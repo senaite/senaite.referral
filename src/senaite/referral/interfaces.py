@@ -19,6 +19,10 @@
 # Some rights reserved, see README and LICENSE.
 
 from senaite.lims.interfaces import ISenaiteLIMS
+from zope.interface import Interface
+
+from bika.lims.interfaces import IDoNotSupportSnapshots
+from bika.lims.interfaces import IHideActionsMenu
 
 
 class ISenaiteReferralLayer(ISenaiteLIMS):
@@ -26,4 +30,19 @@ class ISenaiteReferralLayer(ISenaiteLIMS):
     This interface is referred in profiles/default/browserlayer.xml.
     All views and viewlets register against this layer will appear in the site
     only when the add-on installer has been run.
+    """
+
+
+class IExternalLaboratory(Interface):
+    """Marker interface for ExternalLaboratory type objects
+    """
+
+
+class IContentFolder(IHideActionsMenu, IDoNotSupportSnapshots):
+    """Marker interface for basic containers
+    """
+
+
+class IExternalLaboratoryFolder(IHideActionsMenu, IDoNotSupportSnapshots):
+    """Marker interface for the folder containing ExternalLaboratory contents
     """

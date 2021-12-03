@@ -1,0 +1,12 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="senaite.referral">
+
+  <!-- Static resource directory -->
+  <browser:resourceDirectory
+    name="senaite.referral.static"
+    directory="static"
+    layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+</configure>

@@ -13,6 +13,12 @@
   <!-- Import senaite.core permissions -->
   <include package="bika.lims" file="permissions.zcml" />
 
+  <!-- Import senaite.referral permissions -->
+  <include file="permissions.zcml" />
+
+  <!-- Package includes -->
+  <include package=".browser"/>
+
   <!-- Default profile -->
   <genericsetup:registerProfile
       name="default"

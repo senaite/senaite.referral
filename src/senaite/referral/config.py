@@ -22,3 +22,8 @@ PRODUCT_NAME = "senaite.referral"
 
 PROFILE_ID = "profile-{}:default".format(PRODUCT_NAME)
 UNINSTALL_ID = "profile-{}:uninstall".format(PRODUCT_NAME)
+
+PRODUCT_TYPES = (
+    "ExternalLaboratory",
+    "ExternalLaboratoryFolder",
+)

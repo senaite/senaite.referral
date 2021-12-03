@@ -19,12 +19,17 @@
 # Some rights reserved, see README and LICENSE.
 
 import logging
+from AccessControl.Permission import addPermission
+from AccessControl.SecurityInfo import ModuleSecurityInfo
+from config import PRODUCT_NAME
+from senaite.referral import permissions
+from senaite.referral.config import PRODUCT_TYPES
+from senaite.referral.interfaces import ISenaiteReferralLayer
+from zope.i18nmessageid import MessageFactory
 
 from bika.lims.api import get_request
-from zope.i18nmessageid import MessageFactory
-from config import PRODUCT_NAME
-from senaite.referral.interfaces import ISenaiteReferralLayer
 
+security = ModuleSecurityInfo(PRODUCT_NAME)
 messageFactory = MessageFactory(PRODUCT_NAME)
 logger = logging.getLogger(PRODUCT_NAME)
 
@@ -53,3 +58,11 @@ def initialize(context):
     """Initializer called when used as a Zope 2 product
     """
     logger.info("*** Initializing SENAITE.REFERRAL Customization package ***")
+
+    # Set add permissions
+    for typename in PRODUCT_TYPES:
+        permission_id = "Add" + typename
+        permission_name = getattr(permissions, permission_id)
+        security.declarePublic(permission_id)
+        addPermission(permission_name, default_roles=("Manager", ))
+
