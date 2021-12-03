@@ -9,6 +9,7 @@ from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
 from zope.interface import invariant
+from plone.autoform import directives
 
 
 class IExternalLaboratorySchema(model.Schema):
@@ -28,7 +29,7 @@ class IExternalLaboratorySchema(model.Schema):
     )
 
     reference_laboratory = schema.Bool(
-        title=_(u"label_referencelaboratory_severity",
+        title=_(u"label_externallaboratory_reference",
                 default=u"Reference Laboratory"),
         description=_(
             u"Whether this external laboratory is capable of analysis or "
@@ -38,6 +39,9 @@ class IExternalLaboratorySchema(model.Schema):
         ),
         required=False,
     )
+
+    # Make the code the first field
+    directives.order_before(code='*')
 
     @invariant
     def validate_code(data):

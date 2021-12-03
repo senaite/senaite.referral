@@ -9,4 +9,12 @@
     directory="static"
     layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
+  <!-- External Laboratories folder view -->
+  <browser:page
+      name="view"
+      for="senaite.referral.interfaces.IExternalLaboratoryFolder"
+      class=".externallaboratoryfolder.ExternalLaboratoryFolderView"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
 </configure>

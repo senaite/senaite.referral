@@ -43,7 +43,7 @@
   <property name="add_permission">cmf.AddPortalContent</property>
 
   <!-- Python class for content items of this sort -->
-  <property name="schema">senaite.referral.content.externallaboratory.IExternalLaboratory</property>
+  <property name="schema">senaite.referral.content.externallaboratory.IExternalLaboratorySchema</property>
   <property name="klass">senaite.referral.content.externallaboratory.ExternalLaboratory</property>
 
   <!-- Dexterity behaviours for this type -->
