@@ -1,0 +1,42 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    i18n_domain="senaite.referral">
+
+  <five:registerPackage package="." initialize=".initialize"/>
+
+  <!-- Register Translations -->
+  <i18n:registerTranslations directory="locales" />
+
+  <!-- Import senaite.core permissions -->
+  <include package="bika.lims" file="permissions.zcml" />
+
+  <!-- Default profile -->
+  <genericsetup:registerProfile
+      name="default"
+      title="SENAITE REFERRAL"
+      directory="profiles/default"
+      description="Transfer and refer samples across SENAITE instances"
+      pre_handler="senaite.referral.setuphandlers.pre_install"
+      post_handler="senaite.referral.setuphandlers.post_install"
+      provides="Products.GenericSetup.interfaces.EXTENSION" />
+
+  <!-- Generic Setup Handler -->
+  <genericsetup:importStep
+      name="senaite.referral.setuphandler"
+      title="SENAITE.REFERRAL Setup Handler"
+      description="Run various configuration actions"
+      handler="senaite.referral.setuphandlers.setup_handler"/>
+
+  <!-- Uninstall profile -->
+  <genericsetup:registerProfile
+      name="uninstall"
+      title="SENAITE REFERRAL (uninstall)"
+      directory="profiles/uninstall"
+      description="Transfer and refer samples across SENAITE instances"
+      post_handler="senaite.referral.setuphandlers.post_uninstall"
+      provides="Products.GenericSetup.interfaces.EXTENSION" />
+
+</configure>

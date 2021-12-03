@@ -1,0 +1,9 @@
+[main]
+host = https://www.transifex.com
+
+[senaite-referral.senaite]
+file_filter = <lang>/LC_MESSAGES/senaite.referral.po
+host = https://www.transifex.com
+source_file = senaite.referral.pot
+source_lang = en
+type = PO
