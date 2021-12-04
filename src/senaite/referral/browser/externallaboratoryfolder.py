@@ -81,6 +81,9 @@ class ExternalLaboratoryFolderView(ListingView):
         :index: current index of the item
         """
         obj = api.get_object(obj)
-        item["replace"]["title"] = get_link_for(obj)
+        obj_link = get_link_for(obj)
+        item["replace"]["title"] = obj_link
+
         item["code"] = obj.get_code()
+        item["replace"]["code"] = obj_link
         return item

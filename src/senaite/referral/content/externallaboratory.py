@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from plone.autoform import directives
 from plone.dexterity.content import Item
 from plone.supermodel import model
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_by_code
+from senaite.referral.utils import is_valid_url
+from six.moves.urllib import parse
 from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
 from zope.interface import invariant
-from plone.autoform import directives
 
 
 class IExternalLaboratorySchema(model.Schema):
@@ -19,16 +21,14 @@ class IExternalLaboratorySchema(model.Schema):
     code = schema.TextLine(
         title=_(u"label_externallaboratory_code", default=u"Code"),
         description=_(
-            u"Unique code of this reference laboratory. If the reference "
-            u"laboratory has a senaite instance running, this code must match "
-            u"with the instance's code. It is used to prevent the manual "
-            u"import of an inbound shipment (via file) to a lab other than the "
-            u"expected"
+            u"Unique code of the external laboratory. This code is used to "
+            u"ensure your laboratory and the external laboratory know each "
+            u"other on data transfer"
         ),
         required=True,
     )
 
-    reference_laboratory = schema.Bool(
+    reference = schema.Bool(
         title=_(u"label_externallaboratory_reference",
                 default=u"Reference Laboratory"),
         description=_(
@@ -40,8 +40,64 @@ class IExternalLaboratorySchema(model.Schema):
         required=False,
     )
 
+    reference_url = schema.TextLine(
+        title=_(u"label_externallaboratory_reference_url", default=u"URL"),
+        description=_(
+            u"URL of the external laboratory. If filled, your system will use "
+            u"this URL to automatically dispatch the samples to the external "
+            u"laboratory"
+        ),
+        required=False,
+    )
+
+    referring = schema.Bool(
+        title=_(u"label_externallaboratory_referring",
+                default=u"Referring Laboratory"),
+        description=_(
+            u"Whether this external laboratory can send samples to your "
+            u"laboratory for additional analysis or testing. When checked, "
+            u"your SENAITE instance will accept samples for testing sent from "
+            u"this external laboratory"
+        ),
+        required=False,
+    )
+
+    referring_username = schema.TextLine(
+        title=_(u"label_externallaboratory_referring_username",
+                default=u"Username"),
+        description=_(
+            u"Username of the user the samples will be created on behalf of "
+            u"the external laboratory"
+        ),
+        required=False,
+    )
+
+    referring_password = schema.Password(
+        title=_(u"label_externallaboratory_referring_password",
+                default=u"Password"),
+        description=_(
+            u"Password of the user the samples will be created on behalf of "
+            u"the external laboratory"
+        ),
+        required=False,
+    )
+
     # Make the code the first field
     directives.order_before(code='*')
+
+    # Reference Laboratory fieldset
+    model.fieldset(
+        "reference_laboratory",
+        label=_(u"Reference Laboratory"),
+        fields=["reference", "reference_url"]
+    )
+
+    # Referring Laboratory fieldset
+    model.fieldset(
+        "referring_laboratory",
+        label=_(u"Referring Laboratory"),
+        fields=["referring", "referring_username", "referring_password"]
+    )
 
     @invariant
     def validate_code(data):
@@ -59,6 +115,16 @@ class IExternalLaboratorySchema(model.Schema):
         lab = get_by_code("ExternalLaboratory", code)
         if lab:
             raise Invalid(_("Code must be unique"))
+
+    @invariant
+    def validate_reference_url(data):
+        """Checks if the value for field reference_url is a well-formed URL
+        """
+        if not data.reference_url:
+            return
+
+        if not is_valid_url(data.reference_url):
+            raise Invalid(_("Reference URL is not valid"))
 
 
 @implementer(IExternalLaboratory, IExternalLaboratorySchema)
@@ -85,3 +151,46 @@ class ExternalLaboratory(Item):
             raise ValueError("An External laboratory with Code '{}' already "
                              "exists".format(value))
         self.code = value
+
+    def get_reference(self):
+        return self.reference
+
+    def set_reference(self, value):
+        if self.reference == value:
+            return
+        self.reference = value
+
+    def get_reference_url(self):
+        return self.reference_url
+
+    def set_reference_url(self, value):
+        value = value.strip()
+        if self.reference_url == value:
+            return
+        self.reference_url = value
+
+    def get_referring(self):
+        return self.referring
+
+    def set_referring(self, value):
+        if self.referring == value:
+            return
+        self.referring = value
+
+    def get_referring_username(self):
+        return self.referring_username
+
+    def set_referring_username(self, value):
+        value = value.strip()
+        if self.referring_username == value:
+            return
+        self.referring_username = value
+
+    def get_referring_password(self):
+        return self.referring_password
+
+    def set_referring_password(self, value):
+        value = value.strip()
+        if self.referring_password == value:
+            return
+        self.referring_password = value

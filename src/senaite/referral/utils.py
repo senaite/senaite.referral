@@ -8,6 +8,7 @@ from bika.lims import api
 from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils import t as _t
 from bika.lims.utils import to_utf8
+from six.moves.urllib import parse
 
 
 def set_field_value(instance, field_name, value):
@@ -92,3 +93,13 @@ def search(query, catalog, first_only=False):
         return None
 
     return matches
+
+
+def is_valid_url(value):
+    """Return true if the value is a well-formed url
+    """
+    try:
+        result = parse.urlparse(value)
+        return all([result.scheme, result.netloc, result.path])
+    except:  # noqa a convenient way to check if the url is ok
+        return False
