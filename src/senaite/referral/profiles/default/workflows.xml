@@ -13,7 +13,7 @@
     </type>
 
     <!-- Binding to referral-specific workflows -->
-    <type type_id="InboundShipment">
+    <type type_id="InboundSampleShipment">
       <bound-workflow workflow_id="senaite_inbound_shipment_workflow"/>
     </type>
 
