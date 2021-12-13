@@ -7,7 +7,6 @@ from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_by_code
 from senaite.referral.utils import is_valid_url
-from six.moves.urllib import parse
 from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid

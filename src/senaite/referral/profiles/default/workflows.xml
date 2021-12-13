@@ -12,5 +12,10 @@
       <bound-workflow workflow_id="senaite_deactivable_type_workflow"/>
     </type>
 
+    <!-- Binding to referral-specific workflows -->
+    <type type_id="InboundShipment">
+      <bound-workflow workflow_id="senaite_inbound_shipment_workflow"/>
+    </type>
+
   </bindings>
 </object>

@@ -46,3 +46,8 @@ class IContentFolder(IHideActionsMenu, IDoNotSupportSnapshots):
 class IExternalLaboratoryFolder(IHideActionsMenu, IDoNotSupportSnapshots):
     """Marker interface for the folder containing ExternalLaboratory contents
     """
+
+
+class IInboundShipment(Interface):
+    """Marker interface for InboundShipment type objects
+    """
