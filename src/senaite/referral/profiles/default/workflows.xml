@@ -16,6 +16,9 @@
     <type type_id="InboundSampleShipment">
       <bound-workflow workflow_id="senaite_inbound_shipment_workflow"/>
     </type>
+    <type type_id="OutboundSampleShipment">
+      <bound-workflow workflow_id="senaite_outbound_shipment_workflow"/>
+    </type>
 
   </bindings>
 </object>

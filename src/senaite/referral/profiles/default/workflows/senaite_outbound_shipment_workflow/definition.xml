@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <dc-workflow xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-             workflow_id="senaite_inbound_shipment_workflow"
-             title="Senaite Referral's inbound sample shipment Workflow"
+             workflow_id="senaite_outbound_shipment_workflow"
+             title="Senaite Referral's outbound sample shipment Workflow"
              description=""
              state_variable="review_state"
-             initial_state="due"
+             initial_state="preparation"
              manager_bypass="False"
              i18n:domain="senaite.referral">
 
   <!--
-  Workflow for InboundSampleShipment objects
+  Workflow for OutboundSampleShipment objects
   -->
 
   <!-- PERMISSIONS -->
@@ -20,10 +20,23 @@
   <permission>Modify portal content</permission>
   <permission>View</permission>
 
-  <!-- State: due -->
-  <state state_id="due" title="Due" i18n:attributes="title">
+  <!-- State: preparation -->
+  <state state_id="preparation" title="Preparation" i18n:attributes="title">
     <exit-transition transition_id="cancel" />
-    <exit-transition transition_id="receive" />
+    <exit-transition transition_id="dispatch" />
+
+    <!-- Plone's permissions -->
+    <permission-map name="Access contents information" acquired="True" />
+    <permission-map name="Delete objects" acquired="True" />
+    <permission-map name="List folder contents" acquired="True" />
+    <permission-map name="Modify portal content" acquired="True" />
+    <permission-map name="View" acquired="True" />
+  </state>
+
+  <!-- State: undelivered -->
+  <state state_id="undelivered" title="Undelivered" i18n:attributes="title">
+    <exit-transition transition_id="deliver" />
+    <exit-transition transition_id="lose" />
     <exit-transition transition_id="reject" />
 
     <!-- Plone's permissions -->
@@ -34,8 +47,8 @@
     <permission-map name="View" acquired="True" />
   </state>
 
-  <!-- State: cancelled -->
-  <state state_id="cancelled" title="Cancelled" i18n:attributes="title">
+  <!-- State: delivered -->
+  <state state_id="delivered" title="Delivered" i18n:attributes="title">
     <exit-transition transition_id="" />
 
     <!-- Plone's permissions -->
@@ -46,20 +59,32 @@
     <permission-map name="View" acquired="True" />
   </state>
 
-  <!-- State: received -->
-  <state state_id="received" title="Received" i18n:attributes="title">
-    <exit-transition transition_id="reject" />
+  <!-- State: lost -->
+  <state state_id="lost" title="Lost" i18n:attributes="title">
+    <exit-transition transition_id="" />
 
     <!-- Plone's permissions -->
     <permission-map name="Access contents information" acquired="True" />
     <permission-map name="Delete objects" acquired="True" />
     <permission-map name="List folder contents" acquired="True" />
-    <permission-map name="Modify portal content" acquired="True" />
+    <permission-map name="Modify portal content" acquired="False" />
     <permission-map name="View" acquired="True" />
   </state>
 
   <!-- State: rejected -->
   <state state_id="rejected" title="Rejected" i18n:attributes="title">
+    <exit-transition transition_id="" />
+
+    <!-- Plone's permissions -->
+    <permission-map name="Access contents information" acquired="True" />
+    <permission-map name="Delete objects" acquired="True" />
+    <permission-map name="List folder contents" acquired="True" />
+    <permission-map name="Modify portal content" acquired="False" />
+    <permission-map name="View" acquired="True" />
+  </state>
+
+  <!-- State: cancelled -->
+  <state state_id="cancelled" title="Cancelled" i18n:attributes="title">
     <exit-transition transition_id="" />
 
     <!-- Plone's permissions -->
@@ -78,11 +103,11 @@
     </guard>
   </transition>
 
-  <!-- Transition: receive -->
-  <transition transition_id="receive" title="Receive" new_state="received" trigger="USER" before_script="" after_script="" i18n:attributes="title">
-    <action url="" category="workflow" icon="">Receive</action>
+  <!-- Transition: dispatch -->
+  <transition transition_id="dispatch" title="Dispatch" new_state="undelivered" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+    <action url="" category="workflow" icon="">Dispatch</action>
     <guard>
-      <guard-expression>python:here.guard_handler("receive")</guard-expression>
+      <guard-expression>python:here.guard_handler("dispatch")</guard-expression>
     </guard>
   </transition>
 
@@ -91,6 +116,22 @@
     <action url="" category="workflow" icon="">Reject</action>
     <guard>
       <guard-expression>python:here.guard_handler("reject")</guard-expression>
+    </guard>
+  </transition>
+
+  <!-- Transition: deliver -->
+  <transition transition_id="deliver" title="Deliver" new_state="delivered" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+    <action url="" category="workflow" icon="">Deliver</action>
+    <guard>
+      <guard-expression>python:here.guard_handler("deliver")</guard-expression>
+    </guard>
+  </transition>
+
+  <!-- Transition: lose -->
+  <transition transition_id="lose" title="Lost" new_state="lost" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+    <action url="" category="workflow" icon="">Lost</action>
+    <guard>
+      <guard-expression>python:here.guard_handler("lose")</guard-expression>
     </guard>
   </transition>
 

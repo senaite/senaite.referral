@@ -9,6 +9,9 @@ from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils import t as _t
 from bika.lims.utils import to_utf8
 from six.moves.urllib import parse
+from bika.lims.workflow import getTransitionDate
+
+_marker = object()
 
 
 def set_field_value(instance, field_name, value):
@@ -103,3 +106,14 @@ def is_valid_url(value):
         return all([result.scheme, result.netloc, result.path])
     except:  # noqa a convenient way to check if the url is ok
         return False
+
+
+def get_action_date(obj, action, default=_marker):
+    """Returns the DateTime when an action took place to the given obj.
+    """
+    action_date = getTransitionDate(obj, action, return_as_datetime=True)
+    if action_date is None:
+        if default is _marker:
+            api.fail("No ation date for {} and {}".format(repr(obj), action))
+        action_date = default
+    return action_date

@@ -16,10 +16,14 @@
   <!-- Package includes -->
   <include package=".browser"/>
 
-  <!-- Utilities -->
+  <!-- Vocabularies -->
   <utility
       component="senaite.referral.vocabularies.ReferringLaboratoriesVocabularyFactory"
       name="senaite.referral.vocabularies.referringlaboratories" />
+  <utility
+      component="senaite.referral.vocabularies.ReferenceLaboratoriesVocabularyFactory"
+      name="senaite.referral.vocabularies.referencelaboratories" />
+
 
   <!-- Default profile -->
   <genericsetup:registerProfile

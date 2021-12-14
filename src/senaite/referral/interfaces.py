@@ -51,3 +51,8 @@ class IExternalLaboratoryFolder(IHideActionsMenu, IDoNotSupportSnapshots):
 class IInboundSampleShipment(Interface):
     """Marker interface for InboundSampleShipment type objects
     """
+
+
+class IOutboundSampleShipment(Interface):
+    """Marker interface for OutboundSampleShipment type objects
+    """

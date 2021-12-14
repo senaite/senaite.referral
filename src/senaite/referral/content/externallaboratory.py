@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from plone.autoform import directives
-from plone.dexterity.content import Item
+from plone.dexterity.content import Container
 from plone.supermodel import model
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
@@ -127,9 +127,13 @@ class IExternalLaboratorySchema(model.Schema):
 
 
 @implementer(IExternalLaboratory, IExternalLaboratorySchema)
-class ExternalLaboratory(Item):
+class ExternalLaboratory(Container):
     """Organization that can act as a reference laboratory, as a referring
     laboratory or both
+    Item(PasteBehaviourMixin, BrowserDefaultMixin, DexterityContent):
+
+        PasteBehaviourMixin, DAVCollectionMixin, BrowserDefaultMixin,
+        CMFCatalogAware, CMFOrderedBTreeFolderBase, DexterityContent):
     """
     _catalogs = ["portal_catalog", ]
 

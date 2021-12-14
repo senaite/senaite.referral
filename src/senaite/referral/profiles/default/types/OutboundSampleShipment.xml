@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<object name="ExternalLaboratory"
+<object name="OutboundSampleShipment"
         meta_type="Dexterity FTI"
         i18n:domain="senaite.referral"
         xmlns:i18n="http://xml.zope.org/namespaces/i18n">
 
   <!-- Title and Description -->
-  <property name="title" i18n:translate="">External laboratory</property>
+  <property name="title" i18n:translate="">Outbound sample shipment</property>
   <property name="description" i18n:translate=""/>
 
   <!-- content-type icon -->
-  <property name="icon_expr">string:${portal_url}/++resource++senaite.referral.static/external_laboratory.png</property>
+  <property name="icon_expr">string:${portal_url}/++resource++senaite.referral.static/outbound_shipment.png</property>
 
   <!-- factory name; usually the same as type name -->
-  <property name="factory">ExternalLaboratory</property>
+  <property name="factory">OutboundSampleShipment</property>
 
   <!-- URL TALES expression to add an item TTW -->
-  <property name="add_view_expr">string:${folder_url}/++add++ExternalLaboratory</property>
+  <property name="add_view_expr">string:${folder_url}/++add++OutboundSampleShipment</property>
 
   <property name="link_target"/>
   <property name="immediate_view">view</property>
@@ -27,8 +27,6 @@
   <property name="filter_content_types">True</property>
   <!-- If filtering, what's allowed -->
   <property name="allowed_content_types">
-    <element value="InboundSampleShipment"/>
-    <element value="OutboundSampleShipment"/>
   </property>
 
   <property name="allow_discussion">False</property>
@@ -45,8 +43,8 @@
   <property name="add_permission">cmf.AddPortalContent</property>
 
   <!-- Python class for content items of this sort -->
-  <property name="schema">senaite.referral.content.externallaboratory.IExternalLaboratorySchema</property>
-  <property name="klass">senaite.referral.content.externallaboratory.ExternalLaboratory</property>
+  <property name="schema">senaite.referral.content.outboundsampleshipment.IOutboundSampleShipmentSchema</property>
+  <property name="klass">senaite.referral.content.outboundsampleshipment.OutboundSampleShipment</property>
 
   <!-- Dexterity behaviours for this type -->
   <property name="behaviors">

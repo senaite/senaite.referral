@@ -50,4 +50,28 @@ class ReferringLaboratoriesVocabulary(object):
         return SimpleVocabulary(items)
 
 
+@implementer(IVocabularyFactory)
+class ReferenceLaboratoriesVocabulary(object):
+    """Returns a simple vocabulary made of ExternalLaboratories to which we can
+    send samples because they have the setting "Reference Laboratory" enabled
+    """
+
+    def __call__(self, context):
+        query = {
+            "portal_type": "ExternalLaboratory",
+            "is_active": True,
+            "sort_on": "sortable_title",
+            "sort_order": "ascending",
+        }
+        items = []
+        for brain in api.search(query, "portal_catalog"):
+            obj = api.get_object(brain)
+            if obj.get_reference():
+                # Only those external labs that can act as referring labs
+                items.append(to_simple_term(obj))
+
+        return SimpleVocabulary(items)
+
+
 ReferringLaboratoriesVocabularyFactory = ReferringLaboratoriesVocabulary()
+ReferenceLaboratoriesVocabularyFactory = ReferenceLaboratoriesVocabulary()
