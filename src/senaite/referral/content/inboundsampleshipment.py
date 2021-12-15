@@ -4,6 +4,7 @@ from plone.supermodel import model
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.interfaces import IInboundSampleShipment
+from senaite.referral.utils import get_action_date
 from zope import schema
 from zope.interface import implementer
 from zope.interface import invariant
@@ -56,8 +57,8 @@ class IInboundSampleShipmentSchema(model.Schema):
         required=True,
     )
 
-    dispatch_datetime = schema.Datetime(
-        title=_(u"label_inboundsampleshipment_dispatch_datetime",
+    dispatched_datetime = schema.Datetime(
+        title=_(u"label_inboundsampleshipment_dispatched_datetime",
                 default=u"Dispatched"),
         description=_(
             u"Date and time when the shipment was dispatched by the referring "
@@ -76,16 +77,16 @@ class IInboundSampleShipmentSchema(model.Schema):
         check_referring_laboratory(val)
 
     @invariant
-    def validate_dispatch_datetime(data):
+    def validate_dispatched_datetime(data):
         """Checks if the value for field dispatch_datetime is valid
         """
-        val = data.dispatch_datetime
+        val = data.dispatched_datetime
         if not val:
             return
 
         val = api.to_date(val)
         if not val:
-            raise ValueError("Dispatch date time is not valid")
+            raise ValueError("Dispatched date time is not valid")
 
 
 @implementer(IInboundSampleShipment, IInboundSampleShipmentSchema)
@@ -139,14 +140,35 @@ class InboundSampleShipment(Item):
             return
         self.shipment_id = value
 
-    def get_dispatch_datetime(self):
-        dispatch_datetime = self.dispatch_datetime
-        if not dispatch_datetime:
+    def get_dispatched_datetime(self):
+        """Returns the datetime when the shipment was dispatched from the
+        referral laboratory
+        """
+        dispatched_datetime = self.dispatched_datetime
+        if not dispatched_datetime:
             return u""
-        return dispatch_datetime
+        return dispatched_datetime
 
-    def set_dispatch_datetime(self, value):
+    def set_dispatched_datetime(self, value):
+        """Sets the datetime when the shipment was dispatched from the referral
+        laboratory
+        """
         value = api.to_date(value)
         if not value:
             raise ValueError("Dispatch date time is not valid")
-        self.dispatch_datetime = value
+        self.dispatched_datetime = value
+
+    def get_received_datetime(self):
+        """Returns the datetime when this shipment was received or None
+        """
+        return get_action_date(self, "receive", default=None)
+
+    def get_rejected_datetime(self):
+        """Returns the datetime when this shipment was rejected or None
+        """
+        return get_action_date(self, "reject", default=None)
+
+    def get_cancelled_datetime(self):
+        """Returns the datetime when this shipment was rejected or None
+        """
+        return get_action_date(self, "cancel", default=None)

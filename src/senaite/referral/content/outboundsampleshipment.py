@@ -53,48 +53,6 @@ class IOutboundSampleShipmentSchema(model.Schema):
         readonly=True,
     )
 
-    created_datetime = schema.Datetime(
-        title=_(u"label_outboundsampleshipment_created_datetime",
-                default=u"Created"),
-        description=_(
-            u"Date and time when the shipment was created"
-        ),
-        # Automatically set, see property
-        readonly=True
-    )
-
-    dispatched_datetime = schema.Datetime(
-        title=_(u"label_outboundsampleshipment_dispatched_datetime",
-                default=u"Dispatched"),
-        description=_(
-            u"Date and time when the shipment was dispatched to the reference "
-            u"laboratory"
-        ),
-        # Automatically set, see property
-        readonly=True
-    )
-
-    delivered_datetime = schema.Datetime(
-        title=_(u"label_outboundsampleshipment_delivered_datetime",
-                default=u"Delivered"),
-        description=_(
-            u"Date and time when the shipment was physically delivered to the "
-            u"reference laboratory"
-        ),
-        # Automatically set, see property
-        readonly=True
-    )
-
-    rejected_datetime = schema.Datetime(
-        title=_(u"label_outboundsampleshipment_rejected_datetime",
-                default=u"Delivered"),
-        description=_(
-            u"Date and time when the shipment was rejected"
-        ),
-        # Automatically set, see property
-        readonly=True
-    )
-
     @invariant
     def validate_reference_laboratory(data):
         """Checks if the value for field referring_laboratory is valid
@@ -117,30 +75,6 @@ class OutboundSampleShipment(Item):
         """The unique ID of this outbound shipment object
         """
         return api.get_id(self)
-
-    @property
-    def created_datetime(self):
-        """The datetime when this object was created/registered in the system
-        """
-        return api.get_creation_date(self)
-
-    @property
-    def dispatched_datetime(self):
-        """The datetime when this object was dispatched
-        """
-        return get_action_date(self, "dispatch", default=None)
-
-    @property
-    def delivered_datetime(self):
-        """The datetime when this object was delivered
-        """
-        return get_action_date(self, "deliver", default=None)
-
-    @property
-    def rejected_datetime(self):
-        """The datetime when this object was rejected
-        """
-        return get_action_date(self, "reject", default=None)
 
     def get_reference_laboratory(self):
         lab = self.reference_laboratory
@@ -177,13 +111,33 @@ class OutboundSampleShipment(Item):
         return self.shipment_id
 
     def get_created_datetime(self):
-        return self.created_datetime
+        """Returns the datetime when this shipment was created in the system
+        """
+        return api.get_creation_date(self)
 
     def get_dispatched_datetime(self):
-        return self.dispatched_datetime
+        """Returns the datetime when this shipment was dispatched to the
+        destination reference laboratory
+        """
+        return get_action_date(self, "dispatch", default=None)
 
     def get_delivered_datetime(self):
-        return self.delivered_datetime
+        """Returns the datetime when this shipment was delivered on the
+        destination reference laboratory
+        """
+        return get_action_date(self, "deliver", default=None)
+
+    def get_lost_datetime(self):
+        """Returns the datetime when this shipment was labeled as lost
+        """
+        return get_action_date(self, "lose", default=None)
 
     def get_rejected_datetime(self):
-        return self.rejected_datetime
+        """Returns the datetime when this shipment was rejected or None
+        """
+        return get_action_date(self, "reject", default=None)
+
+    def get_cancelled_datetime(self):
+        """Returns the datetime when this shipment was rejected or None
+        """
+        return get_action_date(self, "cancel", default=None)

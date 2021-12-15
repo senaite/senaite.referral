@@ -9,6 +9,9 @@
     directory="static"
     layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
+  <!-- Package includes -->
+  <include package=".externallaboratory"/>
+
   <!-- External Laboratories folder view -->
   <browser:page
       name="view"
