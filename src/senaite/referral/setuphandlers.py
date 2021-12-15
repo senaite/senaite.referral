@@ -27,6 +27,7 @@ from senaite.referral.config import UNINSTALL_ID
 # Tuples of (folder_id, folder_name, type)
 PORTAL_FOLDERS = [
     ("external_labs", "External laboratories", "ExternalLaboratoryFolder"),
+    ("shipments", "Shipments", "ShipmentFolder"),
 ]
 
 

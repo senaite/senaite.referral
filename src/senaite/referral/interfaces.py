@@ -43,7 +43,7 @@ class IContentFolder(IHideActionsMenu, IDoNotSupportSnapshots):
     """
 
 
-class IExternalLaboratoryFolder(IHideActionsMenu, IDoNotSupportSnapshots):
+class IExternalLaboratoryFolder(IContentFolder):
     """Marker interface for the folder containing ExternalLaboratory contents
     """
 
@@ -55,4 +55,11 @@ class IInboundSampleShipment(Interface):
 
 class IOutboundSampleShipment(Interface):
     """Marker interface for OutboundSampleShipment type objects
+    """
+
+
+class IShipmentFolder(IContentFolder):
+    """Marker interface for the base "fake" folder to live in the navigation bar
+    that is used to display InboundSampleShipment and OutboundSampleShipment
+    objects from inside ExternalLaboratory objects
     """

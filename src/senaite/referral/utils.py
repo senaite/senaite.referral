@@ -6,6 +6,7 @@ from senaite.referral import messageFactory as _
 
 from bika.lims import api
 from bika.lims.catalog import SETUP_CATALOG
+from bika.lims.utils import render_html_attributes
 from bika.lims.utils import t as _t
 from bika.lims.utils import to_utf8
 from six.moves.urllib import parse
@@ -117,3 +118,24 @@ def get_action_date(obj, action, default=_marker):
             api.fail("No ation date for {} and {}".format(repr(obj), action))
         action_date = default
     return action_date
+
+
+def get_image(name, **kwargs):
+    """Returns a well-formed image
+    :param name: file name of the image
+    :param kwargs: additional attributes and values
+    :return: a well-formed html img
+    """
+    if not name:
+        return ""
+    attr = render_html_attributes(**kwargs)
+    url = get_image_url(name)
+    return '<img src="{}" {}/>'.format(url, attr)
+
+
+def get_image_url(name):
+    """Returns the url for the give image
+    """
+    portal_url = api.get_url(api.get_portal())
+    return "{}/++resource++senaite.referral.static/{}"\
+        .format(portal_url, name)

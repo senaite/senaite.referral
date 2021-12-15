@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import collections
+from plone.memoize import view
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
+from senaite.referral.utils import get_image_url
 
 from bika.lims import api
 from bika.lims.browser import ulocalized_time
 from bika.lims.utils import get_link
 from bika.lims.utils import get_link_for
-from plone.memoize import view
 
 
 class OutboundSampleShipmentFolderView(ListingView):
@@ -18,10 +19,8 @@ class OutboundSampleShipmentFolderView(ListingView):
     def __init__(self, context, request):
         super(OutboundSampleShipmentFolderView, self).__init__(context, request)
 
-        self.title = api.get_title(self.context)
-        self.description = api.get_description(self.context)
-        self.icon = api.get_icon(self.context, html_tag=False)
-        self.icon = self.icon.replace(".png", "_big.png")
+        self.title = _("Outbound sample shipments")
+        self.icon = get_image_url("outbound_shipment_big.png")
         self.show_select_row = False
         self.show_select_column = True
 

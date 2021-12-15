@@ -20,4 +20,20 @@
       permission="senaite.core.permissions.ManageBika"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
+  <!-- Inbound shipments -->
+  <browser:page
+      name="inbound_shipments"
+      for="senaite.referral.interfaces.IShipmentFolder"
+      class=".inboundsampleshipmentfolder.InboundSampleShipmentFolderView"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+  <!-- Shipments folder view -->
+  <browser:page
+      name="outbound_shipments"
+      for="senaite.referral.interfaces.IShipmentFolder"
+      class=".outboundsampleshipmentfolder.OutboundSampleShipmentFolderView"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
 </configure>

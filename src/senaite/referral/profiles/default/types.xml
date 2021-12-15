@@ -4,4 +4,5 @@
   <object name="ExternalLaboratoryFolder" meta_type="Dexterity FTI" />
   <object name="InboundSampleShipment" meta_type="Dexterity FTI" />
   <object name="OutboundSampleShipment" meta_type="Dexterity FTI" />
+  <object name="ShipmentFolder" meta_type="Dexterity FTI" />
 </object>
