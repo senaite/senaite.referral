@@ -1,0 +1,22 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="senaite.referral">
+
+  <!-- Inbound shipments listing view -->
+  <browser:page
+      name="inbound_shipments"
+      for="senaite.referral.interfaces.IShipmentFolder"
+      class=".inboundshipments.InboundSampleShipmentFolderView"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+  <!-- Outbound shipments listing view -->
+  <browser:page
+      name="outbound_shipments"
+      for="senaite.referral.interfaces.IShipmentFolder"
+      class=".outboundshipments.OutboundSampleShipmentFolderView"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+</configure>

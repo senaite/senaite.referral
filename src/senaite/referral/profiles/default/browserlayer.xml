@@ -5,4 +5,7 @@
 <layers>
   <layer name="senaite.referral"
          interface="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+  <layer name="senaite.referral.forms"
+         interface="senaite.referral.interfaces.ISenaiteReferralFormLayer"/>
 </layers>

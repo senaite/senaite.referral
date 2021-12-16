@@ -1,0 +1,8 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="senaite.referral">
+
+  <!-- Package includes -->
+  <include package=".dexterity"/>
+
+</configure>

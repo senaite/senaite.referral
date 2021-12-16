@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from Products.CMFCore.permissions import ModifyPortalContent
-from senaite.referral.browser.inboundsampleshipmentfolder import \
+from senaite.referral.browser.shipmentfolder.inboundshipments import \
     InboundSampleShipmentFolderView
-from senaite.referral.browser.outboundsampleshipmentfolder import \
+from senaite.referral.browser.shipmentfolder.outboundshipments import \
     OutboundSampleShipmentFolderView
 
 from bika.lims import api

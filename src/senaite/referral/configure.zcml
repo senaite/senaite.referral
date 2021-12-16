@@ -15,6 +15,7 @@
 
   <!-- Package includes -->
   <include package=".browser"/>
+  <include package=".core"/>
 
   <!-- Vocabularies -->
   <utility

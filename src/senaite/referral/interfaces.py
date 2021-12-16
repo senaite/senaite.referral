@@ -18,6 +18,7 @@
 # Copyright 2021 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+from plone.app.z3cform.interfaces import IPloneFormLayer
 from senaite.lims.interfaces import ISenaiteLIMS
 from zope.interface import Interface
 
@@ -30,6 +31,13 @@ class ISenaiteReferralLayer(ISenaiteLIMS):
     This interface is referred in profiles/default/browserlayer.xml.
     All views and viewlets register against this layer will appear in the site
     only when the add-on installer has been run.
+    """
+
+
+class ISenaiteReferralFormLayer(IPloneFormLayer):
+    """Used to override plone.app.z3cform forms
+
+    Inherits from `z3c.form.interfaces.IFormLayer`
     """
 
 

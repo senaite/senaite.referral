@@ -69,6 +69,7 @@ class OutboundSampleShipment(Item):
     external reference laboratory
     """
     _catalogs = ["portal_catalog", ]
+    exclude_from_nav = True
 
     @property
     def shipment_id(self):

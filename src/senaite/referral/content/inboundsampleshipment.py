@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from plone.autoform import directives
 from plone.dexterity.content import Item
 from plone.supermodel import model
 from senaite.referral import messageFactory as _
@@ -31,6 +32,18 @@ class IInboundSampleShipmentSchema(model.Schema):
     """InboundSampleShipment content schema
     """
 
+    directives.omitted("title")
+    title = schema.TextLine(
+        title=u"Title",
+        required=False
+    )
+
+    directives.omitted("description")
+    description = schema.Text(
+        title=u"Description",
+        required=False
+    )
+
     referring_laboratory = schema.Choice(
         title=_(u"label_inboundsampleshipment_referring_laboratory",
                 default=u"Referring laboratory"),
@@ -39,7 +52,7 @@ class IInboundSampleShipmentSchema(model.Schema):
         required=True,
     )
 
-    comments = schema.TextLine(
+    comments = schema.Text(
         title=_(u"label_inboundsampleshipment_comments",
                 default=u"Comments"),
         description=_(
@@ -66,6 +79,9 @@ class IInboundSampleShipmentSchema(model.Schema):
         ),
         required=True,
     )
+
+    # Make the code the first field
+    directives.order_before(shipment_id='*')
 
     @invariant
     def validate_referring_laboratory(data):
@@ -95,6 +111,19 @@ class InboundSampleShipment(Item):
     referring laboratory
     """
     _catalogs = ["portal_catalog", ]
+    exclude_from_nav = True
+
+    def _get_title(self):
+        code = self.get_shipment_id()
+        return code.encode("utf-8")
+
+    def _set_title(self, title):
+        return
+
+    def setTitle(self, title):
+        return
+
+    title = property(_get_title, _set_title)
 
     def get_referring_laboratory(self):
         lab = self.referring_laboratory

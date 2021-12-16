@@ -11,29 +11,31 @@
 
   <!-- Package includes -->
   <include package=".externallaboratory"/>
+  <include package=".shipmentfolder"/>
 
   <!-- External Laboratories folder view -->
   <browser:page
       name="view"
       for="senaite.referral.interfaces.IExternalLaboratoryFolder"
       class=".externallaboratoryfolder.ExternalLaboratoryFolderView"
-      permission="senaite.core.permissions.ManageBika"
+      permission="zope2.View"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
-  <!-- Inbound shipments -->
+  <!-- Inbound Sample Shipment view -->
   <browser:page
-      name="inbound_shipments"
-      for="senaite.referral.interfaces.IShipmentFolder"
-      class=".inboundsampleshipmentfolder.InboundSampleShipmentFolderView"
-      permission="senaite.core.permissions.ManageBika"
+      name="view"
+      for="senaite.referral.interfaces.IInboundSampleShipment"
+      class=".inboundsampleshipment.InboundSamplesShipmentView"
+      template="templates/inbound_samples_shipment.pt"
+      permission="zope2.View"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
-  <!-- Shipments folder view -->
+  <!-- Inbound Sample Shipment's samples view -->
   <browser:page
-      name="outbound_shipments"
-      for="senaite.referral.interfaces.IShipmentFolder"
-      class=".outboundsampleshipmentfolder.OutboundSampleShipmentFolderView"
-      permission="senaite.core.permissions.ManageBika"
+      name="samples"
+      for="senaite.referral.interfaces.IInboundSampleShipment"
+      class=".inboundsampleshipment.SamplesListingView"
+      permission="zope2.View"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
 </configure>
