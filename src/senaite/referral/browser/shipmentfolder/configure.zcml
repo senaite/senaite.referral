@@ -5,6 +5,12 @@
 
   <!-- Inbound shipments listing view -->
   <browser:page
+      name="view"
+      for="senaite.referral.interfaces.IShipmentFolder"
+      class=".inboundshipments.InboundSampleShipmentFolderView"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+  <browser:page
       name="inbound_shipments"
       for="senaite.referral.interfaces.IShipmentFolder"
       class=".inboundshipments.InboundSampleShipmentFolderView"

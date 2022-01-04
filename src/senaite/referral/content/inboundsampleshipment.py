@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from plone.autoform import directives
-from plone.dexterity.content import Item
+from plone.dexterity.content import Container
 from plone.supermodel import model
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
@@ -44,6 +44,15 @@ class IInboundSampleShipmentSchema(model.Schema):
         required=False
     )
 
+    shipment_id = schema.TextLine(
+        title=_(u"label_inboundsampleshipment_shipment_id",
+                default=u"Shipment ID"),
+        description=_(
+            u"Unique identifier provided by the referring laboratory"
+        ),
+        required=True,
+    )
+
     referring_laboratory = schema.Choice(
         title=_(u"label_inboundsampleshipment_referring_laboratory",
                 default=u"Referring laboratory"),
@@ -61,15 +70,6 @@ class IInboundSampleShipmentSchema(model.Schema):
         required=False,
     )
 
-    shipment_id = schema.TextLine(
-        title=_(u"label_inboundsampleshipment_shipment_id",
-                default=u"Shipment ID"),
-        description=_(
-            u"Unique identifier provided by the referring laboratory"
-        ),
-        required=True,
-    )
-
     dispatched_datetime = schema.Datetime(
         title=_(u"label_inboundsampleshipment_dispatched_datetime",
                 default=u"Dispatched"),
@@ -79,9 +79,6 @@ class IInboundSampleShipmentSchema(model.Schema):
         ),
         required=True,
     )
-
-    # Make the code the first field
-    directives.order_before(shipment_id='*')
 
     @invariant
     def validate_referring_laboratory(data):
@@ -106,7 +103,7 @@ class IInboundSampleShipmentSchema(model.Schema):
 
 
 @implementer(IInboundSampleShipment, IInboundSampleShipmentSchema)
-class InboundSampleShipment(Item):
+class InboundSampleShipment(Container):
     """Single physical package containing one or more samples sent from a
     referring laboratory
     """
@@ -118,9 +115,6 @@ class InboundSampleShipment(Item):
         return code.encode("utf-8")
 
     def _set_title(self, title):
-        return
-
-    def setTitle(self, title):
         return
 
     title = property(_get_title, _set_title)

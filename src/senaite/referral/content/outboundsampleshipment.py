@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from plone.dexterity.content import Item
+from plone.autoform import directives
+from plone.dexterity.content import Container
 from plone.supermodel import model
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
@@ -30,6 +31,18 @@ def check_reference_laboratory(thing):
 class IOutboundSampleShipmentSchema(model.Schema):
     """OutboundSampleShipment content schema
     """
+
+    directives.omitted("title")
+    title = schema.TextLine(
+        title=u"Title",
+        required=False
+    )
+
+    directives.omitted("description")
+    description = schema.Text(
+        title=u"Description",
+        required=False
+    )
 
     reference_laboratory = schema.Choice(
         title=_(u"label_outboundsampleshipment_reference_laboratory",
@@ -64,7 +77,7 @@ class IOutboundSampleShipmentSchema(model.Schema):
 
 
 @implementer(IInboundSampleShipment, IOutboundSampleShipmentSchema)
-class OutboundSampleShipment(Item):
+class OutboundSampleShipment(Container):
     """Single physical package containing one or more samples to be sent to an
     external reference laboratory
     """
@@ -76,6 +89,14 @@ class OutboundSampleShipment(Item):
         """The unique ID of this outbound shipment object
         """
         return api.get_id(self)
+
+    def _get_title(self):
+        return self.shipment_id.encode("utf-8")
+
+    def _set_title(self, title):
+        return
+
+    title = property(_get_title, _set_title)
 
     def get_reference_laboratory(self):
         lab = self.reference_laboratory

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import collections
+from pkg_resources import resource_listdir
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
+from senaite.referral import PRODUCT_NAME
 
 from bika.lims import api
 from bika.lims.utils import get_link_for
