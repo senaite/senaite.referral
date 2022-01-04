@@ -35,11 +35,11 @@ class InboundSampleShipmentFolderView(ListingView):
         self.context_actions = {}
 
         self.columns = collections.OrderedDict((
-            ("referring_laboratory", {
-                "title": _("Referring Lab"),
-            }),
             ("shipment_id", {
                 "title": _("Shipment ID"),
+            }),
+            ("referring_laboratory", {
+                "title": _("Referring Lab"),
             }),
             ("dispatched", {
                 "title": _("Dispatched"),
