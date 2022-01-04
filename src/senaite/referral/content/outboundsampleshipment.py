@@ -4,7 +4,7 @@ from plone.dexterity.content import Container
 from plone.supermodel import model
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
-from senaite.referral.interfaces import IInboundSampleShipment
+from senaite.referral.interfaces import IOutboundSampleShipment
 from senaite.referral.utils import get_action_date
 from zope import schema
 from zope.interface import implementer
@@ -66,6 +66,12 @@ class IOutboundSampleShipmentSchema(model.Schema):
         readonly=True,
     )
 
+    directives.omitted("samples")
+    samples = schema.List(
+        title=_(u"Samples"),
+        required=True,
+    )
+
     @invariant
     def validate_reference_laboratory(data):
         """Checks if the value for field referring_laboratory is valid
@@ -76,7 +82,7 @@ class IOutboundSampleShipmentSchema(model.Schema):
         check_reference_laboratory(val)
 
 
-@implementer(IInboundSampleShipment, IOutboundSampleShipmentSchema)
+@implementer(IOutboundSampleShipment, IOutboundSampleShipmentSchema)
 class OutboundSampleShipment(Container):
     """Single physical package containing one or more samples to be sent to an
     external reference laboratory
@@ -163,3 +169,32 @@ class OutboundSampleShipment(Container):
         """Returns the datetime when this shipment was rejected or None
         """
         return get_action_date(self, "cancel", default=None)
+
+    def get_samples(self):
+        """Returns the list of sample uids assigned to this shipment
+        """
+        samples = self.samples
+        if not samples:
+            return []
+        return samples
+
+    def set_samples(self, value):
+        """Assigns the samples assigned to this shipment
+        """
+        if not isinstance(value, (list, tuple)):
+            value = [value]
+
+        self.samples = []
+        map(self.add_sample, value)
+
+    def add_sample(self, value):
+        """Adds a sample to this shipment
+        """
+        if not value:
+            return
+
+        samples = self.samples or []
+        sample_uid = api.get_uid(value)
+        if sample_uid not in samples:
+            samples.append(sample_uid)
+            self.samples = samples

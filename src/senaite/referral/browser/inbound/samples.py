@@ -2,19 +2,12 @@
 import collections
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
-from senaite.referral.core.browser.dexterity.views import SenaiteDefaultView
 from senaite.referral.shipmentsample import ShipmentSample
 from senaite.referral.utils import get_image_url
 
 from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 from bika.lims.utils import get_link_for
-
-
-class InboundSamplesShipmentView(SenaiteDefaultView):
-    """Default view for InboundSamplesShipment object
-    """
-    pass
 
 
 class SamplesListingView(ListingView):
@@ -26,6 +19,7 @@ class SamplesListingView(ListingView):
         self.title = _("Samples")
         self.icon = get_image_url("shipment_samples.png")
         self.show_select_column = True
+        self.show_search = False
 
         # Query is ignored in `folderitems` method and only there to override
         # the default settings

@@ -11,7 +11,10 @@
 
   <!-- Package includes -->
   <include package=".externallaboratory"/>
+  <include package=".inbound"/>
+  <include package=".outbound"/>
   <include package=".shipmentfolder"/>
+  <include package=".workflow"/>
 
   <!-- External Laboratories folder view -->
   <browser:page
@@ -21,21 +24,12 @@
       permission="zope2.View"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
-  <!-- Inbound Sample Shipment view -->
+  <!-- Shipment of samples (Outbound Shipment creation/assignment) -->
   <browser:page
-      name="view"
-      for="senaite.referral.interfaces.IInboundSampleShipment"
-      class=".inboundsampleshipment.InboundSamplesShipmentView"
-      template="templates/inbound_samples_shipment.pt"
-      permission="zope2.View"
-      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
-
-  <!-- Inbound Sample Shipment's samples view -->
-  <browser:page
-      name="samples"
-      for="senaite.referral.interfaces.IInboundSampleShipment"
-      class=".inboundsampleshipment.SamplesListingView"
-      permission="zope2.View"
+      for="*"
+      name="referral_ship_samples"
+      class=".ship_samples.ShipSamplesView"
+      permission="senaite.core.permissions.ManageAnalysisRequests"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
 </configure>

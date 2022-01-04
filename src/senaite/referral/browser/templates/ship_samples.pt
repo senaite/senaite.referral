@@ -1,0 +1,30 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="senaite.referral">
+  <body>
+
+  <!-- Title -->
+  <metal:title fill-slot="content-title">
+    <h1 i18n:translate="">
+      Ship samples
+    </h1>
+  </metal:title>
+
+  <!-- Description -->
+  <metal:description fill-slot="content-description">
+    <p i18n:translate="">
+      <a tal:attributes="href view/back_url"
+         i18n:name="back_link"
+         i18n:translate="">Back
+      </a>
+    </p>
+  </metal:description>
+
+  <!-- Content -->
+  <metal:core fill-slot="content-core">
+  </metal:core>
+
+  </body>
+</html>

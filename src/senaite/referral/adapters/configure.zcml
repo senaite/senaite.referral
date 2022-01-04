@@ -1,0 +1,12 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="senaite.referral">
+
+  <!-- Guard handler for AnalysisRequest content type -->
+  <adapter
+      for="bika.lims.interfaces.IAnalysisRequest"
+      provides="bika.lims.interfaces.IGuardAdapter"
+      factory=".guards.SampleGuardAdapter"
+      name="senaite.referral.adapter.guard.sample" />
+
+</configure>

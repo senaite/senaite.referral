@@ -2,7 +2,8 @@
 <object name="InboundSampleShipment"
         meta_type="Dexterity FTI"
         i18n:domain="senaite.referral"
-        xmlns:i18n="http://xml.zope.org/namespaces/i18n">
+        xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+        purge="True">
 
   <!-- Title and Description -->
   <property name="title" i18n:translate="">Inbound sample shipment</property>
@@ -82,19 +83,6 @@
           link_target=""
           url_expr="string:${object_url}/edit" visible="True">
     <permission value="Modify portal content"/>
-  </action>
-
-  <!-- Samles listing -->
-  <action title="Samples"
-          action_id="samples"
-          category="object"
-          condition_expr=""
-          icon_expr=""
-          link_target=""
-          url_expr="string:${object_url}/samples"
-          i18n:attributes="title"
-          visible="True">
-    <permission value="View"/>
   </action>
 
 </object>

@@ -1,0 +1,23 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="senaite.referral">
+
+  <!-- Inbound Sample Shipment view -->
+  <browser:page
+      name="view"
+      for="senaite.referral.interfaces.IInboundSampleShipment"
+      class=".view.InboundSamplesShipmentView"
+      template="templates/view.pt"
+      permission="zope2.View"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+  <!-- Inbound Sample Shipment's samples listing -->
+  <browser:page
+      name="samples_listing"
+      for="senaite.referral.interfaces.IInboundSampleShipment"
+      class=".samples.SamplesListingView"
+      permission="zope2.View"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+</configure>
