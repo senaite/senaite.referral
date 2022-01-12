@@ -63,6 +63,18 @@ WORKFLOWS_TO_UPDATE = {
     }
 }
 
+ID_FORMATTING = [
+    # An array of dicts. Each dict represents an ID formatting configuration
+    {
+        "portal_type": "OutboundSampleShipment",
+        "form": "SH{year}{alpha:2a3d}",
+        "prefix": "outboundsampleshipment",
+        "sequence_type": "generated",
+        "counter_type": "",
+        "split_length": 2,
+    },
+]
+
 
 def setup_handler(context):
     """Generic setup handler
@@ -78,6 +90,9 @@ def setup_handler(context):
 
     # Setup worlflows
     setup_workflows(portal)
+
+    # Setup ID formatting
+    setup_id_formatting(portal)
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
 
@@ -300,3 +315,33 @@ def update_workflow_transition(workflow, transition_id, settings):
     guard_props = settings.get("guard", guard_props)
     guard.changeFromProperties(guard_props)
     transition.guard = guard
+
+
+def setup_id_formatting(portal, format_definition=None):
+    """Setup default ID formatting
+    """
+    if not format_definition:
+        logger.info("Setting up ID formatting ...")
+        for formatting in ID_FORMATTING:
+            setup_id_formatting(portal, format_definition=formatting)
+        logger.info("Setting up ID formatting [DONE]")
+        return
+
+    bs = portal.bika_setup
+    p_type = format_definition.get("portal_type", None)
+    if not p_type:
+        return
+
+    form = format_definition.get("form", "")
+    if not form:
+        logger.info("Param 'form' for portal type {} not set [SKIP")
+        return
+
+    logger.info("Applying format '{}' for {}".format(form, p_type))
+    ids = list()
+    for record in bs.getIDFormatting():
+        if record.get('portal_type', '') == p_type:
+            continue
+        ids.append(record)
+    ids.append(format_definition)
+    bs.setIDFormatting(ids)

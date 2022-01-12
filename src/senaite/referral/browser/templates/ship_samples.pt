@@ -3,28 +3,131 @@
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       metal:use-macro="here/main_template/macros/master"
       i18n:domain="senaite.referral">
+
+  <head>
+    <metal:block fill-slot="javascript_head_slot"
+                 tal:define="portal context/@@plone_portal_state/portal;">
+      <script type="text/javascript" tal:attributes="src string:${portal/absolute_url}/bika_widgets/referencewidget.js"></script>
+    </metal:block>
+
+    <metal:block fill-slot="style_slot"
+                 tal:define="portal context/@@plone_portal_state/portal;">
+      <link rel="stylesheet" type="text/css" media="all" href=""
+            tal:attributes="href string:${portal/absolute_url}/bika_widgets/referencewidget.css"/>
+    </metal:block>
+  </head>
+
   <body>
+    <!-- Title -->
+    <metal:title fill-slot="content-title">
+      <h1 i18n:translate="">
+        Samples shipment
+      </h1>
+    </metal:title>
 
-  <!-- Title -->
-  <metal:title fill-slot="content-title">
-    <h1 i18n:translate="">
-      Ship samples
-    </h1>
-  </metal:title>
+    <!-- Description -->
+    <metal:description fill-slot="content-description">
+    </metal:description>
 
-  <!-- Description -->
-  <metal:description fill-slot="content-description">
-    <p i18n:translate="">
-      <a tal:attributes="href view/back_url"
-         i18n:name="back_link"
-         i18n:translate="">Back
-      </a>
-    </p>
-  </metal:description>
+    <!-- Content -->
+    <metal:core fill-slot="content-core">
 
-  <!-- Content -->
-  <metal:core fill-slot="content-core">
-  </metal:core>
+      <div id="ship-samples-view" class="row">
+        <div class="col-sm-12">
+          <form class="form"
+                id="ship_samples_form"
+                name="ship_samples_form"
+                method="POST">
 
+            <!-- Hidden Fields -->
+            <input type="hidden" name="submitted" value="1"/>
+            <input tal:replace="structure context/@@authenticator/authenticator"/>
+
+            <!-- Table of samples to ship -->
+            <table class="table table-bordered">
+              <thead>
+              <tr>
+                <th i18n:translate="">Sample ID</th>
+                <th i18n:translate="">Sample Type</th>
+                <th i18n:translate="">Client</th>
+                <th i18n:translate="">Sampled</th>
+                <th i18n:translate="">Received</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr tal:repeat="sample python:view.get_samples_data()">
+                <input type="hidden" name="selected_uids:list"
+                       tal:attributes="value python:sample['uid']"/>
+                <td tal:content="sample/id" class="monospace"/>
+                <td tal:content="python:sample['sample_type']"/>
+                <td tal:content="python:sample['client']"/>
+                <td tal:content="python:sample['date_sampled']"/>
+                <td tal:content="python:sample['date_received']"/>
+              </tr>
+              </tbody>
+            </table>
+
+            <!-- Form Controls -->
+            <div class="form-group field ArchetypesReferenceWidget">
+
+              <label i18n:translate="" for="shipment">Shipment</label>
+              <input name="shipment"
+                     type="text"
+                     ui_item="getId"
+                     autocomplete="false"
+                     class="blurrable firstToFocus referencewidget"
+                     base_query='{
+                       "portal_type": "OutboundSampleShipment",
+                       "review_state": "preparation",
+                       "is_active": true,
+                       "sort_on": "sortable_title",
+                       "sort_order": "ascending"
+                     }'
+                     search_query='{}'
+                     catalog_name="portal_catalog"
+                     combogrid_options='{
+                      "colModel": [
+                        {"columnName": "getId", "align": "left", "label": "Id", "width": "15"},
+                        {"columnName": "UID", "hidden": true}
+                      ],
+                      "search_fields": ["listing_searchable_text"],
+                      "catalog_name": "portal_catalog",
+                      "url": "referencewidget_search",
+                      "showOn": true,
+                      "searchIcon": true,
+                      "minLength": "0",
+                      "force_all": true,
+                      "width": "700px",
+                      "portal_types": {}
+                     }'
+              />
+              <input type="hidden"
+                     id="shipment_uid"
+                     name="shipment_uid"
+                     value="" />
+
+              <input class="btn btn-sm btn-primary allowMultiSubmit"
+                     type="submit"
+                     name="button_assign"
+                     i18n:attributes="value"
+                     value="Assign"/>
+
+              <input class="btn btn-default btn-sm"
+                     type="submit"
+                     name="button_cancel"
+                     i18n:attributes="value"
+                     value="Cancel"/>
+
+              <input class="btn btn-sm btn-secondary allowMultiSubmit"
+                     type="submit"
+                     name="button_create"
+                     i18n:attributes="value"
+                     value="New Shipment" style="display:none"/>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </metal:core>
   </body>
 </html>
