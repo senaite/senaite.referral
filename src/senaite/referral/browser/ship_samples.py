@@ -5,10 +5,10 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from senaite.referral import messageFactory as _
 from senaite.referral.browser import BaseView
 from senaite.referral.interfaces import IOutboundSampleShipment
+from senaite.referral.workflow import ship_sample
 
 from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
-from bika.lims.workflow import doActionFor
 
 
 class ShipSamplesView(BaseView):
@@ -38,17 +38,17 @@ class ShipSamplesView(BaseView):
                 # Assign samples to selected shipment
                 shipment_uid = form.get("shipment_uid")
 
-            obj = api.get_object(shipment_uid, default=None)
-            if not IOutboundSampleShipment.providedBy(obj):
+            shipment = api.get_object(shipment_uid, default=None)
+            if not IOutboundSampleShipment.providedBy(shipment):
                 return self.reload(message=_("No shipment selected"),
                                    level="error")
 
-            # Assign the samples to the shipment
+            # Ship the samples
             for sample in samples:
-                obj.add_sample(sample["uid"])
-                doActionFor(sample["obj"], "ship")
+                sample_obj = sample["obj"]
+                ship_sample(sample_obj, shipment)
 
-            titles = ", ".join(map(lambda sample: sample["title"], samples))
+            titles = ", ".join(map(lambda samp: samp["title"], samples))
             message = _("Shipped {} samples: {}".format(len(samples), titles))
             self.redirect(message=message)
 

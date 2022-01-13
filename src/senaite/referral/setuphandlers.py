@@ -58,7 +58,7 @@ WORKFLOWS_TO_UPDATE = {
                     "guard_roles": "",
                     "guard_expr": "python:here.guard_handler('ship')",
                 }
-            }
+            },
         }
     }
 }

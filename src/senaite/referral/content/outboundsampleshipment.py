@@ -198,3 +198,15 @@ class OutboundSampleShipment(Container):
         if sample_uid not in samples:
             samples.append(sample_uid)
             self.samples = samples
+
+    def remove_sample(self, value):
+        """Removes a sample from this shipment
+        """
+        if not value:
+            return
+
+        samples = self.samples or []
+        sample_uid = api.get_uid(value)
+        if sample_uid in samples:
+            samples.pop(sample_uid)
+            self.samples = samples

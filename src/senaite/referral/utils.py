@@ -3,13 +3,13 @@
 import copy
 
 from senaite.referral import messageFactory as _
+from six.moves.urllib import parse
 
 from bika.lims import api
 from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils import render_html_attributes
 from bika.lims.utils import t as _t
 from bika.lims.utils import to_utf8
-from six.moves.urllib import parse
 from bika.lims.workflow import getTransitionDate
 
 _marker = object()
@@ -35,12 +35,14 @@ def set_field_value(instance, field_name, value):
         setattr(instance, field_name, value)
 
 
-def get_field_value(instance, field_name, default=None):
+def get_field_value(instance, field_name, default=None, raw=False):
     """Returns the value of a Schema field
     """
     field = instance.getField(field_name)
     if field:
         # Schema field available
+        if raw:
+            return field.getRaw(instance)
         return field.get(instance)
 
     # No schema field available
@@ -139,18 +141,3 @@ def get_image_url(name):
     portal_url = api.get_url(api.get_portal())
     return "{}/++resource++senaite.referral.static/{}"\
         .format(portal_url, name)
-
-
-def get_previous_status(instance, default=None):
-    """Returns the previous state for the given instance from review history
-    """
-    # Get the current status
-    current_status = api.get_review_status(instance)
-
-    # Get the review history, most recent actions first
-    history = api.get_review_history(instance)
-    for item in history:
-        status = item.get("review_state")
-        if status and status != current_status:
-            return status
-    return default

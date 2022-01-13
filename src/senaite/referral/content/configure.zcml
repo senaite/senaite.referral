@@ -1,0 +1,13 @@
+<configure
+  xmlns="http://namespaces.zope.org/zope"
+  i18n_domain="senaite.referral">
+
+  <include package="archetypes.schemaextender" />
+
+  <!-- Extend AnalysisRequest Schema -->
+  <adapter
+    name="senaite.referral.analysisrequest.schemaextender"
+    factory=".analysisrequest.AnalysisRequestSchemaExtender"
+    provides="archetypes.schemaextender.interfaces.ISchemaExtender" />
+
+</configure>

@@ -1,6 +1,6 @@
 <configure
-    xmlns="http://namespaces.zope.org/zope"
-    i18n_domain="senaite.referral">
+  xmlns="http://namespaces.zope.org/zope"
+  i18n_domain="senaite.referral">
 
   <!-- Guard handler for AnalysisRequest content type -->
   <adapter
@@ -17,5 +17,24 @@
     factory=".actions.RecoverFromShipmentAdapter"
     name="workflow_action_recover_from_shipment"
     permission="zope.Public" />
+
+  <!-- Samples listing with additional filters and columns -->
+  <subscriber
+    for="bika.lims.browser.analysisrequest.AnalysisRequestsView
+         bika.lims.interfaces.IAnalysisRequestsFolder"
+    provides="senaite.core.listing.interfaces.IListingViewAdapter"
+    factory=".listing.AnalysisRequestsListingViewAdapter" />
+
+  <subscriber
+    for="bika.lims.browser.analysisrequest.AnalysisRequestsView
+         bika.lims.interfaces.IClient"
+    provides="senaite.core.listing.interfaces.IListingViewAdapter"
+    factory=".listing.AnalysisRequestsListingViewAdapter" />
+
+  <subscriber
+    for="bika.lims.browser.analysisrequest.AnalysisRequestsView
+         bika.lims.interfaces.IBatch"
+    provides="senaite.core.listing.interfaces.IListingViewAdapter"
+    factory=".listing.AnalysisRequestsListingViewAdapter" />
 
 </configure>

@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 from senaite.referral import messageFactory as _
-from senaite.referral.utils import get_previous_status
+from senaite.referral.workflow import recover_sample
 from zope.interface import implementer
-from zope.lifecycleevent import modified
 
 from bika.lims import api
 from bika.lims.browser.workflow import RequestContextAware
 from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.interfaces import IWorkflowActionUIDsAdapter
-from bika.lims.utils import changeWorkflowState
 
 
 @implementer(IWorkflowActionUIDsAdapter)
@@ -38,19 +36,8 @@ class RecoverFromShipmentAdapter(RequestContextAware):
             if not IAnalysisRequest.providedBy(sample):
                 continue
 
-            status = api.get_review_status(sample)
-            if status != "shipped":
-                continue
-
-            # Transition the sample to the state before it was shipped
-            prev = get_previous_status(sample, default="sample_received")
-            changeWorkflowState(sample, "bika_ar_workflow", prev)
-
-            # Notify the sample has ben modified
-            modified(sample)
-
-            # Reindex the sample
-            sample.reindexObject()
+            # Recover the sample
+            recover_sample(sample, shipment=self.context)
 
         ids = ", ".join(sample_ids)
         message = _("These samples have been recovered: {}").format(ids)
