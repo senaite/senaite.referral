@@ -4,9 +4,18 @@
 
   <!-- Guard handler for AnalysisRequest content type -->
   <adapter
-      for="bika.lims.interfaces.IAnalysisRequest"
-      provides="bika.lims.interfaces.IGuardAdapter"
-      factory=".guards.SampleGuardAdapter"
-      name="senaite.referral.adapter.guard.sample" />
+    for="bika.lims.interfaces.IAnalysisRequest"
+    provides="bika.lims.interfaces.IGuardAdapter"
+    factory=".guards.SampleGuardAdapter"
+    name="senaite.referral.adapter.guard.sample" />
+
+  <!-- Recovers selected samples from an outbound shipment -->
+  <adapter
+    for="senaite.referral.interfaces.IOutboundSampleShipment
+         senaite.referral.interfaces.ISenaiteReferralLayer"
+    provides="bika.lims.interfaces.IWorkflowActionAdapter"
+    factory=".actions.RecoverFromShipmentAdapter"
+    name="workflow_action_recover_from_shipment"
+    permission="zope.Public" />
 
 </configure>

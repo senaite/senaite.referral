@@ -139,3 +139,18 @@ def get_image_url(name):
     portal_url = api.get_url(api.get_portal())
     return "{}/++resource++senaite.referral.static/{}"\
         .format(portal_url, name)
+
+
+def get_previous_status(instance, default=None):
+    """Returns the previous state for the given instance from review history
+    """
+    # Get the current status
+    current_status = api.get_review_status(instance)
+
+    # Get the review history, most recent actions first
+    history = api.get_review_history(instance)
+    for item in history:
+        status = item.get("review_state")
+        if status and status != current_status:
+            return status
+    return default

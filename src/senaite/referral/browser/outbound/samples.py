@@ -65,6 +65,15 @@ class SamplesListingView(ListingView):
             "title": _("All samples"),
             "contentFilter": {},
             "transitions": [],
+            "custom_transitions": [{
+                "id": "recover_from_shipment",
+                "title": _("Recover"),
+                "help": _("Recover selected samples from this shipment"),
+                "url": "workflow_action?action=recover_from_shipment",
+            }],
+            "confirm_transitions": [
+                "recover_from_shipment",
+            ],
             "columns": self.columns.keys(),
         }]
 
