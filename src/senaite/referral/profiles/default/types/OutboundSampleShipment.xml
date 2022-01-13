@@ -85,4 +85,16 @@
     <permission value="Modify portal content"/>
   </action>
 
+  <!-- Add samples -->
+  <action title="Add samples"
+          action_id="add_samples"
+          category="object"
+          condition_expr="python:context.in_preparation()"
+          description=""
+          icon_expr=""
+          link_target=""
+          url_expr="string:${object_url}/add_samples" visible="True">
+    <permission value="Modify portal content"/>
+  </action>
+
 </object>

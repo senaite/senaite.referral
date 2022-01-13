@@ -21,8 +21,17 @@ class ShipSamplesView(BaseView):
         # Form submit toggle
         form_submitted = form.get("submitted", False)
         form_assign = form.get("button_assign", False)
-        form_create = form.get("button_create", False)
         form_cancel = form.get("button_cancel", False)
+
+        # Handle cancel
+        if form_submitted and form_cancel:
+            return self.redirect(message=_("Samples shipment cancelled"))
+
+        # Get the shipment (either from context or request form)
+        shipment = self.get_shipment()
+        if form_submitted and form_assign and not shipment:
+            return self.reload(message=_("No shipment selected"),
+                               level="error")
 
         # Get the samples passed-in through the request as a list of UIDs
         samples = self.get_samples_data()
@@ -30,19 +39,7 @@ class ShipSamplesView(BaseView):
             return self.redirect(message=_("No samples selected"),
                                  level="warning")
 
-        # Handle shipment
-        if form_submitted:
-
-            shipment_uid = None
-            if form_assign:
-                # Assign samples to selected shipment
-                shipment_uid = form.get("shipment_uid")
-
-            shipment = api.get_object(shipment_uid, default=None)
-            if not IOutboundSampleShipment.providedBy(shipment):
-                return self.reload(message=_("No shipment selected"),
-                                   level="error")
-
+        if shipment:
             # Ship the samples
             for sample in samples:
                 sample_obj = sample["obj"]
@@ -52,11 +49,20 @@ class ShipSamplesView(BaseView):
             message = _("Shipped {} samples: {}".format(len(samples), titles))
             self.redirect(message=message)
 
-        # Handle cancel
-        if form_submitted and form_cancel:
-            return self.redirect(message=_("Samples shipment cancelled"))
-
         return self.template()
+
+    def get_shipment(self):
+        if IOutboundSampleShipment.providedBy(self.context):
+            return self.context
+
+        # Extract the Shipment from the form
+        form = self.request.form
+        shipment_uid = form.get("shipment_uid")
+        shipment = api.get_object(shipment_uid, default=None)
+        if not IOutboundSampleShipment.providedBy(shipment):
+            shipment = None
+
+        return shipment
 
     @view.memoize
     def get_samples_data(self):

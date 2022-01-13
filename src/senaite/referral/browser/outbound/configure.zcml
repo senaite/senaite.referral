@@ -5,19 +5,27 @@
 
   <!-- Outbound Sample Shipment view -->
   <browser:page
-      name="view"
-      for="senaite.referral.interfaces.IOutboundSampleShipment"
-      class=".view.OutboundSamplesShipmentView"
-      template="templates/view.pt"
-      permission="zope2.View"
-      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+    name="view"
+    for="senaite.referral.interfaces.IOutboundSampleShipment"
+    class=".view.OutboundSamplesShipmentView"
+    template="templates/view.pt"
+    permission="zope2.View"
+    layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
   <!-- Outbound Sample Shipment's samples view -->
   <browser:page
-      name="samples_listing"
-      for="senaite.referral.interfaces.IOutboundSampleShipment"
-      class=".samples.SamplesListingView"
-      permission="zope2.View"
-      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+    name="samples_listing"
+    for="senaite.referral.interfaces.IOutboundSampleShipment"
+    class=".samples.SamplesListingView"
+    permission="zope2.View"
+    layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+  <!-- Outbound Sample Shipment's Add samples view -->
+  <browser:page
+    name="add_samples"
+    for="senaite.referral.interfaces.IOutboundSampleShipment"
+    class=".add_samples.AddSamplesListingView"
+    permission="zope2.View"
+    layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
 </configure>

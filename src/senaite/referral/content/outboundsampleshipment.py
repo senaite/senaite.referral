@@ -2,6 +2,7 @@
 from plone.autoform import directives
 from plone.dexterity.content import Container
 from plone.supermodel import model
+from Products.CMFCore.permissions import ModifyPortalContent
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.interfaces import IOutboundSampleShipment
@@ -11,6 +12,7 @@ from zope.interface import implementer
 from zope.interface import invariant
 
 from bika.lims import api
+from bika.lims.api.security import check_permission
 
 
 def check_reference_laboratory(thing):
@@ -210,3 +212,8 @@ class OutboundSampleShipment(Container):
         if sample_uid in samples:
             samples.pop(sample_uid)
             self.samples = samples
+
+    def in_preparation(self):
+        """Return whether the status of the shipment is "preparation"
+        """
+        return api.get_review_status(self) == "preparation"
