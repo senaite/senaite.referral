@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import collections
+
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
 from senaite.referral.utils import get_image_url
 
+from bika.lims import api
 from bika.lims import bikaMessageFactory as _c
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 
@@ -76,6 +78,23 @@ class SamplesListingView(ListingView):
             ],
             "columns": self.columns.keys(),
         }]
+
+    def update(self):
+        """Before template render hook
+        """
+        super(SamplesListingView, self).update()
+
+        # "Recover" action is only available when status is "preparation"
+        open_status = ["preparation", ]
+        status = api.get_review_status(self.context)
+        if status not in open_status:
+            self.show_select_all_checkbox = False
+            self.show_select_column = False
+            for rv in self.review_states:
+                rv.update({
+                    "custom_transitions": [],
+                    "confirm_transitions": [],
+                })
 
     def folderitem(self, obj, item, index):
         """Applies new properties to item that is currently being rendered as a
