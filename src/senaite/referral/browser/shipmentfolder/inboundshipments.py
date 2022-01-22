@@ -41,6 +41,9 @@ class InboundSampleShipmentFolderView(ListingView):
             ("referring_laboratory", {
                 "title": _("Referring Lab"),
             }),
+            ("num_samples", {
+                "title": _("#Samples"),
+            }),
             ("dispatched", {
                 "title": _("Dispatched"),
             }),
@@ -101,6 +104,7 @@ class InboundSampleShipmentFolderView(ListingView):
         shipment_id = obj.get_shipment_id()
         item["shipment_id"] = shipment_id
         item["replace"]["shipment_id"] = get_link(href, shipment_id)
+        item["num_samples"] = len(obj.get_samples())
 
         referring = obj.get_referring_laboratory()
         referring = self.get_object(referring)

@@ -1,0 +1,9 @@
+<registry
+  xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+  i18n:domain="senaite.referral">
+
+  <records
+    interface="senaite.referral.browser.controlpanel.IReferralControlPanel"
+    prefix="senaite.referral" />
+
+</registry>

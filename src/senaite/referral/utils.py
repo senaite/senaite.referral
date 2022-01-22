@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import copy
-
-from senaite.referral import messageFactory as _
-from six.moves.urllib import parse
-
+import six
 from bika.lims import api
-from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils import render_html_attributes
 from bika.lims.utils import t as _t
 from bika.lims.utils import to_utf8
 from bika.lims.workflow import getTransitionDate
+from senaite.referral import messageFactory as _
+from senaite.referral import PRODUCT_NAME
+from six.moves.urllib import parse
 
 _marker = object()
 
@@ -142,3 +141,10 @@ def get_image_url(name):
     portal_url = api.get_url(api.get_portal())
     return "{}/++resource++senaite.referral.static/{}"\
         .format(portal_url, name)
+
+
+def get_lab_code():
+    """Returns the code of the current lab instance
+    """
+    key = "{}.code".format(PRODUCT_NAME)
+    return api.get_registry_record(key)

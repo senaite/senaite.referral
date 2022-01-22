@@ -18,6 +18,7 @@
   <include package=".browser"/>
   <include package=".content"/>
   <include package=".core"/>
+  <include package=".workflow"/>
 
   <!-- Vocabularies -->
   <utility

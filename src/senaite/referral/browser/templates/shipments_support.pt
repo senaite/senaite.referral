@@ -1,0 +1,23 @@
+<div tal:omit-tag=""
+     tal:condition="python:view.is_visible()"
+     i18n:domain="senaite.referral">
+
+  <div class="visualClear"></div>
+
+  <div id="portal-alert">
+    <div class="portlet-alert-item alert alert-warning">
+      <strong i18n:translate="">Outbound shipments won't be created automatically on this external laboratory</strong>
+      <p class="title">
+        <ul>
+          <li tal:condition="python: not view.is_reference_lab()"
+              i18n:translate="">Laboratory is not set as a reference lab</li>
+          <li tal:condition="python: not view.is_valid_lab_url()"
+              i18n:translate="">Laboratory URL is not valid</li>
+          <li tal:condition="python: not view.is_valid_credentials()"
+              i18n:translate="">Login credentials are not set</li>
+        </ul>
+      </p>
+    </div>
+  </div>
+
+</div>

@@ -16,6 +16,34 @@
   <include package=".shipmentfolder"/>
   <include package=".workflow"/>
 
+  <!-- Referral Control panel -->
+  <browser:page
+      name="referral-controlpanel"
+      for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+      class=".controlpanel.ReferralControlPanelView"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+  <!-- Referral configuration viewlet -->
+  <browser:viewlet
+      for="*"
+      name="senaite.referral.configuration_viewlet"
+      class=".viewlets.ReferralConfigurationViewlet"
+      manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+      template="templates/configuration_viewlet.pt"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+  <!-- Shipments support viewlet -->
+  <browser:viewlet
+      for="senaite.referral.interfaces.IExternalLaboratory"
+      name="senaite.referral.shipment_support"
+      class=".viewlets.ShipmentsSupportViewlet"
+      manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+      template="templates/shipments_support.pt"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
   <!-- External Laboratories folder view -->
   <browser:page
       name="view"

@@ -49,6 +49,26 @@ class IExternalLaboratorySchema(model.Schema):
         required=False,
     )
 
+    reference_username = schema.TextLine(
+        title=_(u"label_externallaboratory_reference_username",
+                default=u"Username"),
+        description=_(
+            u"Username of the user to use for the automatic creation of inbound "
+            u"sample shipments on the reference laboratory on dispatch"
+        ),
+        required=False,
+    )
+
+    reference_password = schema.Password(
+        title=_(u"label_externallaboratory_reference_password",
+                default=u"Password"),
+        description=_(
+            u"Password of the user to use for the automatic creation of inbound "
+            u"sample shipments on the reference laboratory on dispatch"
+        ),
+        required=False,
+    )
+
     referring = schema.Bool(
         title=_(u"label_externallaboratory_referring",
                 default=u"Referring Laboratory"),
@@ -88,7 +108,8 @@ class IExternalLaboratorySchema(model.Schema):
     model.fieldset(
         "reference_laboratory",
         label=_(u"Reference Laboratory"),
-        fields=["reference", "reference_url"]
+        fields=["reference", "reference_url", "reference_username",
+                "reference_password"]
     )
 
     # Referring Laboratory fieldset
@@ -197,3 +218,21 @@ class ExternalLaboratory(Container):
         if self.referring_password == value:
             return
         self.referring_password = value
+
+    def get_reference_username(self):
+        return self.reference_username
+
+    def set_reference_username(self, value):
+        value = value.strip()
+        if self.reference_username == value:
+            return
+        self.reference_username = value
+
+    def get_reference_password(self):
+        return self.reference_password
+
+    def set_reference_password(self, value):
+        value = value.strip()
+        if self.reference_password == value:
+            return
+        self.reference_password = value

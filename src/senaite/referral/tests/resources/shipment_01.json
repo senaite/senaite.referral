@@ -1,20 +1,14 @@
 [
   {
     "id": "SAMP0001",
-    "sample_type": "Blood",
-    "client": "Happy Hills",
-    "contact": "Contact"
+    "sample_type": "Blood"
   },
   {
     "id": "SAMP0002",
-    "sample_type": "Blood",
-    "client": "Happy Hills",
-    "contact": "Contact"
+    "sample_type": "Blood"
   },
   {
     "id": "SAMP0003",
-    "sample_type": "Blood",
-    "client": "Happy Hills",
-    "contact": "Contact"
+    "sample_type": "Blood"
   }
 ]
