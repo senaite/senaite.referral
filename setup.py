@@ -38,6 +38,7 @@ setup(
     install_requires=[
         "senaite.lims>=1.3.5",
         "senaite.lims<2",
+        "senaite.jsonapi",
     ],
     extras_require={
         "test": [

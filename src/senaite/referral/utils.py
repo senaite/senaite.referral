@@ -38,12 +38,13 @@ def set_field_value(instance, field_name, value):
 def get_field_value(instance, field_name, default=None, raw=False):
     """Returns the value of a Schema field
     """
-    field = instance.getField(field_name)
-    if field:
-        # Schema field available
-        if raw:
-            return field.getRaw(instance)
-        return field.get(instance)
+    if api.is_at_content(instance):
+        field = instance.getField(field_name)
+        if field:
+            # Schema field available
+            if raw:
+                return field.getRaw(instance)
+            return field.get(instance)
 
     # No schema field available
     value = getattr(instance, field_name, default)
@@ -58,7 +59,7 @@ def translate(i18n_message, mapping=None):
     return to_utf8(_t(_(i18n_message, mapping=mapping)))
 
 
-def get_by_code(portal_type, code, catalog=SETUP_CATALOG):
+def get_by_code(portal_type, code, catalog="portal_catalog"):
     """Returns the first object of the given portal type which code matches
     with de code passed-in
     """

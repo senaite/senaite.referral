@@ -2,6 +2,13 @@
   xmlns="http://namespaces.zope.org/zope"
   i18n_domain="senaite.referral">
 
+  <!-- Adapter for inbound shipment consumer (JSONAPI) -->
+  <adapter
+    for="*"
+    provides="senaite.jsonapi.interfaces.IPushConsumer"
+    factory=".jsonapi.InboundShipmentConsumer"
+    name="senaite.referral.inbound_shipment" />
+
   <!-- Recovers selected samples from an outbound shipment -->
   <adapter
     for="senaite.referral.interfaces.IOutboundSampleShipment
