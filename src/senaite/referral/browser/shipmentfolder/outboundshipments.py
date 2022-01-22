@@ -41,6 +41,9 @@ class OutboundSampleShipmentFolderView(ListingView):
             ("reference_laboratory", {
                 "title": _("Reference Lab"),
             }),
+            ("num_samples", {
+                "title": _("#Samples"),
+            }),
             ("created", {
                 "title": _("Created"),
                 "sortable": True,
@@ -124,6 +127,8 @@ class OutboundSampleShipmentFolderView(ListingView):
         reference = self.get_object(reference)
         item["reference_laboratory"] = api.get_title(reference)
         item["replace"]["reference_laboratory"] = get_link_for(reference)
+
+        item["num_samples"] = len(obj.get_samples())
 
         # dispatched, received, rejected, cancelled
         dispatched = obj.get_dispatched_datetime()
