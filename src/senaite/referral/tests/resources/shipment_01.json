@@ -4,5 +4,17 @@
     "sample_type": "Blood",
     "client": "Happy Hills",
     "contact": "Contact"
+  },
+  {
+    "id": "SAMP0002",
+    "sample_type": "Blood",
+    "client": "Happy Hills",
+    "contact": "Contact"
+  },
+  {
+    "id": "SAMP0003",
+    "sample_type": "Blood",
+    "client": "Happy Hills",
+    "contact": "Contact"
   }
 ]

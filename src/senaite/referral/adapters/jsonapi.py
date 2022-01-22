@@ -7,6 +7,7 @@ from senaite.jsonapi.request import is_json_deserializable
 from senaite.referral import utils
 from senaite.jsonapi.interfaces import IPushConsumer
 from zope.interface import implementer
+from Products.ATContentTypes.utils import DT2dt
 
 
 @implementer(IPushConsumer)
@@ -61,7 +62,8 @@ class InboundShipmentConsumer(object):
             "shipment_id": str(shipment_id),
             "referring_laboratory": api.get_uid(lab),
             "comments": str(comments),
-            "dispatched_datetime": dispatched_date,
+            "dispatched_datetime": DT2dt(dispatched_date),
+            "samples": sample_records,
         }
         shipment = api.create(lab, "InboundSampleShipment", **values)
         if not api.is_object(shipment):

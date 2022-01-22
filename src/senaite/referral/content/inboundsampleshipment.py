@@ -80,6 +80,12 @@ class IInboundSampleShipmentSchema(model.Schema):
         required=True,
     )
 
+    directives.omitted("samples")
+    samples = schema.List(
+        title=_(u"Samples"),
+        required=True,
+    )
+
     @invariant
     def validate_referring_laboratory(data):
         """Checks if the value for field referring_laboratory is valid
@@ -195,3 +201,20 @@ class InboundSampleShipment(Container):
         """Returns the datetime when this shipment was rejected or None
         """
         return get_action_date(self, "cancel", default=None)
+
+    def get_samples(self):
+        """Returns the list of samples assigned to this shipment. Samples can
+        either be UIDs (for when shipment has been received) or dicts (when
+        shipment has not been received yet):
+        """
+        samples = self.samples
+        if not samples:
+            return []
+        return samples
+
+    def set_samples(self, value):
+        """Assigns the samples assigned to this shipment
+        """
+        if not isinstance(value, (list, tuple)):
+            value = [value]
+        self.samples = value

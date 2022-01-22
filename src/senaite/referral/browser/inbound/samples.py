@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 import collections
-from senaite.core.listing import ListingView
-from senaite.referral import messageFactory as _
-from senaite.referral.shipmentsample import ShipmentSample
-from senaite.referral.utils import get_image_url
-
 from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 from bika.lims.utils import get_link_for
+from senaite.core.listing import ListingView
+from senaite.referral import messageFactory as _
+from senaite.referral.utils import get_image_url
 
 
 class SamplesListingView(ListingView):
@@ -17,7 +15,7 @@ class SamplesListingView(ListingView):
         super(SamplesListingView, self).__init__(context, request)
 
         self.title = _("Samples")
-        self.icon = get_image_url("shipment_samples.png")
+        self.icon = get_image_url("shipment_samples_big.png")
         self.show_select_column = True
         self.show_search = False
 
@@ -67,42 +65,45 @@ class SamplesListingView(ListingView):
         return items[:self.pagesize]
 
     def get_shipment_samples(self):
-        """Returns ShipmentSample objects assigned to this shipment
+        """Returns sample objects and dict-like samples assigned to this
+        shipment
         """
-        # TODO Fake data!
-        samples = [
-            {"id": "FK00001", },
-            {"id": "FK00002", },
-            {"id": "FK00003", },
-            {"id": "FK00004", },
-        ]
-        query = {
-            "portal_type": "AnalysisRequest",
-            "review_state": ["sample_due", "sample_received", "to_be_verified"],
-            "sort_on": "created",
-            "sort_order": "ascending"
-        }
-        brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
-        samples.extend(map(api.get_object, brains))
+        obj_samples = self.context.get_samples()
 
-        # Generate the ShipmentSample objects
-        return map(ShipmentSample, samples)
+        # Pick the dict-like samples first
+        samples = filter(lambda samp: isinstance(samp, dict), obj_samples)
 
-    def make_item(self, shipment_sample):
-        """Makes an item from a ShipmentSample object
-        :param task: ShipmentSample object to make an item from
-        :return: a listing item that represents the ShipmentSample object
+        # Extract the sample objects
+        sample_uids = filter(api.is_uid, obj_samples)
+        if sample_uids:
+            query = {
+                "UID": sample_uids,
+                "portal_type": "AnalysisRequest",
+                "sort_on": "created",
+                "sort_order": "ascending",
+            }
+            brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
+            samples.extend(brains)
+
+        return samples
+
+    def make_item(self, sample):
+        """Makes an item from a sample object or sample-dict like object
+        :return: a listing item that represents the sample
         """
         item = self.make_empty_item()
-        sample_id = shipment_sample.id
-        sample_link = get_link_for(shipment_sample.obj) or sample_id
-        item.update({
-            "uid": shipment_sample.uid,
-            "sample_id": shipment_sample.id,
-            "replace": [{
-                "sample_id": sample_link,
-            }],
-        })
+
+        if api.is_object(sample):
+            item.update({
+                "uid": api.get_uid(sample),
+                "sample_id": api.get_id(sample),
+            })
+            item["replace"]["sample_id"] = get_link_for(sample)
+        else:
+            item.update({
+                "sample_id": sample.get("id", "")
+            })
+
         return item
 
     def make_empty_item(self, **kw):
@@ -110,7 +111,7 @@ class SamplesListingView(ListingView):
         :return: a dict that with the basic structure of a listing item
         """
         item = {
-            "uid": None,
+            "uid": "",
             "before": {},
             "after": {},
             "replace": {},
@@ -122,8 +123,8 @@ class SamplesListingView(ListingView):
         return item
 
     def get_allowed_transitions_for(self, uids):
-        """Overrides get_allowed_transations_for from paranet class. Our UIDs
-        are not from objects, but from tasks, so none of them have
+        """Overrides get_allowed_transitions_for from paranet class. Our UIDs
+        are not from objects, but from dict-like samples, so none of them have
         workflow-based transitions
         """
         if not uids:
@@ -133,7 +134,7 @@ class SamplesListingView(ListingView):
 
     def get_transitions_for(self, obj):
         """Overrides get_transitions_for from parent class. Our UIDs are not
-        from objects, but from tasks, so none of them have workflow-based
-        transitions
+        from objects, but from dict-like samples, so none of them have
+        workflow-based transitions
         """
         return []
