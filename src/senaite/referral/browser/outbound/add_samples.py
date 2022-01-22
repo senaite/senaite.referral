@@ -30,10 +30,3 @@ class AddSamplesListingView(SamplesListingView):
             }],
             "columns": self.columns.keys(),
         }]
-
-    def isItemAllowed(self, obj):
-        # Do not render samples w/o analyses awaiting for submission
-        analyses_num = obj.getAnalysesNum
-        if not analyses_num[2]:
-            return False
-        return True
