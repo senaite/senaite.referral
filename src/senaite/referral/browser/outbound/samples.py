@@ -19,7 +19,7 @@ class SamplesListingView(ListingView):
         super(SamplesListingView, self).__init__(context, request)
 
         self.title = _("Samples")
-        self.icon = get_image_url("shipment_samples.png")
+        self.icon = get_image_url("shipment_samples_big.png")
         self.show_select_column = True
         self.show_search = False
 
