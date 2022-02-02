@@ -5,9 +5,11 @@ from plone.memoize import view
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
 from senaite.referral.utils import get_image_url
+from senaite.referral.utils import translate as t
 
 from bika.lims import api
 from bika.lims.browser import ulocalized_time
+from bika.lims.utils import get_image
 from bika.lims.utils import get_link
 from bika.lims.utils import get_link_for
 
@@ -143,7 +145,42 @@ class OutboundSampleShipmentFolderView(ListingView):
             "lost": self.get_localized_date(lost, show_time=True),
             "cancelled": self.get_localized_date(cancelled, show_time=True),
         })
+
+        # If the notification errored, then add an icon
+        if dispatched:
+            if not obj.get_dispatch_notification_datetime():
+                # Not notified to the reference lab
+                msg = t(_("Reference lab not notified"))
+                icon = get_image("warning.png", title=msg)
+                self._append_html_element(item, "shipment_id", icon)
+
+            else:
+                error = obj.get_dispatch_notification_error()
+                if error:
+                    # Notification to the reference lab errored
+                    msg = t(_("The notification to reference lab errored: {}"))
+                    msg = msg.format(error)
+                    icon = get_image("warning.png", title=msg)
+                    self._append_html_element(item, "shipment_id", icon)
+
         return item
+
+    def _append_html_element(self, item, element, html, glue="&nbsp;",
+                             after=True):
+        """Appends an html value after or before the element in the item dict
+
+        :param item: dictionary that represents an analysis row
+        :param element: id of the element the html must be added thereafter
+        :param html: element to append
+        :param glue: glue to use for appending
+        :param after: if the html content must be added after or before"""
+        position = after and 'after' or 'before'
+        item[position] = item.get(position, {})
+        original = item[position].get(element, '')
+        if not original:
+            item[position][element] = html
+            return
+        item[position][element] = glue.join([original, html])
 
     def get_localized_date(self, date_value, show_time=1, default=""):
         if not date_value:

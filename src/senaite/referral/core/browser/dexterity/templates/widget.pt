@@ -39,4 +39,17 @@
   <input type="text"
          tal:replace="structure widget/render"
          metal:define-slot="widget" />
+
+  <style>
+    .sourcetext-field {
+        font-family: monospace;
+        font-weight: lighter;
+        font-size: 0.8em;
+        color: #777;
+        border: 1px solid #dfdfdf;
+        display: block;
+        padding: 10px;
+        margin: 10px 0;
+    }
+  </style>
 </div>

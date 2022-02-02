@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import requests
-from bika.lims import api
-from bika.lims.interfaces import IAnalysisRequest
 from datetime import datetime
 from senaite.referral import logger
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_lab_code
 from senaite.referral.utils import is_valid_url
+
+from bika.lims import api
+from bika.lims.interfaces import IAnalysisRequest
 
 
 def after_dispatch(shipment):
@@ -60,7 +61,7 @@ class ShipmentDispatcher(object):
     def __init__(self, host):
         self.host = host
 
-    def send(self, shipment):
+    def send(self, shipment, timeout=60):
         dispatched = shipment.get_dispatched_datetime() or datetime.now()
         samples = map(self.get_sample_info, shipment.get_samples())
         payload = {
@@ -70,7 +71,13 @@ class ShipmentDispatcher(object):
             "dispatched": dispatched.strftime("%Y-%m-%d %H:%M:%S"),
             "samples": filter(None, samples),
         }
-        self.post("push", payload)
+
+        now = datetime.now()
+        response = self.post("push", payload, timeout)
+        response_text = "[{}] {}".format(response.status_code, response.text)
+        shipment.set_dispatch_notification_response(response_text)
+        shipment.set_dispatch_notification_datetime(now)
+        shipment.set_dispatch_notification_payload(payload)
 
     def get_sample_info(self, sample_brain_uid):
         sample = api.get_object(sample_brain_uid)
@@ -94,12 +101,10 @@ class ShipmentDispatcher(object):
             logger.error(response.status_code)
         return response
 
-    def post(self, url, payload):
+    def post(self, url, payload, timeout):
         url = self.resolve_api_slug(url)
-        response = self.session.post(url, data=payload)
-        logger.info("[POST] {}".format(response.url))
-        if response.status_code != 200:
-            logger.error(response.status_code)
+        logger.info("[POST] {}".format(url))
+        response = self.session.post(url, json=payload, timeout=timeout)
         return response
 
     def auth(self, user, password):

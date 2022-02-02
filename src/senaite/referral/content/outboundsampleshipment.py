@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+
+import json
+import re
+import six
 from plone.autoform import directives
 from plone.dexterity.content import Container
 from plone.supermodel import model
-from Products.CMFCore.permissions import ModifyPortalContent
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.interfaces import IOutboundSampleShipment
@@ -12,7 +15,6 @@ from zope.interface import implementer
 from zope.interface import invariant
 
 from bika.lims import api
-from bika.lims.api.security import check_permission
 
 
 def check_reference_laboratory(thing):
@@ -72,6 +74,24 @@ class IOutboundSampleShipmentSchema(model.Schema):
     samples = schema.List(
         title=_(u"Samples"),
         required=True,
+    )
+
+    dispatch_notification_datetime = schema.Datetime(
+        title=_(u"Datetime when shipment was notified to reference lab"),
+        readonly=True,
+        required=False,
+    )
+
+    dispatch_notification_payload = schema.SourceText(
+        title=_(u"Shipment notification payload"),
+        readonly=True,
+        required=False,
+    )
+
+    dispatch_notification_response = schema.SourceText(
+        title=_(u"Shipment notification response"),
+        readonly=True,
+        required=False,
     )
 
     @invariant
@@ -188,6 +208,97 @@ class OutboundSampleShipment(Container):
 
         self.samples = []
         map(self.add_sample, value)
+
+    def get_dispatch_notification_datetime(self):
+        """Returns the datetime when the reference laboratory was notified
+        about this outbound shipment. Returns None if the reference laboratory
+        has never been notified about this shipment
+        """
+        dispatch_notification_datetime = self.dispatch_notification_datetime
+        if not dispatch_notification_datetime:
+            return None
+        return dispatch_notification_datetime
+
+    def set_dispatch_notification_datetime(self, value):
+        """Sets the datetime when the reference laboratory was notified
+        about this outbound shipment. A None value means the reference lab has
+        not been notified at all
+        """
+        if self.dispatch_notification_datetime == value:
+            # nothing changed
+            return
+        self.dispatch_notification_datetime = value
+
+    def get_dispatch_notification_payload(self):
+        """Returns the payload sent to the reference laboratory when this
+        outbound shipment was notified
+        """
+        dispatch_notification_payload = self.dispatch_notification_payload
+        if not dispatch_notification_payload:
+            return u""
+        return dispatch_notification_payload
+
+    def set_dispatch_notification_payload(self, value):
+        """Sets the payload sent to the referecne laboratory when this outbound
+        shipment was notified
+        """
+        if isinstance(value, (dict, list)):
+            value = json.dumps(value)
+        elif not value:
+            value = u""
+        elif not isinstance(value, six.string_types):
+            value = repr(value)
+
+        if self.dispatch_notification_payload == value:
+            # nothing changed
+            return
+        self.dispatch_notification_payload = value
+
+    def get_dispatch_notification_response(self):
+        """Returns the response from the reference lab once notified
+        """
+        dispatch_notification_response = self.dispatch_notification_response
+        if not dispatch_notification_response:
+            return u""
+        return dispatch_notification_response
+
+    def set_dispatch_notification_response(self, value):
+        """Sets the response from the reference lab once notified
+        """
+        if self.dispatch_notification_response == value:
+            # nothing changed
+            return
+        self.dispatch_notification_response = value
+
+    def get_dispatch_notification_error(self):
+        """Returns the error from the response of the reference lab, if any
+        """
+        response = self.get_dispatch_notification_response()
+        if not response:
+            return None
+
+        match = re.match(r"^\[(\d+)]\s(.*)", response)
+        if not match:
+            return None
+
+        groups = match.groups()
+        if len(groups) < 2:
+            return None
+
+        error = None
+        status = groups[0]
+        response = groups[1]
+        try:
+            response = json.loads(response)
+        except ValueError:
+            # Not JSON deserializable!
+            response = {"message": response, "success": status == "200"}
+
+        if not response.get("success", False):
+            msg = response.get("message", "Unknown error")
+            error = "[{}] {}".format(status, msg)
+
+        return error
 
     def add_sample(self, value):
         """Adds a sample to this shipment
