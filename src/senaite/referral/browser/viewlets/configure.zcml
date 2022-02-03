@@ -1,0 +1,26 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="senaite.referral">
+
+  <!-- Referral configuration viewlet -->
+  <browser:viewlet
+      for="*"
+      name="senaite.referral.configuration_viewlet"
+      class=".configuration.ReferralConfigurationViewlet"
+      manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+      template="templates/configuration_viewlet.pt"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+  <!-- Shipments support viewlet -->
+  <browser:viewlet
+      for="senaite.referral.interfaces.IExternalLaboratory"
+      name="senaite.referral.shipment_support"
+      class=".shipments_support.ShipmentsSupportViewlet"
+      manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+      template="templates/shipments_support.pt"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+</configure>
