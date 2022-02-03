@@ -76,18 +76,21 @@ class IOutboundSampleShipmentSchema(model.Schema):
         required=True,
     )
 
+    directives.omitted("dispatch_notification_datetime")
     dispatch_notification_datetime = schema.Datetime(
         title=_(u"Datetime when shipment was notified to reference lab"),
         readonly=True,
         required=False,
     )
 
+    directives.omitted("dispatch_notification_payload")
     dispatch_notification_payload = schema.SourceText(
         title=_(u"Shipment notification payload"),
         readonly=True,
         required=False,
     )
 
+    directives.omitted("dispatch_notification_response")
     dispatch_notification_response = schema.SourceText(
         title=_(u"Shipment notification response"),
         readonly=True,

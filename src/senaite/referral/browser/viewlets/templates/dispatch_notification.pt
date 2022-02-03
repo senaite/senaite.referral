@@ -7,7 +7,7 @@
   <div id="portal-alert" tal:define="errored python: view.is_error()">
 
     <div class="portal-alert-item alert alert-info"
-         tal:condition="python: errored">
+         tal:condition="python: not errored">
       <strong i18n:translate="">Reference Laboratory has been notified successfully</strong>
       <p class="title">
         <span i18n:translate="">Date time</span>:&nbsp;
