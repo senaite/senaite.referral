@@ -6,7 +6,7 @@
 
   <div id="portal-alert">
     <div class="portlet-alert-item alert alert-warning">
-      <strong i18n:translate="">Outbound shipments won't be created automatically on this external laboratory</strong>
+      <strong i18n:translate="">Sample shipments won't be created automatically on this external laboratory</strong>
       <p class="title">
         <ul>
           <li tal:condition="python: not view.is_reference_lab()"

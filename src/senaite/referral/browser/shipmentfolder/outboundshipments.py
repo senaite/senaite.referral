@@ -75,6 +75,14 @@ class OutboundSampleShipmentFolderView(ListingView):
         self.review_states = [
             {
                 "id": "default",
+                "title": _("Active"),
+                "contentFilter": {
+                    "review_state": ["preparation", "undelivered"]
+                },
+                "columns": self.columns.keys(),
+            },
+            {
+                "id": "preparation",
                 "title": _("Under preparation"),
                 "contentFilter": {"review_state": "preparation"},
                 "columns": self.columns.keys(),
@@ -86,7 +94,7 @@ class OutboundSampleShipmentFolderView(ListingView):
             }, {
                 "id": "delivered",
                 "title": _("Delivered"),
-                "contentFilter": {"review_state": "rejected"},
+                "contentFilter": {"review_state": "delivered"},
                 "columns": self.columns.keys(),
             },  {
                 "id": "lost",

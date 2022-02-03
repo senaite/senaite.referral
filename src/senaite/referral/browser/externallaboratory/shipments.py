@@ -33,6 +33,12 @@ class InboundSampleShipmentsView(InboundSampleShipmentFolderView):
                     "icon": "++resource++bika.lims.images/add.png"}
             }
 
+        # Remove lab-specific columns
+        del self.columns["referring_laboratory"]
+        col_keys = self.columns.keys()
+        for review_state in self.review_states:
+            review_state.update({"columns": col_keys})
+
 
 class OutboundSampleShipmentsView(OutboundSampleShipmentFolderView):
     """View that lists Inbound Sample Shipment objects
@@ -52,3 +58,9 @@ class OutboundSampleShipmentsView(OutboundSampleShipmentFolderView):
                 "permission": ModifyPortalContent,
                 "icon": "++resource++bika.lims.images/add.png"}
         }
+
+        # Remove lab-specific columns
+        del self.columns["reference_laboratory"]
+        col_keys = self.columns.keys()
+        for review_state in self.review_states:
+            review_state.update({"columns": col_keys})
