@@ -148,3 +148,10 @@ def get_lab_code():
     """
     key = "{}.code".format(PRODUCT_NAME)
     return api.get_registry_record(key)
+
+
+def is_manual_inbound_shipment_permitted():
+    """Returns whether the manual creation of inbound shipments is permitted
+    """
+    key = "{}.manual_inbound_permitted".format(PRODUCT_NAME)
+    return api.get_registry_record(key, default=False)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from Products.CMFCore.permissions import ModifyPortalContent
 from senaite.referral.browser.shipmentfolder.inboundshipments import \
     InboundSampleShipmentFolderView
@@ -7,6 +8,7 @@ from senaite.referral.browser.shipmentfolder.outboundshipments import \
 
 from bika.lims import api
 from bika.lims import bikaMessageFactory as _sc
+from senaite.referral.utils import is_manual_inbound_shipment_permitted
 
 
 class InboundSampleShipmentsView(InboundSampleShipmentFolderView):
@@ -21,12 +23,15 @@ class InboundSampleShipmentsView(InboundSampleShipmentFolderView):
                 "depth": 1
             }
         })
-        self.context_actions = {
-            _sc("Add"): {
-                "url": "++add++InboundSampleShipment",
-                "permission": ModifyPortalContent,
-                "icon": "++resource++bika.lims.images/add.png"}
-        }
+
+        self.context_actions = {}
+        if is_manual_inbound_shipment_permitted():
+            self.context_actions = {
+                _sc("Add"): {
+                    "url": "++add++InboundSampleShipment",
+                    "permission": ModifyPortalContent,
+                    "icon": "++resource++bika.lims.images/add.png"}
+            }
 
 
 class OutboundSampleShipmentsView(OutboundSampleShipmentFolderView):

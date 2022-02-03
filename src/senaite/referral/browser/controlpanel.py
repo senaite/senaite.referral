@@ -22,6 +22,17 @@ class IReferralControlPanel(Interface):
         required=True,
     )
 
+    manual_inbound_permitted = schema.Bool(
+        title=_(u"label_referral_manual_inbound_permitted",
+                default=u"Allow manual creation of Inbound Shipments"),
+        description=_(
+            u"Whether the manual creation of inbound sample shipments is "
+            u"permitted. If not enabled, the creation of inbound shipments "
+            u"will only be possible via POST requests by referral laboratories"
+        ),
+        default=False,
+        required=False,)
+
 
 class ReferralControlPanelForm(RegistryEditForm):
     schema = IReferralControlPanel
