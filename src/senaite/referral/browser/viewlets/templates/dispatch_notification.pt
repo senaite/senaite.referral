@@ -32,6 +32,29 @@
           <span tal:replace="python: view.get_message()"/>
         </span>
       </p>
+      <form id="dispatch_retry_notification"
+            name="dispatch_retry_notification"
+            action="retry_notification"
+            enctype="multipart/form-data"
+            method="POST">
+
+        <p class="description">
+
+          <!-- Hidden Fields -->
+          <input type="hidden" name="submitted" value="1"/>
+          <input tal:replace="structure context/@@authenticator/authenticator"/>
+
+          <div class="form-group field">
+
+            <!-- Button to retry notification -->
+            <input class="btn btn-primary btn-xs"
+                   name="retry"
+                   i18n:attributes="value"
+                   type="submit"
+                   value="Retry notification"/>
+          </div>
+        </p>
+      </form>
     </div>
   </div>
 

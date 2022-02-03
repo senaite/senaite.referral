@@ -14,10 +14,16 @@ from bika.lims.interfaces import IAnalysisRequest
 def after_dispatch(shipment):
     """ Event fired after transition "dispatch" is triggered
     """
+    notify_outbound_shipment(shipment)
+
+
+def notify_outbound_shipment(shipment):
     lab_code = get_lab_code()
     if not lab_code:
         # No valid code set for the current lab. Do nothing
-        return
+        msg = "No valid code set for the current laboratory"
+        logger.error(msg)
+        return msg
 
     lab = shipment.get_reference_laboratory()
     if api.is_uid(lab):
@@ -25,33 +31,41 @@ def after_dispatch(shipment):
 
     if not IExternalLaboratory.providedBy(lab):
         # Not an external laboratory!
-        shipment_id = api.get_id(shipment)
-        logger.error("Shipment {} does not belong to an external lab"
-                     .format(shipment_id))
-        return
+        msg = "Shipment does not belong to an external lab"
+        logger.error(msg)
+        return msg
 
     if not lab.get_reference():
         # External lab not set as reference lab
-        return
+        msg = "External lab is not set as a reference laboratory"
+        logger.error(msg)
+        return msg
 
     url = lab.get_reference_url()
     if not is_valid_url(url):
         # External Lab URL not valid
-        return
+        msg = "External lab's URL is not valid: {}".format(url)
+        logger.error(msg)
+        return msg
 
     username = lab.get_reference_username()
     password = lab.get_reference_password()
     if not all([username, password]):
         # Empty username or password
-        return
+        msg = "No valid credentials"
+        logger.error(msg)
+        return msg
 
     dispatcher = ShipmentDispatcher(url)
     if not dispatcher.auth(username, password):
         # Unable to authenticate
-        return
+        msg = "Cannot authenticate against reference laboratory"
+        logger.error(msg)
+        return msg
 
     # Send the shipment via post
     dispatcher.send(shipment)
+    return None
 
 
 class ShipmentDispatcher(object):
