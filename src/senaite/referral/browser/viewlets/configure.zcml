@@ -23,7 +23,7 @@
       permission="senaite.core.permissions.ManageBika"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
-  <!-- Dispatch notification viewlet
+  <!-- Dispatch notification viewlet -->
   <browser:viewlet
       for="senaite.referral.interfaces.IOutboundSampleShipment"
       name="senaite.referral.dispathc_notification_viewlet"
@@ -31,6 +31,6 @@
       manager="plone.app.layout.viewlets.interfaces.IAboveContent"
       template="templates/dispatch_notification.pt"
       permission="senaite.core.permissions.ManageBika"
-      layer="senaite.referral.interfaces.ISenaiteReferralLayer" /-->
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
 </configure>

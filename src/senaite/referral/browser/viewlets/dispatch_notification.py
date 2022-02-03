@@ -4,6 +4,8 @@ from plone.app.layout.viewlets import ViewletBase
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from senaite.referral import check_installed
 
+from bika.lims.browser import ulocalized_time
+
 
 class DispatchNotificationViewlet(ViewletBase):
     """Viewlet that displays information about the dispatch notification of the
@@ -40,3 +42,7 @@ class DispatchNotificationViewlet(ViewletBase):
     def get_status_code(self):
         response = self.get_notification_response()
         return response.get("status")
+
+    def get_notification_date(self):
+        when = self.context.get_dispatch_notification_datetime()
+        return ulocalized_time(when, long_format=True)

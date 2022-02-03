@@ -7,16 +7,31 @@
   <div id="portal-alert" tal:define="errored python: view.is_error()">
 
     <div class="portal-alert-item alert alert-info"
-         tal:condition="python: not errored">
-      <strong i18n:translate="">Reference lab has been notified successfully:</strong>
-      <pre tal:content="python: view.get_message()"/>
+         tal:condition="python: errored">
+      <strong i18n:translate="">Reference Laboratory has been notified successfully</strong>
+      <p class="title">
+        <span i18n:translate="">Date time</span>:&nbsp;
+        <span tal:content="python: view.get_notification_date()"/><br/>
+        <span i18n:translate="">Server response</span>:&nbsp;
+        <span style="font-family:monospace;font-size:0.9em">
+          [<span tal:replace="python: view.get_status_code()"/>]
+          <span tal:replace="python: view.get_message()"/>
+        </span>
+      </p>
     </div>
 
     <div class="portlet-alert-item alert alert-warning"
          tal:condition="errored">
-      <strong i18n:translate="">The notification of reference laboratory errored:</strong>
-      &nbsp;&nbsp;<span tal:content="python: view.get_status_code()"/>
-      <pre tal:content="python: view.get_message()"/>
+      <strong i18n:translate="">Unable to notify the Reference Laboratory about this shipment</strong>
+      <p class="title">
+        <span i18n:translate="">Date time</span>:&nbsp;
+        <span tal:content="python: view.get_notification_date()"/><br/>
+        <span i18n:translate="">Server response</span>:&nbsp;
+        <span style="font-family:monospace;font-size:0.9em">
+          [<span tal:replace="python: view.get_status_code()"/>]
+          <span tal:replace="python: view.get_message()"/>
+        </span>
+      </p>
     </div>
   </div>
 
