@@ -1,0 +1,23 @@
+<div tal:omit-tag=""
+     tal:condition="python:view.is_visible()"
+     i18n:domain="senaite.referral">
+
+  <div class="visualClear"></div>
+
+  <div id="portal-alert" tal:define="errored python: view.is_error()">
+
+    <div class="portal-alert-item alert alert-info"
+         tal:condition="python: not errored">
+      <strong i18n:translate="">Reference lab has been notified successfully:</strong>
+      <pre tal:content="python: view.get_message()"/>
+    </div>
+
+    <div class="portlet-alert-item alert alert-warning"
+         tal:condition="errored">
+      <strong i18n:translate="">The notification of reference laboratory errored:</strong>
+      &nbsp;&nbsp;<span tal:content="python: view.get_status_code()"/>
+      <pre tal:content="python: view.get_message()"/>
+    </div>
+  </div>
+
+</div>

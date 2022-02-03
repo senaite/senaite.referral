@@ -270,9 +270,7 @@ class OutboundSampleShipment(Container):
             return
         self.dispatch_notification_response = value
 
-    def get_dispatch_notification_error(self):
-        """Returns the error from the response of the reference lab, if any
-        """
+    def get_dispatch_notification_info(self):
         response = self.get_dispatch_notification_response()
         if not response:
             return None
@@ -285,7 +283,6 @@ class OutboundSampleShipment(Container):
         if len(groups) < 2:
             return None
 
-        error = None
         status = groups[0]
         response = groups[1]
         try:
@@ -294,8 +291,17 @@ class OutboundSampleShipment(Container):
             # Not JSON deserializable!
             response = {"message": response, "success": status == "200"}
 
-        if not response.get("success", False):
+        response.update({"status": status})
+        return response
+
+    def get_dispatch_notification_error(self):
+        """Returns the error from the response of the reference lab, if any
+        """
+        error = None
+        response = self.get_dispatch_notification_info()
+        if response and not response.get("success", False):
             msg = response.get("message", "Unknown error")
+            status = response.get("status")
             error = "[{}] {}".format(status, msg)
 
         return error
