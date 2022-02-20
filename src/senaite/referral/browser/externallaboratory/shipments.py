@@ -11,6 +11,13 @@ from bika.lims import bikaMessageFactory as _sc
 from senaite.referral.utils import is_manual_inbound_shipment_permitted
 
 
+# Columns to remove from the listing
+DELETE_COLUMNS = [
+    "lab_code",
+    "referring_laboratory",
+]
+
+
 class InboundSampleShipmentsView(InboundSampleShipmentFolderView):
     """View that lists Inbound Sample Shipment objects
     """
@@ -34,7 +41,10 @@ class InboundSampleShipmentsView(InboundSampleShipmentFolderView):
             }
 
         # Remove lab-specific columns
-        del self.columns["referring_laboratory"]
+        delete_columns = ["lab_code", "referring_laboratory"]
+        for column_id in delete_columns:
+            del self.columns[column_id]
+
         col_keys = self.columns.keys()
         for review_state in self.review_states:
             review_state.update({"columns": col_keys})
@@ -60,7 +70,10 @@ class OutboundSampleShipmentsView(OutboundSampleShipmentFolderView):
         }
 
         # Remove lab-specific columns
-        del self.columns["reference_laboratory"]
+        delete_columns = ["lab_code", "reference_laboratory"]
+        for column_id in delete_columns:
+            del self.columns[column_id]
+
         col_keys = self.columns.keys()
         for review_state in self.review_states:
             review_state.update({"columns": col_keys})

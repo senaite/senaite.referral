@@ -44,6 +44,9 @@ class OutboundSampleShipmentFolderView(ListingView):
             ("reference_laboratory", {
                 "title": _("Reference Lab"),
             }),
+            ("lab_code", {
+                "title": _("Lab code"),
+            }),
             ("num_samples", {
                 "title": _("#Samples"),
             }),
@@ -141,6 +144,11 @@ class OutboundSampleShipmentFolderView(ListingView):
         reference = self.get_object(reference)
         item["reference_laboratory"] = api.get_title(reference)
         item["replace"]["reference_laboratory"] = get_link_for(reference)
+
+        lab_code = reference.get_code()
+        lab_url = api.get_url(reference)
+        item["lab_code"] = lab_code
+        item["replace"]["lab_code"] = get_link(lab_url, value=lab_code)
 
         item["num_samples"] = len(obj.get_samples())
         item["created_by"] = self.get_creator_fullname(obj)

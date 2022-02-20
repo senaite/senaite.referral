@@ -41,8 +41,19 @@ class InboundSampleShipmentFolderView(ListingView):
             ("referring_laboratory", {
                 "title": _("Referring Lab"),
             }),
+            ("lab_code", {
+                "title": _("Lab code"),
+            }),
             ("num_samples", {
                 "title": _("#Samples"),
+            }),
+            ("created_by", {
+                "title": _("Created by"),
+            }),
+            ("created", {
+                "title": _("Created"),
+                "sortable": True,
+                "index": "created",
             }),
             ("dispatched", {
                 "title": _("Dispatched"),
@@ -105,11 +116,17 @@ class InboundSampleShipmentFolderView(ListingView):
         item["shipment_id"] = shipment_id
         item["replace"]["shipment_id"] = get_link(href, shipment_id)
         item["num_samples"] = len(obj.get_samples())
+        item["created_by"] = self.get_creator_fullname(obj)
 
         referring = obj.get_referring_laboratory()
         referring = self.get_object(referring)
         item["referring_laboratory"] = api.get_title(referring)
         item["replace"]["referring_laboratory"] = get_link_for(referring)
+
+        lab_code = referring.get_code()
+        lab_url = api.get_url(referring)
+        item["lab_code"] = lab_code
+        item["replace"]["lab_code"] = get_link(lab_url, value=lab_code)
 
         # dispatched, received, rejected, cancelled
         dispatched = obj.get_dispatched_datetime()
@@ -132,3 +149,10 @@ class InboundSampleShipmentFolderView(ListingView):
     @view.memoize
     def get_object(self, uid):
         return api.get_object_by_uid(uid)
+
+    def get_creator_fullname(self, shipment):
+        """Returns the fullname of the user who created the shipment
+        """
+        creator = shipment.Creator()
+        properties = api.get_user_properties(creator)
+        return properties.get("fullname", creator)
