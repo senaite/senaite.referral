@@ -8,6 +8,7 @@ from senaite.referral.utils import get_image_url
 from senaite.referral.utils import translate as t
 
 from bika.lims import api
+from bika.lims.api.user import get_user
 from bika.lims.browser import ulocalized_time
 from bika.lims.utils import get_image
 from bika.lims.utils import get_link
@@ -45,6 +46,9 @@ class OutboundSampleShipmentFolderView(ListingView):
             }),
             ("num_samples", {
                 "title": _("#Samples"),
+            }),
+            ("created_by", {
+                "title": _("Created by"),
             }),
             ("created", {
                 "title": _("Created"),
@@ -139,6 +143,7 @@ class OutboundSampleShipmentFolderView(ListingView):
         item["replace"]["reference_laboratory"] = get_link_for(reference)
 
         item["num_samples"] = len(obj.get_samples())
+        item["created_by"] = self.get_creator_fullname(obj)
 
         # dispatched, received, rejected, cancelled
         dispatched = obj.get_dispatched_datetime()
@@ -198,3 +203,10 @@ class OutboundSampleShipmentFolderView(ListingView):
     @view.memoize
     def get_object(self, uid):
         return api.get_object_by_uid(uid)
+
+    def get_creator_fullname(self, shipment):
+        """Returns the fullname of the user who created the shipment
+        """
+        creator = shipment.Creator()
+        properties = api.get_user_properties(creator)
+        return properties.get("fullname", creator)
