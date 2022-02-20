@@ -43,10 +43,10 @@ class AnalysisRequestsListingViewAdapter(object):
         default_columns = invalid.get("columns")
         default_actions = invalid.get("custom_transitions", [])
 
-        # New review_state "Shipped"
+        # New review_state "shipped"
         shipped = {
             "id": "shipped",
-            "title": _("Shipped"),
+            "title": _("Referred"),
             "contentFilter": {
                 "review_state": ("shipped",),
                 "sort_on": "created",

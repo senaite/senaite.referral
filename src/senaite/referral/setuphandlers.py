@@ -41,8 +41,8 @@ WORKFLOWS_TO_UPDATE = {
                 "transitions": ("ship",),
             },
             "shipped": {
-                "title": "Shipped",
-                "description": "Sample is shipped",
+                "title": "Referred",
+                "description": "Sample is shipped to reference laboratory",
                 "transitions": (),
                 # Sample is read-only
                 "permissions_copy_from":  "invalid",
