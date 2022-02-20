@@ -67,7 +67,7 @@ ID_FORMATTING = [
     # An array of dicts. Each dict represents an ID formatting configuration
     {
         "portal_type": "OutboundSampleShipment",
-        "form": "SH{year}{alpha:2a3d}",
+        "form": "{lab_code}{year}{alpha:2a3d}",
         "prefix": "outboundsampleshipment",
         "sequence_type": "generated",
         "counter_type": "",

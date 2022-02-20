@@ -39,6 +39,10 @@ setup(
         "senaite.lims>=1.3.5",
         "senaite.lims<2",
         "senaite.jsonapi",
+        # Python 2.7: python-slugify < 5.0.0
+        # Python 3.6+: python-slugify >= 5.0.0
+        "python-slugify >= 4.0.1",
+        "python-slugify < 5.0.0",
     ],
     extras_require={
         "test": [

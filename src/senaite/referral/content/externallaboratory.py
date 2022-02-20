@@ -7,6 +7,7 @@ from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_by_code
 from senaite.referral.utils import is_valid_url
+from senaite.referral.utils import is_valid_code
 from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
@@ -131,6 +132,9 @@ class IExternalLaboratorySchema(model.Schema):
             if context.code == code:
                 # nothing changed
                 return
+
+        if not is_valid_code(code):
+            raise Invalid(_("Code cannot contain special characters or spaces"))
 
         lab = get_by_code("ExternalLaboratory", code)
         if lab:

@@ -10,6 +10,7 @@ from bika.lims.workflow import getTransitionDate
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
 from six.moves.urllib import parse
+from slugify import slugify
 
 _marker = object()
 
@@ -109,6 +110,13 @@ def is_valid_url(value):
         return all([result.scheme, result.netloc, result.path])
     except:  # noqa a convenient way to check if the url is ok
         return False
+
+
+def is_valid_code(value):
+    """Return whether the value can be used as a laboratory code
+    """
+    val = value.replace("_", "")
+    return value == slugify(val, separator="", lowercase=False)
 
 
 def get_action_date(obj, action, default=_marker):
