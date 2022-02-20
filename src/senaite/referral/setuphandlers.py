@@ -50,9 +50,9 @@ WORKFLOWS_TO_UPDATE = {
         },
         "transitions": {
             "ship": {
-                "title": "Ship",
+                "title": "Add to shipment",
                 "new_state": "shipped",
-                "action": "Ship sample",
+                "action": "Add to shipment",
                 "guard": {
                     "guard_permissions": "",
                     "guard_roles": "",
