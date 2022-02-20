@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import copy
-import six
+
+from senaite.referral import messageFactory as _
+from senaite.referral import PRODUCT_NAME
+from six.moves.urllib import parse
+from slugify import slugify
+
 from bika.lims import api
 from bika.lims.utils import render_html_attributes
 from bika.lims.utils import t as _t
 from bika.lims.utils import to_utf8
 from bika.lims.workflow import getTransitionDate
-from senaite.referral import messageFactory as _
-from senaite.referral import PRODUCT_NAME
-from six.moves.urllib import parse
-from slugify import slugify
 
 _marker = object()
 

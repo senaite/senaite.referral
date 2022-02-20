@@ -15,6 +15,20 @@
     factory=".jsonapi.InboundShipmentConsumer"
     name="senaite.referral.inbound_shipment" />
 
+  <!-- Default value for OutboundShipment field in Add Sample form -->
+  <adapter
+    for="*"
+    provides="bika.lims.interfaces.IGetDefaultFieldValueARAddHook"
+    factory=".addsample.OutboundShipmentDefaultFieldValue"
+    name = "OutboundShipment_default_value_hook" />
+
+  <!-- Visibility of OutboundShipment field in AnalysisRequest context -->
+  <adapter
+    for="bika.lims.interfaces.IAnalysisRequest"
+    provides="bika.lims.interfaces.IATWidgetVisibility"
+    factory=".visibility.OutboundShipmentFieldVisibility"
+    name="senaite.referral.visibility.analysisrequest.outboundshipment" />
+
   <!-- Recovers selected samples from an outbound shipment -->
   <adapter
     for="senaite.referral.interfaces.IOutboundSampleShipment

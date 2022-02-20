@@ -8,4 +8,10 @@
          Products.DCWorkflow.interfaces.IAfterTransitionEvent"
     handler=".outboundsampleshipment.AfterTransitionEventHandler" />
 
+  <!-- After event handler for AnalysisRequest -->
+  <subscriber
+    for="bika.lims.interfaces.IAnalysisRequest
+         Products.DCWorkflow.interfaces.IAfterTransitionEvent"
+    handler=".analysisrequest.AfterTransitionEventHandler" />
+
 </configure>

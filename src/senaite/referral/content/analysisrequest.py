@@ -23,12 +23,12 @@ class AnalysisRequestSchemaExtender(object):
         ExtUIDReferenceField(
             "OutboundShipment",
             allowed_types=("OutboundSampleShipment",),
-            mode="r",
             read_permission=View,
             widget=ReferenceWidget(
                 label=_("Outbound shipment"),
                 showOn=True,
-                visible={"add": "invisible", },
+                render_own_label=True,
+                visible={"add": "edit", "secondary": "disabled"},
                 catalog_name="portal_catalog",
                 base_query=dict(
                     is_active=True,
