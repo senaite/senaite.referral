@@ -1,17 +1,22 @@
 # -*- coding: utf-8 -*-
 
+from AccessControl import ClassSecurityInfo
 from plone.autoform import directives
 from plone.dexterity.content import Container
 from plone.supermodel import model
+from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_by_code
-from senaite.referral.utils import is_valid_url
 from senaite.referral.utils import is_valid_code
+from senaite.referral.utils import is_valid_url
 from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
 from zope.interface import invariant
+
+from bika.lims import api
+from bika.lims.interfaces import IDeactivable
 
 
 class IExternalLaboratorySchema(model.Schema):
@@ -82,23 +87,14 @@ class IExternalLaboratorySchema(model.Schema):
         required=False,
     )
 
-    referring_username = schema.TextLine(
-        title=_(u"label_externallaboratory_referring_username",
-                default=u"Username"),
+    referring_client = schema.Choice(
+        title=_("ulabel_externallaboratory_referring_client",
+                default=u"Default client"),
         description=_(
-            u"Username of the user the samples will be created on behalf of "
-            u"the external laboratory"
+            U"The default client for inbound sample shipments received from "
+            U"this external laboratory"
         ),
-        required=False,
-    )
-
-    referring_password = schema.Password(
-        title=_(u"label_externallaboratory_referring_password",
-                default=u"Password"),
-        description=_(
-            u"Password of the user the samples will be created on behalf of "
-            u"the external laboratory"
-        ),
+        vocabulary="senaite.referral.vocabularies.clients",
         required=False,
     )
 
@@ -117,7 +113,7 @@ class IExternalLaboratorySchema(model.Schema):
     model.fieldset(
         "referring_laboratory",
         label=_(u"Referring Laboratory"),
-        fields=["referring", "referring_username", "referring_password"]
+        fields=["referring", "referring_client"]
     )
 
     @invariant
@@ -150,8 +146,33 @@ class IExternalLaboratorySchema(model.Schema):
         if not is_valid_url(data.reference_url):
             raise Invalid(_("Reference URL is not valid"))
 
+    @invariant
+    def validate_referring(data):
+        """Checks if all the information required for this external laboratory
+        to be able to act as a referring laboratory has been filled correctly
+        """
+        value = data.referring
+        if not value:
+            return
 
-@implementer(IExternalLaboratory, IExternalLaboratorySchema)
+        # Check if a default client for this referring laboratory has been set
+        request = api.get_request()
+        client = request.form.get("form.widgets.referring_client")
+        client = client and client[0] or None
+        if api.is_uid(client):
+            return
+
+        # mark the request to avoid multiple raising
+        key = "_v_referring_checked"
+        if getattr(request, key, False):
+            return
+        setattr(request, key, True)
+        msg = _("Please set the default client to use when creating "
+                "samples from this referring laboratory first")
+        raise Invalid(msg)
+
+
+@implementer(IExternalLaboratory, IExternalLaboratorySchema, IDeactivable)
 class ExternalLaboratory(Container):
     """Organization that can act as a reference laboratory, as a referring
     laboratory or both
@@ -161,6 +182,26 @@ class ExternalLaboratory(Container):
         CMFCatalogAware, CMFOrderedBTreeFolderBase, DexterityContent):
     """
     _catalogs = ["portal_catalog", ]
+
+    security = ClassSecurityInfo()
+
+    @security.private
+    def accessor(self, fieldname):
+        """Return the field accessor for the fieldname
+        """
+        schema = api.get_schema(self)
+        if fieldname not in schema:
+            return None
+        return schema[fieldname].get
+
+    @security.private
+    def mutator(self, fieldname):
+        """Return the field mutator for the fieldname
+        """
+        schema = api.get_schema(self)
+        if fieldname not in schema:
+            return None
+        return schema[fieldname].set
 
     def get_code(self):
         code = self.code
@@ -205,24 +246,6 @@ class ExternalLaboratory(Container):
             return
         self.referring = value
 
-    def get_referring_username(self):
-        return self.referring_username
-
-    def set_referring_username(self, value):
-        value = value.strip()
-        if self.referring_username == value:
-            return
-        self.referring_username = value
-
-    def get_referring_password(self):
-        return self.referring_password
-
-    def set_referring_password(self, value):
-        value = value.strip()
-        if self.referring_password == value:
-            return
-        self.referring_password = value
-
     def get_reference_username(self):
         return self.reference_username
 
@@ -240,3 +263,13 @@ class ExternalLaboratory(Container):
         if self.reference_password == value:
             return
         self.reference_password = value
+
+    @security.protected(permissions.View)
+    def getReferralClient(self):
+        accessor = self.accessor("referring_client")
+        return accessor(self)
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setReferralClient(self, value):
+        mutator = self.mutator("referring_client")
+        return mutator(self, value)
