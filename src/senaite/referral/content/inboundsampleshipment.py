@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+
+from AccessControl import ClassSecurityInfo
 from plone.autoform import directives
 from plone.dexterity.content import Container
 from plone.supermodel import model
+from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.interfaces import IInboundSampleShipment
@@ -11,6 +14,7 @@ from zope.interface import implementer
 from zope.interface import invariant
 
 from bika.lims import api
+from bika.lims.interfaces import IClient
 
 
 def check_referring_laboratory(thing):
@@ -24,6 +28,16 @@ def check_referring_laboratory(thing):
         # The external laboratory must be enabled as referring laboratory
         raise ValueError("The external laboratory cannot act as a "
                          "referring laboratory")
+
+    return True
+
+
+def check_referring_client(thing):
+    """Checks if the referring client passed in is valid
+    """
+    obj = api.get_object(thing, default=None)
+    if not IClient.providedBy(obj):
+        raise ValueError("Type is not supported: {}".format(repr(obj)))
 
     return True
 
@@ -58,6 +72,14 @@ class IInboundSampleShipmentSchema(model.Schema):
                 default=u"Referring laboratory"),
         description=_(u"The referring laboratory the samples come from"),
         vocabulary="senaite.referral.vocabularies.referringlaboratories",
+        required=True,
+    )
+
+    referring_client = schema.Choice(
+        title=_(u"label_inboundsampleshipment_referring_client",
+                default=u"Referring client"),
+        description=_(u"The referring client the samples come from"),
+        vocabulary="senaite.referral.vocabularies.clients",
         required=True,
     )
 
@@ -96,6 +118,15 @@ class IInboundSampleShipmentSchema(model.Schema):
         check_referring_laboratory(val)
 
     @invariant
+    def validate_referring_client(data):
+        """Checks if the value for field referring_client is valid
+        """
+        val = data.referring_client
+        if not val:
+            return
+        check_referring_client(val)
+
+    @invariant
     def validate_dispatched_datetime(data):
         """Checks if the value for field dispatch_datetime is valid
         """
@@ -114,6 +145,8 @@ class InboundSampleShipment(Container):
     referring laboratory
     """
     _catalogs = ["portal_catalog", ]
+
+    security = ClassSecurityInfo()
     exclude_from_nav = True
 
     def _get_title(self):
@@ -218,3 +251,22 @@ class InboundSampleShipment(Container):
         if not isinstance(value, (list, tuple)):
             value = [value]
         self.samples = value
+
+    @security.protected(permissions.View)
+    def getReferringClient(self):
+        """Returns the client the samples come from
+        """
+        accessor = self.accessor("referring_client")
+        client = accessor(self)
+        if not client:
+            return None
+        return client[0]
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setReferringClient(self, value):
+        """Sets the client the samples come from
+        """
+        if not isinstance(value, list):
+            value = [value]
+        mutator = self.mutator("referring_client")
+        mutator(self, value)
