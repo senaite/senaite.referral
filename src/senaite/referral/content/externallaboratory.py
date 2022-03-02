@@ -184,6 +184,7 @@ class ExternalLaboratory(Container):
     _catalogs = ["portal_catalog", ]
 
     security = ClassSecurityInfo()
+    exclude_from_nav = True
 
     @security.private
     def accessor(self, fieldname):
@@ -264,11 +265,16 @@ class ExternalLaboratory(Container):
         mutator(self, value)
 
     @security.protected(permissions.View)
-    def getReferralClient(self):
+    def getReferringClient(self):
         accessor = self.accessor("referring_client")
-        return accessor(self)
+        client = accessor(self)
+        if not client:
+            return None
+        return client[0]
 
     @security.protected(permissions.ModifyPortalContent)
-    def setReferralClient(self, value):
+    def setReferringClient(self, value):
+        if not isinstance(value, list):
+            value = [value]
         mutator = self.mutator("referring_client")
         mutator(self, value)
