@@ -145,7 +145,7 @@ class OutboundSampleShipmentFolderView(ListingView):
         item["reference_laboratory"] = api.get_title(reference)
         item["replace"]["reference_laboratory"] = get_link_for(reference)
 
-        lab_code = reference.get_code()
+        lab_code = reference.getCode()
         lab_url = api.get_url(reference)
         item["lab_code"] = lab_code
         item["replace"]["lab_code"] = get_link(lab_url, value=lab_code)
