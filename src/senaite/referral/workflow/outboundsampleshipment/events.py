@@ -99,11 +99,14 @@ class ShipmentDispatcher(object):
             return None
 
         sample_type = sample.getSampleType()
+        date_sampled = sample.getDateSampled()
+
         state = ["registered", "unassigned", "assigned"]
         analyses = sample.getAnalyses(full_objects=False, review_state=state)
         return {
             "id": api.get_id(sample),
             "sample_type": api.get_title(sample_type),
+            "date_sampled": date_sampled.strftime("%Y-%m-%d"),
             "analyses": map(lambda an: an.getKeyword, analyses)
         }
 

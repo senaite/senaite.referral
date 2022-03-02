@@ -31,13 +31,15 @@ class InboundShipmentConsumer(object):
         self.validate(self.data, required=required_fields)
 
         # Ensure the samples passed-in are compliant
-        required_fields = ["id", ]
+        required_fields = ["id", "date_sampled", "sample_type"]
         sample_records = self.data.get("samples")
         if isinstance(sample_records, six.string_types):
             if not is_json_deserializable(sample_records):
                 raise ValueError("Value for 'samples' is not a valid JSON")
             sample_records = json.loads(sample_records)
         self.validate(sample_records, required=required_fields)
+
+        # XXX translate sample info (e.g. SampleType) to UIDs
 
         dispatched = self.data.get("dispatched")
         dispatched_date = api.to_date(dispatched)
@@ -57,7 +59,7 @@ class InboundShipmentConsumer(object):
                                  .format(shipment_id))
 
         # Create the inbound shipment
-        comments = self.data.get("comments")
+        comments = self.data.get("comments", "")
         values = {
             "shipment_id": str(shipment_id),
             "referring_laboratory": api.get_uid(lab),

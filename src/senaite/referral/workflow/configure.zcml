@@ -2,6 +2,12 @@
     xmlns="http://namespaces.zope.org/zope"
     i18n_domain="senaite.referral">
 
+  <!-- After event handler for InboundSampleShipment -->
+  <subscriber
+    for="senaite.referral.interfaces.IInboundSampleShipment
+         Products.DCWorkflow.interfaces.IAfterTransitionEvent"
+    handler=".inboundsampleshipment.AfterTransitionEventHandler" />
+
   <!-- After event handler for OutboundSampleShipment -->
   <subscriber
     for="senaite.referral.interfaces.IOutboundSampleShipment

@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import collections
 import copy
 
+from senaite.referral import logger
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
 from six.moves.urllib import parse
 from slugify import slugify
 
 from bika.lims import api
+from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils import render_html_attributes
 from bika.lims.utils import t as _t
 from bika.lims.utils import to_utf8
@@ -103,6 +106,50 @@ def search(query, catalog, first_only=False):
     return matches
 
 
+def get_object_by_title(portal_type, title, catalog="portal_catalog",
+                        default=_marker):
+    """Returns an object for the portal type and title passed-in, if any
+    """
+    if not all([portal_type, title]):
+        if default is _marker:
+            raise ValueError("portal_type and/or title not set")
+        return default
+
+    query = {
+        "portal_type": portal_type,
+        "title": title,
+    }
+    raise_error = default is _marker
+    obj = get_object(query, catalog=catalog, raise_error=raise_error)
+    if not obj:
+        if raise_error:
+            msg = "No {} found with title '{}'".format(portal_type, title)
+            raise ValueError(msg)
+        return default
+    return obj
+
+
+def get_object(query, catalog="portal_catalog", raise_error=True):
+    """Returns the object that matches with the query passed-in, if any. Returns
+    None otherwise. If more than one object is found for the query and catalog
+    passed-in, system raises an a ValueError unless 'raise_error' is False. In
+    such case, system returns None
+    :param query: dict containing the search criteria
+    :param catalog: the catalog to search objects against
+    :param raise_error: whether a ValueError is raised if not unique
+    """
+    objects = search(query, catalog=catalog)
+    if not objects:
+        return None
+    if len(objects) > 1:
+        msg = "{} objects found for {}".format(len(objects), repr(query))
+        logger.warn(msg)
+        if raise_error:
+            raise ValueError(msg)
+        return None
+    return objects[0]
+
+
 def is_valid_url(value):
     """Return true if the value is a well-formed url
     """
@@ -164,3 +211,44 @@ def is_manual_inbound_shipment_permitted():
     """
     key = "{}.manual_inbound_permitted".format(PRODUCT_NAME)
     return api.get_registry_record(key, default=False)
+
+
+def to_uids(value):
+    """Returns the value passed-in as a list of UIDs
+    """
+    if not isinstance(value, list):
+        value = [value]
+
+    value = filter(None, value)
+    value = map(api.get_uid, value)
+    value = list(collections.OrderedDict.fromkeys(value))
+    return value
+
+
+def set_uids_field_value(instance, field_name, value, validator=None):
+    """Sets the value to a field that stores UIDs
+    """
+    # Convert the value to a list of UIDs
+    uids = to_uids(value)
+    if get_field_value(instance, field_name, raw=True) == uids:
+        # Nothing changed
+        return
+
+    # Check the values
+    if validator:
+        map(validator, uids)
+
+    # Assign the value
+    mutator = instance.mutator(field_name)
+    mutator(instance, uids)
+
+
+def get_uids_field_value(instance, field_name):
+    """Returns the value from a field that stores UIDs
+    """
+    value = get_field_value(instance, field_name, raw=True)
+    if not value:
+        value = []
+    if not isinstance(value, list):
+        value = [value]
+    return filter(api.is_uid, value)

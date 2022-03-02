@@ -43,7 +43,7 @@ class IDServerVariablesAdapter(object):
         if IOutboundSampleShipment.providedBy(shipment):
             lab_uid = self.container.get_reference_laboratory()
         elif IInboundSampleShipment.providedBy(shipment):
-            lab_uid = self.container.get_referring_laboratory()
+            lab_uid = self.container.getReferringLaboratory()
         else:
             str_type = repr(type(shipment))
             return ValueError("Type not supported: {}".format(str_type))

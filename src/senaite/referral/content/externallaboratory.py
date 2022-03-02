@@ -8,8 +8,10 @@ from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_by_code
+from senaite.referral.utils import get_uids_field_value
 from senaite.referral.utils import is_valid_code
 from senaite.referral.utils import is_valid_url
+from senaite.referral.utils import set_uids_field_value
 from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
@@ -266,15 +268,17 @@ class ExternalLaboratory(Container):
 
     @security.protected(permissions.View)
     def getReferringClient(self):
-        accessor = self.accessor("referring_client")
-        client = accessor(self)
-        if not client:
+        """Returns the default client that samples from inbound shipments from
+        this laboratory will be assigned to
+        """
+        value = get_uids_field_value(self, "referring_client")
+        if not value:
             return None
-        return client[0]
+        return value[0]
 
     @security.protected(permissions.ModifyPortalContent)
     def setReferringClient(self, value):
-        if not isinstance(value, list):
-            value = [value]
-        mutator = self.mutator("referring_client")
-        mutator(self, value)
+        """Sets the default client the samples from inbound shipments will
+        be assigned to
+        """
+        set_uids_field_value(self, "referring_client", value)

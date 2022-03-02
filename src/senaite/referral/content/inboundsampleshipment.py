@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import collections
 from AccessControl import ClassSecurityInfo
 from plone.autoform import directives
 from plone.dexterity.content import Container
@@ -9,6 +10,9 @@ from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.interfaces import IInboundSampleShipment
 from senaite.referral.utils import get_action_date
+from senaite.referral.utils import get_uids_field_value
+from senaite.referral.utils import set_uids_field_value
+from senaite.referral.utils import to_uids
 from zope import schema
 from zope.interface import implementer
 from zope.interface import invariant
@@ -158,23 +162,23 @@ class InboundSampleShipment(Container):
 
     title = property(_get_title, _set_title)
 
-    def get_referring_laboratory(self):
-        lab = self.referring_laboratory
-        if not lab:
-            return u""
-        return lab
+    @security.private
+    def accessor(self, fieldname):
+        """Return the field accessor for the fieldname
+        """
+        schema = api.get_schema(self)
+        if fieldname not in schema:
+            return None
+        return schema[fieldname].get
 
-    def set_referring_laboratory(self, value):
-        if api.is_object(value):
-            value = api.get_uid(value)
-
-        value = value.strip()
-        if self.referring_laboratory == value:
-            # nothing changed
-            return
-
-        if check_referring_laboratory(value):
-            self.referring_laboratory = value
+    @security.private
+    def mutator(self, fieldname):
+        """Return the field mutator for the fieldname
+        """
+        schema = api.get_schema(self)
+        if fieldname not in schema:
+            return None
+        return schema[fieldname].set
 
     def get_comments(self):
         comments = self.comments
@@ -253,20 +257,33 @@ class InboundSampleShipment(Container):
         self.samples = value
 
     @security.protected(permissions.View)
+    def getReferringLaboratory(self):
+        """Returns the client the samples come from
+        """
+        value = get_uids_field_value(self, "referring_laboratory")
+        if not value:
+            return None
+        return value[0]
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setReferringLaboratory(self, value):
+        """Sets the client the samples come from
+        """
+        set_uids_field_value(self, "referring_laboratory", value,
+                             validator=check_referring_laboratory)
+
+    @security.protected(permissions.View)
     def getReferringClient(self):
         """Returns the client the samples come from
         """
-        accessor = self.accessor("referring_client")
-        client = accessor(self)
-        if not client:
+        value = get_uids_field_value(self, "referring_client")
+        if not value:
             return None
-        return client[0]
+        return value[0]
 
     @security.protected(permissions.ModifyPortalContent)
     def setReferringClient(self, value):
         """Sets the client the samples come from
         """
-        if not isinstance(value, list):
-            value = [value]
-        mutator = self.mutator("referring_client")
-        mutator(self, value)
+        set_uids_field_value(self, "referring_client", value,
+                             validator=check_referring_client)
