@@ -123,7 +123,7 @@ class InboundSampleShipmentFolderView(ListingView):
         item["referring_laboratory"] = api.get_title(referring)
         item["replace"]["referring_laboratory"] = get_link_for(referring)
 
-        lab_code = referring.get_code()
+        lab_code = referring.getCode()
         lab_url = api.get_url(referring)
         item["lab_code"] = lab_code
         item["replace"]["lab_code"] = get_link(lab_url, value=lab_code)

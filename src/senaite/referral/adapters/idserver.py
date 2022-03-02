@@ -49,4 +49,4 @@ class IDServerVariablesAdapter(object):
             return ValueError("Type not supported: {}".format(str_type))
 
         laboratory = api.get_object_by_uid(lab_uid)
-        return laboratory.get_code()
+        return laboratory.getCode()

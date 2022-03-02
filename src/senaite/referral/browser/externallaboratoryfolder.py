@@ -7,6 +7,7 @@ from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
 
 from bika.lims import api
+from bika.lims.utils import get_link
 from bika.lims.utils import get_link_for
 
 
@@ -83,9 +84,11 @@ class ExternalLaboratoryFolderView(ListingView):
         :index: current index of the item
         """
         obj = api.get_object(obj)
+        obj_url = api.get_url(obj)
         obj_link = get_link_for(obj)
         item["replace"]["title"] = obj_link
 
-        item["code"] = obj.get_code()
-        item["replace"]["code"] = obj_link
+        code = obj.getCode()
+        item["code"] = obj.getCode()
+        item["replace"]["code"] = get_link(href=obj_url, value=code)
         return item

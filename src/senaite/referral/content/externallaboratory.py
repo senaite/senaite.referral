@@ -133,7 +133,7 @@ class IExternalLaboratorySchema(model.Schema):
             raise Invalid(_("Code cannot contain special characters or spaces"))
 
         lab = get_by_code("ExternalLaboratory", code)
-        if lab:
+        if lab and lab != context:
             raise Invalid(_("Code must be unique"))
 
     @invariant
@@ -203,24 +203,6 @@ class ExternalLaboratory(Container):
             return None
         return schema[fieldname].set
 
-    def get_code(self):
-        code = self.code
-        if not code:
-            return u""
-        return self.code
-
-    def set_code(self, value):
-        value = value.strip()
-        if self.code == value:
-            # nothing changed
-            return
-
-        symptom = get_by_code("ExternalLaboratory", value)
-        if symptom:
-            raise ValueError("An External laboratory with Code '{}' already "
-                             "exists".format(value))
-        self.code = value
-
     def get_reference(self):
         return self.reference
 
@@ -263,6 +245,12 @@ class ExternalLaboratory(Container):
         if self.reference_password == value:
             return
         self.reference_password = value
+
+
+    @security.protected(permissions.View)
+    def getCode(self):
+        accessor = self.accessor("code")
+        return accessor(self)
 
     @security.protected(permissions.View)
     def getReferralClient(self):
