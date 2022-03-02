@@ -246,11 +246,22 @@ class ExternalLaboratory(Container):
             return
         self.reference_password = value
 
-
     @security.protected(permissions.View)
     def getCode(self):
         accessor = self.accessor("code")
         return accessor(self)
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setCode(self, value):
+        if not is_valid_code(value):
+            raise ValueError("Code cannot contain special characters or spaces")
+
+        lab = get_by_code("ExternalLaboratory", value)
+        if lab and lab != self:
+            raise Invalid("Code must be unique")
+
+        mutator = self.mutator("code")
+        mutator(self, value)
 
     @security.protected(permissions.View)
     def getReferralClient(self):
@@ -260,4 +271,4 @@ class ExternalLaboratory(Container):
     @security.protected(permissions.ModifyPortalContent)
     def setReferralClient(self, value):
         mutator = self.mutator("referring_client")
-        return mutator(self, value)
+        mutator(self, value)
