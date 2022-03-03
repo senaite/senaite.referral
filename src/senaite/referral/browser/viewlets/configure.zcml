@@ -26,7 +26,7 @@
   <!-- Dispatch notification viewlet -->
   <browser:viewlet
       for="senaite.referral.interfaces.IOutboundSampleShipment"
-      name="senaite.referral.dispathc_notification_viewlet"
+      name="senaite.referral.dispatch_notification_viewlet"
       class=".dispatch_notification.DispatchNotificationViewlet"
       manager="plone.app.layout.viewlets.interfaces.IAboveContent"
       template="templates/dispatch_notification.pt"
