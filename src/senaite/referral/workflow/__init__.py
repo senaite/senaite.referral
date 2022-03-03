@@ -123,6 +123,13 @@ def recover_sample(sample, shipment=None):
         prev = get_previous_status(sample, default="sample_received")
         changeWorkflowState(sample, "bika_ar_workflow", prev)
 
+    # Transition the "shipped" analyses to their prior status
+    analyses = sample.getAnalyses(full_objects=True, review_state="shipped")
+    for analysis in analyses:
+        prev = get_previous_status(analysis, default="unassigned")
+        changeWorkflowState(analysis, "bika_analysis_workflow", prev)
+        analysis.reindexObject()
+
     # Notify the sample has ben modified
     modified(sample)
 
