@@ -28,11 +28,36 @@ class AnalysisRequestsListingViewAdapter(object):
 
     def folder_item(self, obj, item, index):
         obj = api.get_object(obj)
-        shipment = get_field_value(obj, "OutboundShipment", default="")
-        if shipment:
-            shipment = get_link_for(shipment)
-        item["OutboundShipment"] = shipment
+
+        # Outbound shipment
+        outbound = get_field_value(obj, "OutboundShipment", default="")
+        if outbound:
+            link = get_link_for(outbound)
+            ico = self.get_glyphicon("export")
+            item["replace"]["Shipment"] = "{}{}".format(ico, link)
+            outbound = api.get_title(outbound)
+
+        # Inbound shipment
+        inbound = get_field_value(obj, "InboundShipment", default="")
+        if inbound:
+            link = get_link_for(inbound)
+            ico = self.get_glyphicon("import")
+            val = "{}{}".format(ico, link)
+            if outbound:
+                val = "&nbsp;|&nbsp;".join([val, item["replace"]["Shipment"]])
+            item["replace"]["Shipment"] = val
+            inbound = api.get_title(inbound)
+
+        item["Shipment"] = "{} {}".format(outbound, inbound).strip()
+
         return item
+
+    def get_glyphicon(self, name):
+        """Returns an html element that represents the glyphicon with the name
+        """
+        span = '<span class="glyphicon glyphicon-{}" ' \
+               'style="padding-right:3px"></span>'
+        return span.format(name)
 
     def add_review_states(self):
         """Adds referral-specific review states (filter buttons) in the listing
@@ -64,7 +89,7 @@ class AnalysisRequestsListingViewAdapter(object):
         """Adds referral-specific columns in the listing
         """
         custom_columns = collections.OrderedDict((
-            ("OutboundShipment", {
+            ("Shipment", {
                 "title": _("Shipment"),
                 "sortable": False,
                 "toggle": True,
