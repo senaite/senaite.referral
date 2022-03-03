@@ -20,6 +20,17 @@ class AnalysisRequestSchemaExtender(object):
     """
     layer = ISenaiteReferralLayer
     custom_fields = [
+
+        ExtUIDReferenceField(
+            "InboundShipment",
+            allowed_types=("InboundSampleShipment",),
+            widget=ReferenceWidget(
+                # Read-only mode
+                label=_("Inbound shipment"),
+                render_own_label=True,
+            )
+        ),
+
         ExtUIDReferenceField(
             "OutboundShipment",
             allowed_types=("OutboundSampleShipment",),
@@ -36,7 +47,7 @@ class AnalysisRequestSchemaExtender(object):
                     sort_order="ascending"
                 ),
             )
-        )
+        ),
     ]
 
     def __init__(self, context):

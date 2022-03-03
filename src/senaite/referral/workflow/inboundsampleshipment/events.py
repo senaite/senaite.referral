@@ -7,6 +7,7 @@ from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_lab_code
 from senaite.referral.utils import get_object_by_title as get_obj
 from senaite.referral.utils import is_valid_url
+from senaite.referral.utils import set_field_value
 
 from bika.lims import api
 from bika.lims.catalog import SETUP_CATALOG
@@ -29,6 +30,7 @@ def after_receive(shipment):
     - The Containers are resolved based on the containers mapping
     """
     request = api.get_request()
+    shipment_uid = api.get_uid(shipment)
     client = shipment.getReferringClient()
     client = api.get_object(client)
     samples = []
@@ -58,7 +60,10 @@ def after_receive(shipment):
             "DateSampled": sample_info.get("date_sampled"),
             "SampleType": api.get_uid(sample_type)
         }
+
+        #  Create the sample and assign the shipment
         sample = create_analysisrequest(client, request, values, service_uids)
+        set_field_value(sample, "InboundShipment", shipment_uid)
         samples.append(sample)
 
     # Assign the sample objects to the shipment
