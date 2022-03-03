@@ -89,11 +89,6 @@ class InboundSampleShipmentFolderView(ListingView):
                 "title": _("Rejected"),
                 "contentFilter": {"review_state": "rejected"},
                 "columns": self.columns.keys(),
-            },  {
-                "id": "cancelled",
-                "title": _("Cancelled"),
-                "contentFilter": {"review_state": "cancelled"},
-                "columns": self.columns.keys(),
             }, {
                 "id": "all",
                 "title": _("All"),

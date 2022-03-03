@@ -22,7 +22,6 @@
 
   <!-- State: due -->
   <state state_id="due" title="Due" i18n:attributes="title">
-    <exit-transition transition_id="cancel" />
     <exit-transition transition_id="receive" />
     <exit-transition transition_id="reject" />
 
@@ -31,18 +30,6 @@
     <permission-map name="Delete objects" acquired="True" />
     <permission-map name="List folder contents" acquired="True" />
     <permission-map name="Modify portal content" acquired="True" />
-    <permission-map name="View" acquired="True" />
-  </state>
-
-  <!-- State: cancelled -->
-  <state state_id="cancelled" title="Cancelled" i18n:attributes="title">
-    <exit-transition transition_id="" />
-
-    <!-- Plone's permissions -->
-    <permission-map name="Access contents information" acquired="True" />
-    <permission-map name="Delete objects" acquired="True" />
-    <permission-map name="List folder contents" acquired="True" />
-    <permission-map name="Modify portal content" acquired="False" />
     <permission-map name="View" acquired="True" />
   </state>
 
@@ -69,14 +56,6 @@
     <permission-map name="Modify portal content" acquired="False" />
     <permission-map name="View" acquired="True" />
   </state>
-
-  <!-- Transition: cancel -->
-  <transition transition_id="cancel" title="Cancel" new_state="cancelled" trigger="USER" before_script="" after_script="" i18n:attributes="title">
-    <action url="" category="workflow" icon="">Cancel</action>
-    <guard>
-      <guard-expression>python:here.guard_handler("cancel")</guard-expression>
-    </guard>
-  </transition>
 
   <!-- Transition: receive -->
   <transition transition_id="receive" title="Receive" new_state="received" trigger="USER" before_script="" after_script="" i18n:attributes="title">
