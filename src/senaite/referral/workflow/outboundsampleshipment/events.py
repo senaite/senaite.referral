@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import requests
 from datetime import datetime
 from senaite.referral import logger
@@ -64,7 +65,14 @@ def notify_outbound_shipment(shipment):
         return msg
 
     # Send the shipment via post
-    dispatcher.send(shipment)
+    try:
+        dispatcher.send(shipment)
+    except Exception as e:
+        logger.error(str(e))
+        response = json.dumps({"success": False, "message": str(e)})
+        response_text = "[500] {}".format(response)
+        shipment.set_dispatch_notification_response(response_text)
+
     return None
 
 
@@ -75,7 +83,7 @@ class ShipmentDispatcher(object):
     def __init__(self, host):
         self.host = host
 
-    def send(self, shipment, timeout=60):
+    def send(self, shipment, timeout=5):
         dispatched = shipment.get_dispatched_datetime() or datetime.now()
         samples = map(self.get_sample_info, shipment.get_samples())
         payload = {
@@ -87,11 +95,12 @@ class ShipmentDispatcher(object):
         }
 
         now = datetime.now()
+        shipment.set_dispatch_notification_datetime(now)
+        shipment.set_dispatch_notification_payload(payload)
+
         response = self.post("push", payload, timeout)
         response_text = "[{}] {}".format(response.status_code, response.text)
         shipment.set_dispatch_notification_response(response_text)
-        shipment.set_dispatch_notification_datetime(now)
-        shipment.set_dispatch_notification_payload(payload)
 
     def get_sample_info(self, sample_brain_uid):
         sample = api.get_object(sample_brain_uid)
