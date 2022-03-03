@@ -15,6 +15,13 @@
     factory=".jsonapi.InboundShipmentConsumer"
     name="senaite.referral.inbound_shipment" />
 
+  <!-- Guard handler for Sample (aka AnalysisRequest) content type -->
+  <adapter
+    for="bika.lims.interfaces.IAnalysisRequest"
+    provides="bika.lims.interfaces.IGuardAdapter"
+    factory=".guards.SampleGuardAdapter"
+    name="senaite.referral.adapter.guard.sample" />
+
   <!-- Default value for OutboundShipment field in Add Sample form -->
   <adapter
     for="*"

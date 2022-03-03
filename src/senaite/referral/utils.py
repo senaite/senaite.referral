@@ -252,3 +252,12 @@ def get_uids_field_value(instance, field_name):
     if not isinstance(value, list):
         value = [value]
     return filter(api.is_uid, value)
+
+
+def is_from_shipment(sample):
+    """Returns whether the sample comes from an inbound sample shipment
+    """
+    shipment = get_field_value(sample, "InboundShipment", raw=True)
+    if shipment:
+        return True
+    return False
