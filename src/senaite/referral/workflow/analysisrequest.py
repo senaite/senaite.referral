@@ -4,7 +4,10 @@ from senaite.referral import check_installed
 from senaite.referral.utils import get_field_value
 from senaite.referral.workflow import ship_sample
 
-from bika.lims.utils import changeWorkflowState
+from bika.lims import EditFieldResults
+from bika.lims import EditResults
+from bika.lims import FieldEditAnalysisResult
+from bika.lims.api import security
 from bika.lims.workflow import doActionFor
 
 
@@ -36,13 +39,12 @@ def after_no_sampling_workflow(sample):
 
 
 def after_ship(sample):
-    """Automatically transition the not-yet-submitted analyses from the sample
-    to shipped status, so they cannot be edited by regular users anymore
+    """Automatically revoke edit permissions for analyses from this sample
     """
-    wf_id = "bika_analysis_workflow"
-    status = ["registered", "unassigned", "assigned"]
-    analyses = sample.getAnalyses(full_objects=True, review_state=status)
+    analyses = sample.getAnalyses(full_objects=True)
     for analysis in analyses:
-        args = {"action": "ship"}
-        changeWorkflowState(analysis, wf_id, "shipped", **args)
+        roles = security.get_valid_roles_for(analysis)
+        security.revoke_permission_for(analysis, EditFieldResults, roles)
+        security.revoke_permission_for(analysis, EditResults, roles)
+        security.revoke_permission_for(analysis, FieldEditAnalysisResult, roles)
         analysis.reindexObject()

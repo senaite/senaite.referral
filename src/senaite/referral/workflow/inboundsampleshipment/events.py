@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import requests
-from datetime import datetime
-from senaite.referral import logger
-from senaite.referral.interfaces import IExternalLaboratory
-from senaite.referral.utils import get_lab_code
 from senaite.referral.utils import get_object_by_title as get_obj
-from senaite.referral.utils import is_valid_url
 from senaite.referral.utils import set_field_value
 
 from bika.lims import api
 from bika.lims.catalog import SETUP_CATALOG
-from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.utils.analysisrequest import create_analysisrequest
 
 

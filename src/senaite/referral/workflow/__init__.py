@@ -17,17 +17,20 @@
 #
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
-
-from bika.lims import api
-from bika.lims.interfaces import IAnalysisRequest
-from bika.lims.interfaces import IGuardAdapter
-from bika.lims.utils import changeWorkflowState
-from bika.lims.workflow import doActionFor
+from senaite.referral import logger
 from senaite.referral.interfaces import IOutboundSampleShipment
 from senaite.referral.utils import get_field_value
 from senaite.referral.utils import set_field_value
-from zope.interface import implementer
 from zope.lifecycleevent import modified
+
+from bika.lims import api
+from bika.lims import EditFieldResults
+from bika.lims import EditResults
+from bika.lims import FieldEditAnalysisResult
+from bika.lims.api import security
+from bika.lims.interfaces import IAnalysisRequest
+from bika.lims.utils import changeWorkflowState
+from bika.lims.workflow import doActionFor
 
 
 def TransitionEventHandler(before_after, obj, mod, event): # noqa lowercase
@@ -38,24 +41,6 @@ def TransitionEventHandler(before_after, obj, mod, event): # noqa lowercase
     if hasattr(mod, function_name):
         # Call the function from events package
         getattr(mod, function_name)(obj)
-
-
-@implementer(IGuardAdapter)
-class BaseGuardAdapter(object):
-
-    def __init__(self, context):
-        self.context = context
-
-    def get_module(self):
-        raise NotImplementedError("To be implemented by child classes")
-
-    def guard(self, action):
-        func_name = "guard_{}".format(action)
-        module = self.get_module()
-        func = getattr(module, func_name, None)
-        if func:
-            return func(self.context)
-        return True
 
 
 def get_previous_status(instance, default=None):
@@ -94,6 +79,12 @@ def ship_sample(sample, shipment):
     set_field_value(sample, "OutboundShipment", shipment_uid)
     doActionFor(sample, "ship")
 
+    # Revoke edition permissions of analyses
+    revoke_analyses_permissions(sample)
+
+    # Reindex the sample
+    sample.reindexObject()
+
 
 def recover_sample(sample, shipment=None):
     """Recovers a sample from a shipment
@@ -123,12 +114,8 @@ def recover_sample(sample, shipment=None):
         prev = get_previous_status(sample, default="sample_received")
         changeWorkflowState(sample, "bika_ar_workflow", prev)
 
-    # Transition the "shipped" analyses to their prior status
-    analyses = sample.getAnalyses(full_objects=True, review_state="shipped")
-    for analysis in analyses:
-        prev = get_previous_status(analysis, default="unassigned")
-        changeWorkflowState(analysis, "bika_analysis_workflow", prev)
-        analysis.reindexObject()
+    # Restore analyses permissions
+    restore_analyses_permissions(sample)
 
     # Notify the sample has ben modified
     modified(sample)
@@ -138,3 +125,35 @@ def recover_sample(sample, shipment=None):
 
     # Reindex the shipment
     shipment.reindexObject()
+
+
+def revoke_analyses_permissions(sample):
+    """Revoke edit permissions for analsyes from the sample passed-in
+    """
+    def revoke_permission(obj, perm, roles):
+        try:
+            security.revoke_permission_for(obj, perm, roles)
+        except ValueError as e:
+            # Keep invalid permission silent
+            logger.warn(str(e))
+
+    analyses = sample.getAnalyses(full_objects=True)
+    for analysis in analyses:
+        roles = security.get_valid_roles_for(analysis)
+        revoke_permission(analysis, EditFieldResults, roles)
+        revoke_permission(analysis, EditResults, roles)
+        revoke_permission(analysis, FieldEditAnalysisResult, roles)
+        analysis.reindexObject()
+
+
+def restore_analyses_permissions(sample):
+    """Restore the permissions of the analyses from the sample passed-in
+    """
+    wf_id = "bika_analysis_workflow"
+    wf_tool = api.get_tool("portal_workflow")
+    wf = wf_tool.getWorkflowById(wf_id)
+
+    analyses = sample.getAnalyses(full_objects=True)
+    for analysis in analyses:
+        wf.updateRoleMappingsFor(analysis)
+        analysis.reindexObject()

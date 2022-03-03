@@ -61,17 +61,6 @@ WORKFLOWS_TO_UPDATE = {
             },
         }
     },
-    "bika_analysis_workflow": {
-        "states": {
-            "shipped": {
-                "title": "Referred",
-                "description": "Analysis is referred to reference laboratory",
-                "transitions": (),
-                # Analysis is read-only for regular users
-                "permissions_copy_from": "rejected",
-            }
-        },
-    }
 }
 
 ID_FORMATTING = [
@@ -104,11 +93,6 @@ def setup_handler(context):
 
     # Setup ID formatting
     setup_id_formatting(portal)
-
-
-    #TODO TO REMOVE AFTER TESTING
-    fix_analyses_statuses(portal)
-
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
 
@@ -361,16 +345,3 @@ def setup_id_formatting(portal, format_definition=None):
         ids.append(record)
     ids.append(format_definition)
     bs.setIDFormatting(ids)
-
-
-def fix_analyses_statuses(portal):
-    from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
-    from senaite.referral.workflow.analysisrequest import after_ship
-    query = {
-        "portal_type": "AnalysisRequest",
-        "review_state": "shipped",
-    }
-    brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
-    for brain in brains:
-        sample = api.get_object(brain)
-        after_ship(sample)
