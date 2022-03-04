@@ -45,3 +45,15 @@ class InboundSampleShipmentGuardAdapter(BaseGuardAdapter):
         if not samples:
             return False
         return True
+
+
+@implementer(IGuardAdapter)
+class OutboundSampleShipmentGuardAdapter(BaseGuardAdapter):
+
+    def guard_dispatch(self):
+        """Returns true if the outbound shipment can be dispatched
+        """
+        samples = self.context.get_samples()
+        if not samples:
+            return False
+        return True
