@@ -98,6 +98,7 @@ def setup_handler(context):
     #TODO TO REMOVE AFTER TESTING
     fix_analyses_permissions(portal)
     fix_inbound_shipments_review_history(portal)
+    fix_inbound_shipments_samples(portal)
 
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
@@ -389,3 +390,28 @@ def fix_inbound_shipments_review_history(portal):
         shipment.workflow_history[wf_id] = tuple(new_history)
 
     logger.info("Fixing inbound shipments review history [DONE]")
+
+def fix_inbound_shipments_samples(portal):
+    import copy
+    logger.info("Fixing inbound shipments samples ...")
+    query = {
+        "portal_type": "InboundSampleShipment",
+    }
+    for brain in api.search(query):
+        shipment = api.get_object(brain)
+        new_samples = []
+        old_samples = shipment.get_samples()
+        for sample in old_samples:
+            if api.is_uid(sample) or api.is_object(sample):
+                new_samples.append(api.get_uid(sample))
+                continue
+
+            required = ["sample_type", "date_sampled"]
+            values = map(lambda key: sample.get(key), required)
+            if all(values):
+                new_sample = copy.deepcopy(sample)
+                new_samples.append(new_sample)
+
+        shipment.set_samples(new_samples)
+        shipment.reindexObject()
+    logger.info("Fixing inbound shipments samples [DONE]")
