@@ -8,19 +8,10 @@ from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils.analysisrequest import create_analysisrequest
 
 
-def after_receive(shipment):
-    """ Event fired after transition "received" for an Inbound Sample Shipment
-    is triggered. System creates the samples defined in the inbound shipment
-    as required
-    with the following criteria:
-    - The Client contact is the contact id provided if exists. Picks the first
-      client contact otherwise. If client does not have a contact, system
-      creates a default one automatically.
-    - The original sample ID (from the referring lab) is stored in Client Sample
-      ID field for traceability purposes.
-    - The Analyses to create are resolved based on the keywords mapping
-    - The Sample Types are resolved based on the sample types mapping
-    - The Containers are resolved based on the containers mapping
+def after_receive_inbound_shipment(shipment):
+    """ Event fired after transition "receive_inbounf_shipment" for an Inbound
+    Sample Shipment is triggered. System creates the counterpart samples in
+    current instance
     """
     request = api.get_request()
     shipment_uid = api.get_uid(shipment)
