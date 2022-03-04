@@ -97,6 +97,7 @@ def setup_handler(context):
 
     #TODO TO REMOVE AFTER TESTING
     fix_analyses_permissions(portal)
+    fix_inbound_shipments_review_history(portal)
 
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
@@ -352,9 +353,12 @@ def setup_id_formatting(portal, format_definition=None):
     bs.setIDFormatting(ids)
 
 
+# TODO Remove functions below after testing
+
 def fix_analyses_permissions(portal):
     from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
     from senaite.referral.workflow import revoke_analyses_permissions
+    logger.info("Fixing analyses permissions ...")
     query = {
         "portal_type": "AnalysisRequest",
         "review_state": "shipped",
@@ -363,3 +367,25 @@ def fix_analyses_permissions(portal):
     for brain in brains:
         sample = api.get_object(brain)
         revoke_analyses_permissions(sample)
+    logger.info("Fixing analyses permissions [DONE]")
+
+def fix_inbound_shipments_review_history(portal):
+    logger.info("Fixing inbound shipments review history ...")
+    wf_id = "senaite_inbound_shipment_workflow"
+    query = {
+        "portal_type": "InboundSampleShipment",
+    }
+    for brain in api.search(query):
+        shipment = api.get_object(brain)
+        new_history = []
+        old_history = api.get_review_history(shipment, rev=False)
+        for event in old_history:
+            new_event = event.copy()
+            action = new_event.get("action")
+            if action in ["receive", "reject"]:
+                action = "{}_inbound_shipment".format(action)
+                new_event.update({"action": action})
+            new_history.append(new_event)
+        shipment.workflow_history[wf_id] = tuple(new_history)
+
+    logger.info("Fixing inbound shipments review history [DONE]")
