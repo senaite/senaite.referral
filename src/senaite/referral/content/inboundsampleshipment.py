@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import collections
 from AccessControl import ClassSecurityInfo
 from plone.autoform import directives
 from plone.dexterity.content import Container
@@ -12,7 +11,6 @@ from senaite.referral.interfaces import IInboundSampleShipment
 from senaite.referral.utils import get_action_date
 from senaite.referral.utils import get_uids_field_value
 from senaite.referral.utils import set_uids_field_value
-from senaite.referral.utils import to_uids
 from zope import schema
 from zope.interface import implementer
 from zope.interface import invariant
