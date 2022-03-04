@@ -2,6 +2,7 @@
 
 from senaite.referral import check_installed
 from senaite.referral.utils import get_field_value
+from senaite.referral.workflow import revoke_analyses_permissions
 from senaite.referral.workflow import ship_sample
 
 from bika.lims import EditFieldResults
@@ -41,10 +42,4 @@ def after_no_sampling_workflow(sample):
 def after_ship(sample):
     """Automatically revoke edit permissions for analyses from this sample
     """
-    analyses = sample.getAnalyses(full_objects=True)
-    for analysis in analyses:
-        roles = security.get_valid_roles_for(analysis)
-        security.revoke_permission_for(analysis, EditFieldResults, roles)
-        security.revoke_permission_for(analysis, EditResults, roles)
-        security.revoke_permission_for(analysis, FieldEditAnalysisResult, roles)
-        analysis.reindexObject()
+    revoke_analyses_permissions(sample)
