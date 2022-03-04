@@ -227,12 +227,12 @@ class InboundSampleShipment(Container):
     def get_received_datetime(self):
         """Returns the datetime when this shipment was received or None
         """
-        return get_action_date(self, "receive", default=None)
+        return get_action_date(self, "receive_inbound_shipment", default=None)
 
     def get_rejected_datetime(self):
         """Returns the datetime when this shipment was rejected or None
         """
-        return get_action_date(self, "reject", default=None)
+        return get_action_date(self, "reject_inbound_shipment", default=None)
 
     def get_cancelled_datetime(self):
         """Returns the datetime when this shipment was rejected or None

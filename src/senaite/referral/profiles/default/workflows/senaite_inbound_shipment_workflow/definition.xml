@@ -22,8 +22,8 @@
 
   <!-- State: due -->
   <state state_id="due" title="Due" i18n:attributes="title">
-    <exit-transition transition_id="receive" />
-    <exit-transition transition_id="reject" />
+    <exit-transition transition_id="receive_inbound_shipment" />
+    <exit-transition transition_id="reject_inbound_shipment" />
 
     <!-- Plone's permissions -->
     <permission-map name="Access contents information" acquired="True" />
@@ -35,7 +35,7 @@
 
   <!-- State: received -->
   <state state_id="received" title="Received" i18n:attributes="title">
-    <exit-transition transition_id="reject" />
+    <exit-transition transition_id="reject_inbound_shipment" />
 
     <!-- Plone's permissions -->
     <permission-map name="Access contents information" acquired="True" />
@@ -57,19 +57,19 @@
     <permission-map name="View" acquired="True" />
   </state>
 
-  <!-- Transition: receive -->
-  <transition transition_id="receive" title="Receive" new_state="received" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+  <!-- Transition: receive_inbound_shipment -->
+  <transition transition_id="receive_inbound_shipment" title="Receive" new_state="received" trigger="USER" before_script="" after_script="" i18n:attributes="title">
     <action url="" category="workflow" icon="">Receive</action>
     <guard>
-      <guard-expression>python:here.guard_handler("receive")</guard-expression>
+      <guard-expression>python:here.guard_handler("receive_inbound_shipment")</guard-expression>
     </guard>
   </transition>
 
-  <!-- Transition: reject -->
-  <transition transition_id="reject" title="Reject" new_state="rejected" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+  <!-- Transition: reject_inbound_shipment -->
+  <transition transition_id="reject_inbound_shipment" title="Reject" new_state="rejected" trigger="USER" before_script="" after_script="" i18n:attributes="title">
     <action url="" category="workflow" icon="">Reject</action>
     <guard>
-      <guard-expression>python:here.guard_handler("reject")</guard-expression>
+      <guard-expression>python:here.guard_handler("reject_inbound_shipment")</guard-expression>
     </guard>
   </transition>
 
