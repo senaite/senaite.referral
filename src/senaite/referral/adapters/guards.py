@@ -6,10 +6,7 @@ from zope.interface import implementer
 from bika.lims.interfaces import IGuardAdapter
 
 
-@implementer(IGuardAdapter)
-class SampleGuardAdapter(object):
-    """Adapter for Sample guards
-    """
+class BaseGuardAdapter(object):
 
     def __init__(self, context):
         self.context = context
@@ -24,9 +21,27 @@ class SampleGuardAdapter(object):
         # No guard intercept here
         return True
 
+
+@implementer(IGuardAdapter)
+class SampleGuardAdapter(BaseGuardAdapter):
+    """Adapter for Sample guards
+    """
+
     def guard_cancel(self):
         """Returns true if the sample was not created from a Sample Shipment
         """
         if is_from_shipment(self.context):
+            return False
+        return True
+
+
+@implementer(IGuardAdapter)
+class InboundSampleShipmentGuardAdapter(BaseGuardAdapter):
+
+    def guard_receive_inbound_shipment(self):
+        """Returns true if the inbound shipment can be fully received
+        """
+        samples = self.context.get_samples()
+        if not samples:
             return False
         return True

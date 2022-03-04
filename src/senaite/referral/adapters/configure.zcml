@@ -22,6 +22,13 @@
     factory=".guards.SampleGuardAdapter"
     name="senaite.referral.adapter.guard.sample" />
 
+  <!-- Guard handler for InboundSampleShipment content type -->
+  <adapter
+      for="senaite.referral.interfaces.IInboundSampleShipment"
+      provides="bika.lims.interfaces.IGuardAdapter"
+      factory=".guards.InboundSampleShipmentGuardAdapter"
+      name="senaite.referral.adapter.guard.inbound_sample_shipment" />
+
   <!-- Default value for OutboundShipment field in Add Sample form -->
   <adapter
     for="*"
