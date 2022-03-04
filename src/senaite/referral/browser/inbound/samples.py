@@ -2,6 +2,7 @@
 import collections
 from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
+from bika.lims.utils import get_link
 from bika.lims.utils import get_link_for
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
@@ -16,7 +17,7 @@ class SamplesListingView(ListingView):
 
         self.title = _("Samples")
         self.icon = get_image_url("shipment_samples_big.png")
-        self.show_select_column = True
+        self.show_select_column = False
         self.show_search = False
 
         # Query is ignored in `folderitems` method and only there to override
@@ -27,6 +28,22 @@ class SamplesListingView(ListingView):
         self.columns = collections.OrderedDict((
             ("sample_id", {
                 "title": _("Sample ID"),
+                "sortable": False,
+            }),
+            ("client", {
+                "title": _("Client"),
+                "sortable": False,
+            }),
+            ("sample_type", {
+                "title": _("Sample Type"),
+                "sortable": False,
+            }),
+            ("date_sampled", {
+                "title": _("Sampled"),
+                "sortable": False,
+            }),
+            ("analyses", {
+                "title": _("Analyses"),
                 "sortable": False,
             }),
         ))
@@ -94,14 +111,35 @@ class SamplesListingView(ListingView):
         item = self.make_empty_item()
 
         if api.is_object(sample):
+            sample = api.get_object(sample)
+            date_sampled = sample.getDateSampled()
+            sample_type = sample.getSampleType()
+            client = sample.getClient()
+            analyses = map(lambda an: an.getKeyword, sample.getAnalyses())
+            analyses = list(collections.OrderedDict.fromkeys(analyses))
             item.update({
                 "uid": api.get_uid(sample),
                 "sample_id": api.get_id(sample),
+                "client": api.get_title(client),
+                "sample_type": api.get_id(sample_type),
+                "date_sampled": date_sampled.strftime("%Y-%m-%d"),
+                "analyses": ", ".join(analyses),
             })
-            item["replace"]["sample_id"] = get_link_for(sample)
+            sample_link = get_link_for(sample)
+            csid = sample.getClientSampleID()
+            if csid:
+                sample_link = "{} &rarr; {}".format(csid, sample_link)
+
+            item["replace"]["sample_id"] = sample_link
+            item["replace"]["sample_type"] = get_link_for(sample_type)
+            item["replace"]["client"] = get_link_for(client)
         else:
             item.update({
-                "sample_id": sample.get("id", "")
+                "sample_id": sample.get("id", ""),
+                "client": sample.get("client", ""),
+                "sample_type": sample.get("sample_type", ""),
+                "date_sampled": sample.get("date_sampled", ""),
+                "analyses": ", ".join(sample.get("analyses", [])),
             })
 
         return item
