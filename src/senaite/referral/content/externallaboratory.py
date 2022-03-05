@@ -90,7 +90,7 @@ class IExternalLaboratorySchema(model.Schema):
     )
 
     referring_client = schema.Choice(
-        title=_("ulabel_externallaboratory_referring_client",
+        title=_(u"label_externallaboratory_referring_client",
                 default=u"Default client"),
         description=_(
             U"The default client for inbound sample shipments received from "
