@@ -20,11 +20,17 @@
 
 from Products.DCWorkflow.Guard import Guard
 from senaite.referral import logger
+from senaite.referral.catalog.inbound_sample_catalog import InboundSampleCatalog
 from senaite.referral.config import PRODUCT_NAME
 from senaite.referral.config import PROFILE_ID
 from senaite.referral.config import UNINSTALL_ID
 
 from bika.lims import api
+
+
+CATALOGS = (
+    InboundSampleCatalog,
+)
 
 # Tuples of (folder_id, folder_name, type)
 PORTAL_FOLDERS = [
@@ -93,6 +99,9 @@ def setup_handler(context):
 
     # Setup ID formatting
     setup_id_formatting(portal)
+
+    # Setup catalogs
+    setup_catalogs(portal)
 
 
     #TODO TO REMOVE AFTER TESTING
@@ -352,6 +361,104 @@ def setup_id_formatting(portal, format_definition=None):
         ids.append(record)
     ids.append(format_definition)
     bs.setIDFormatting(ids)
+
+
+def setup_catalogs(portal):
+    """Setup referral catalogs
+    """
+    logger.info("Setup referral catalogs ...")
+
+    # TODO 2.x Replace **ALL** logic from this function by:
+    #  from senaite.core.setuphandlers import setup_core_catalogs
+    #  setup_core_catalogs(portal, catalog_classes=CATALOGS)
+
+    from Acquisition import aq_base
+    from Products.GenericSetup.utils import _resolveDottedName
+    from senaite.referral.core.api.catalog import add_column
+    from senaite.referral.core.api.catalog import add_index
+    from senaite.referral.core.api.catalog import get_columns
+    from senaite.referral.core.api.catalog import get_indexes
+    from senaite.referral.core.api.catalog import reindex_index
+
+    def add_catalog_column(catalog, column):
+        columns = get_columns(catalog)
+        if column in columns:
+            logger.info("*** Column '%s' already in catalog '%s'"
+                        % (column, catalog.id))
+            return False
+        add_column(catalog, column)
+        logger.info("*** Added column '%s' to catalog '%s'"
+                    % (column, catalog.id))
+        return True
+
+    def add_catalog_index(catalog, idx_id, idx_attr, idx_type):
+        indexes = get_indexes(catalog)
+        # check if the index exists
+        if idx_id in indexes:
+            logger.info("*** %s '%s' already in catalog '%s'"
+                        % (idx_type, idx_id, catalog.id))
+            return False
+        # create the index
+        add_index(catalog, idx_id, idx_type, indexed_attrs=idx_attr)
+        logger.info("*** Added %s '%s' for catalog '%s'"
+                    % (idx_type, idx_id, catalog.id))
+        return True
+
+    def reindex_catalog_index(catalog, index):
+        catalog_id = catalog.id
+        logger.info("*** Indexing new index '%s' in '%s' ..."
+                    % (index, catalog_id))
+        reindex_index(catalog, index)
+        logger.info("*** Indexing new index '%s' in '%s' [DONE]"
+                    % (index, catalog_id))
+
+    at = api.get_tool("archetype_tool")
+
+    # contains tuples of (catalog, index) pairs
+    to_reindex = []
+
+    for cls in CATALOGS:
+        module = _resolveDottedName(cls.__module__)
+
+        # get the required attributes from the module
+        catalog_id = module.CATALOG_ID
+        catalog_indexes = module.INDEXES
+        catalog_columns = module.COLUMNS
+        catalog_types = module.TYPES
+
+        catalog = getattr(aq_base(portal), catalog_id, None)
+        if catalog is None:
+            catalog = cls()
+            catalog._setId(catalog_id)
+            portal._setObject(catalog_id, catalog)
+
+        # catalog indexes
+        for idx_id, idx_attr, idx_type in catalog_indexes:
+            if add_catalog_index(catalog, idx_id, idx_attr, idx_type):
+                to_reindex.append((catalog, idx_id))
+            else:
+                continue
+
+        # catalog columns
+        for column in catalog_columns:
+            add_catalog_column(catalog, column)
+
+        # map allowed types to this catalog in archetype_tool
+        for portal_type in catalog_types:
+            # check existing catalogs
+            catalogs = at.getCatalogsByType(portal_type)
+            if catalog not in catalogs:
+                existing = list(map(lambda c: c.getId(), catalogs))
+                new_catalogs = existing + [catalog_id]
+                at.setCatalogsByType(portal_type, new_catalogs)
+                logger.info("*** Mapped catalog '%s' for type '%s'"
+                            % (catalog_id, portal_type))
+
+    # reindex new indexes
+    for catalog, idx_id in to_reindex:
+        reindex_catalog_index(catalog, idx_id)
+
+    logger.info("Setup referral catalogs [DONE]")
 
 
 # TODO Remove functions below after testing

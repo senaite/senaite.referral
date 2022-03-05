@@ -1,0 +1,17 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="senaite.referral">
+
+  <!-- InboundSample Indexes and metadata columns -->
+  <adapter name="date_sampled" factory=".indexers.date_sampled"/>
+  <adapter name="laboratory_code" factory=".indexers.laboratory_code"/>
+  <adapter name="laboratory_title" factory=".indexers.laboratory_title"/>
+  <adapter name="laboratory_uid" factory=".indexers.laboratory_uid"/>
+  <adapter name="referring_id" factory=".indexers.referring_id"/>
+  <adapter name="sample_id" factory=".indexers.sample_id"/>
+  <adapter name="sample_uid" factory=".indexers.sample_uid"/>
+  <adapter name="shipment_id" factory=".indexers.shipment_id"/>
+  <adapter name="shipment_uid" factory=".indexers.shipment_uid"/>
+  <adapter name="inbound_sample_searchable_text" factory=".indexers.inbound_sample_searchable_text"/>
+
+</configure>

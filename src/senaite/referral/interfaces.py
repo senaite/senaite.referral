@@ -76,3 +76,18 @@ class IShipmentFolder(IContentFolder):
     that is used to display InboundSampleShipment and OutboundSampleShipment
     objects from inside ExternalLaboratory objects
     """
+
+
+class ISenaiteReferralCatalogObject(Interface):
+    """Marker interface for referral catalog objects
+    """
+
+
+class ISenaiteReferralCatalog(ISenaiteReferralCatalogObject):
+    """Marker interface for referral catalog
+    """
+
+
+class IInboundSampleCatalog(ISenaiteReferralCatalogObject):
+    """Marker interface for Inbound Sample Catalog
+    """

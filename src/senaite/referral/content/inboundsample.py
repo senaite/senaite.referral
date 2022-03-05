@@ -7,6 +7,7 @@ from plone.dexterity.content import Container
 from plone.supermodel import model
 from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
+from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.interfaces import IInboundSample
 from senaite.referral.utils import get_action_date
 from senaite.referral.utils import get_uids_field_value
@@ -23,23 +24,32 @@ from bika.lims import api
 def is_referring_id_unique(instance, referring_id):
     """Checks whether the referring id passed-in is unique
     """
-    query = {
-        "portal_type": "InboundSample",
-        "filters": [
-            {"getReferringID", referring_id}
-        ]
-    }
-    obj = search(query, catalog="portal_catalog")
-    if len(obj) > 1:
+    query = {"portal_type": "InboundSample", "referring_id": referring_id }
+    brains = api.search(query, catalog=INBOUND_SAMPLE_CATALOG)
+    if not brains:
+        return True
+    elif len(brains) > 1:
         return False
-    elif len(obj) == 1 and obj != instance:
-        return False
-    return True
+
+    obj = api.get_object(brains[0])
+    return obj == instance
 
 
 class IInboundSampleSchema(model.Schema):
     """InboundSample content type schema
     """
+
+    directives.omitted("title")
+    title = schema.TextLine(
+        title=u"Title",
+        required=False
+    )
+
+    directives.omitted("description")
+    description = schema.Text(
+        title=u"Description",
+        required=False
+    )
 
     referring_id = schema.TextLine(
         title=_(u"label_inboundsample_referring_id", default=u"Original ID"),
@@ -118,7 +128,7 @@ class InboundSample(Container):
     """Sample sent by a referring laboratory through an Inbound Sample Shipment
     """
 
-    _catalogs = ["portal_catalog", ]
+    _catalogs = [INBOUND_SAMPLE_CATALOG, ]
 
     security = ClassSecurityInfo()
     exclude_from_nav = True
@@ -140,6 +150,27 @@ class InboundSample(Container):
         if fieldname not in schema:
             return None
         return schema[fieldname].set
+
+    def Title(self):
+        """Returns the unique ID provided by the referring laboratory
+        """
+        referring_id = self.getReferringID()
+        return referring_id.encode("utf8")
+
+    @security.protected(permissions.View)
+    def getInboundShipment(self):
+        """Returns the inbound shipment this inbound sample belongs to
+        """
+        shipment = api.get_parent(self)
+        return shipment
+
+    @security.protected(permissions.View)
+    def getReferringLaboratory(self):
+        """Returns the laboratory that referred the shipment this inbound
+        sample belongs to
+        """
+        shipment = self.getInboundShipment()
+        return shipment.getReferringLaboratory()
 
     @security.protected(permissions.View)
     def getReferringID(self):
@@ -224,6 +255,16 @@ class InboundSample(Container):
     @security.protected(permissions.View)
     def getSample(self):
         """Returns the AnalysisRequest object type counterpart in current
+        instance, if any
+        """
+        uid = self.getSampleUID()
+        if api.is_uid(uid):
+            return api.get_object_by_uid(uid)
+        return None
+
+    @security.protected(permissions.View)
+    def getSampleUID(self):
+        """Returns the UID of the AnalysisRequest counterpart in current
         instance, if any
         """
         value = get_uids_field_value(self, "sample")
