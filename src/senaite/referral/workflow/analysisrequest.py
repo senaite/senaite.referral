@@ -5,10 +5,6 @@ from senaite.referral.utils import get_field_value
 from senaite.referral.workflow import revoke_analyses_permissions
 from senaite.referral.workflow import ship_sample
 
-from bika.lims import EditFieldResults
-from bika.lims import EditResults
-from bika.lims import FieldEditAnalysisResult
-from bika.lims.api import security
 from bika.lims.workflow import doActionFor
 
 
