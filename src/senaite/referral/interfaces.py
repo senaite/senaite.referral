@@ -56,6 +56,11 @@ class IExternalLaboratoryFolder(IContentFolder):
     """
 
 
+class IInboundSample(Interface):
+    """Marker interface for InboundSample type objects
+    """
+
+
 class IInboundSampleShipment(Interface):
     """Marker interface for InboundSampleShipment type objects
     """

@@ -2,6 +2,7 @@
 <object name="portal_types">
   <object remove="True" name="ExternalLaboratory" meta_type="Dexterity FTI" />
   <object remove="True" name="ExternalLaboratoryFolder" meta_type="Dexterity FTI" />
+  <object remove="True" name="InboundSample" meta_type="Dexterity FTI" />
   <object remove="True" name="InboundSampleShipment" meta_type="Dexterity FTI" />
   <object remove="True" name="OutboundSampleShipment" meta_type="Dexterity FTI" />
 </object>

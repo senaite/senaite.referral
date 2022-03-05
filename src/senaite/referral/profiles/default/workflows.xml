@@ -2,6 +2,7 @@
 <object name="portal_workflow" meta_type="Plone Workflow Tool">
 
   <!-- senaite.referral-specific workflows -->
+  <object name="senaite_inbound_sample_workflow" meta_type="Workflow"/>
   <object name="senaite_inbound_shipment_workflow" meta_type="Workflow"/>
   <object name="senaite_outbound_shipment_workflow" meta_type="Workflow"/>
 
@@ -21,6 +22,9 @@
     </type>
 
     <!-- Binding to referral-specific workflows -->
+    <type type_id="InboundSample">
+      <bound-workflow workflow_id="senaite_inbound_sample_workflow"/>
+    </type>
     <type type_id="InboundSampleShipment">
       <bound-workflow workflow_id="senaite_inbound_shipment_workflow"/>
     </type>
