@@ -58,7 +58,7 @@ class InboundShipmentConsumer(object):
                 raise ValueError("Inbound shipment already exists: {}"
                                  .format(shipment_id))
 
-        # Create the Inbound Shipment
+        # Create the Inbound Shipment and the Inbound Samples
         comments = self.data.get("comments", "")
         values = {
             "shipment_id": str(shipment_id),
@@ -69,12 +69,8 @@ class InboundShipmentConsumer(object):
             "samples": sample_records,
         }
         shipment = api.create(lab, "InboundSampleShipment", **values)
-        if not api.is_object(shipment):
-            raise ValueError("Cannot create the Inbound shipment")
-
-        # Create the Inbound Samples inside
         for record in sample_records:
-            inbound_sample = self.create_inbound_sample(shipment, record)
+            self.create_inbound_sample(shipment, record)
 
         return True
 
