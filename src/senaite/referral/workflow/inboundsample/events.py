@@ -25,8 +25,11 @@ def after_receive_inbound_sample(inbound_sample):
     shipment = inbound_sample.getInboundShipment()
     set_field_value(sample, "InboundShipment", api.get_uid(shipment))
 
-    # Try to transition the whole shipment
-    doActionFor(shipment, "receive_inbound_shipment")
+    # If all inbound samples have been transitioned, try with the whole shipment
+    received = shipment.getInboundSamples()
+    received = map(lambda i: api.get_review_status(i) == "received", received)
+    if all(received):
+        doActionFor(shipment, "receive_inbound_shipment")
 
 
 def create_sample(inbound_sample):
