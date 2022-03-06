@@ -22,7 +22,9 @@ class InboundSampleShipmentFolderView(ListingView):
         self.title = _("Inbound sample shipments")
         self.icon = get_image_url("inbound_shipment_big.png")
         self.show_select_row = False
-        self.show_select_column = True
+
+        # We do not want the user to transition inbound shipments directly!
+        self.show_select_column = False
 
         self.catalog = "portal_catalog"
 
