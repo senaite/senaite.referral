@@ -4,6 +4,7 @@ from senaite.referral.utils import is_from_shipment
 from zope.interface import implementer
 
 from bika.lims.interfaces import IGuardAdapter
+from bika.lims.workflow import isTransitionAllowed as is_transition_allowed
 
 
 class BaseGuardAdapter(object):
@@ -39,12 +40,14 @@ class SampleGuardAdapter(BaseGuardAdapter):
 class InboundSampleShipmentGuardAdapter(BaseGuardAdapter):
 
     def guard_receive_inbound_shipment(self):
-        """Returns true if the inbound shipment can be fully received
+        """Returns true if the inbound shipment contains at least one inbound
+        sample not yet received
         """
-        samples = self.context.get_samples()
-        if not samples:
-            return False
-        return True
+        action_id = "receive_inbound_sample"
+        for inbound_sample in self.context.getInboundSamples():
+            if is_transition_allowed(inbound_sample, action_id):
+                return True
+        return False
 
 
 @implementer(IGuardAdapter)

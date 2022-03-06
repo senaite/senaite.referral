@@ -1,6 +1,12 @@
 <configure
-    xmlns="http://namespaces.zope.org/zope"
-    i18n_domain="senaite.referral">
+  xmlns="http://namespaces.zope.org/zope"
+  i18n_domain="senaite.referral">
+
+  <!-- After event handler for InboundSample -->
+  <subscriber
+    for="senaite.referral.interfaces.IInboundSample
+         Products.DCWorkflow.interfaces.IAfterTransitionEvent"
+    handler=".inboundsample.AfterTransitionEventHandler" />
 
   <!-- After event handler for InboundSampleShipment -->
   <subscriber
