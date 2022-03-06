@@ -53,6 +53,11 @@ class SamplesListingView(ListingView):
                 "title": _("Analyses"),
                 "sortable": False,
             }),
+            ("state_title", {
+                "title": _("State"),
+                "sortable": True,
+                "index": "review_state"
+            }),
         ))
 
         self.review_states = [
@@ -134,7 +139,7 @@ class SamplesListingView(ListingView):
                 "client": "",
                 "sample_type": obj.getSampleType(),
                 "date_sampled": date_sampled.strftime("%Y-%m-%d"),
-                "analyses": ", ".join(sample.getAnalyses()),
+                "analyses": ", ".join(obj.getAnalyses()),
             })
 
         return item
