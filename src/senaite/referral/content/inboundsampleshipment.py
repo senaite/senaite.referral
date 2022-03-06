@@ -7,6 +7,7 @@ from plone.supermodel import model
 from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
+from senaite.referral.interfaces import IInboundSample
 from senaite.referral.interfaces import IInboundSampleShipment
 from senaite.referral.utils import get_action_date
 from senaite.referral.utils import get_uids_field_value
@@ -102,12 +103,6 @@ class IInboundSampleShipmentSchema(model.Schema):
             u"Date and time when the shipment was dispatched by the referring "
             u"laboratory"
         ),
-        required=True,
-    )
-
-    directives.omitted("samples")
-    samples = schema.List(
-        title=_(u"Samples"),
         required=True,
     )
 
@@ -238,23 +233,6 @@ class InboundSampleShipment(Container):
         """
         return get_action_date(self, "cancel", default=None)
 
-    def get_samples(self):
-        """Returns the list of samples assigned to this shipment. Samples can
-        either be UIDs (for when shipment has been received) or dicts (when
-        shipment has not been received yet):
-        """
-        samples = self.samples
-        if not samples:
-            return []
-        return samples
-
-    def set_samples(self, value):
-        """Assigns the samples assigned to this shipment
-        """
-        if not isinstance(value, (list, tuple)):
-            value = [value]
-        self.samples = value
-
     @security.protected(permissions.View)
     def getReferringLaboratory(self):
         """Returns the client the samples come from
@@ -292,7 +270,8 @@ class InboundSampleShipment(Container):
         """Returns the inbound samples assigned to this inbound
         sample shipment
         """
-        return self.objectValues("InboundSample")
+        samples = self.objectValues() or []
+        return filter(IInboundSample.providedBy, samples)
 
     @security.protected(permissions.View)
     def getSamplesUIDs(self):

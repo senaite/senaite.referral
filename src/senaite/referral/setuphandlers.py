@@ -499,26 +499,58 @@ def fix_inbound_shipments_review_history(portal):
     logger.info("Fixing inbound shipments review history [DONE]")
 
 def fix_inbound_shipments_samples(portal):
-    import copy
+    import collections
+    from bika.lims.workflow import changeWorkflowState
     logger.info("Fixing inbound shipments samples ...")
     query = {
         "portal_type": "InboundSampleShipment",
     }
     for brain in api.search(query):
         shipment = api.get_object(brain)
-        new_samples = []
-        old_samples = shipment.get_samples()
-        for sample in old_samples:
+        if not hasattr(shipment, "samples"):
+            continue
+
+        for sample in shipment.samples:
             if api.is_uid(sample) or api.is_object(sample):
-                new_samples.append(api.get_uid(sample))
-                continue
+                # A sample was created already for an inbound sample. Let's
+                # create an inbound sample with the information from the sample
+                sample = api.get_object(sample)
+                sample_type = sample.getSampleType()
+                if sample_type:
+                    sample_type = api.get_title(sample_type)
+                keywords = map(lambda an: an.getKeyword, sample.getAnalyses())
+                keywords = list(collections.OrderedDict.fromkeys(keywords))
+                values = {
+                    "referring_id": sample.getClientSampleID(),
+                    "date_sampled": sample.getDateSampled(),
+                    "sample_type": sample_type,
+                    "analyses": keywords,
+                }
+                inbound_sample = api.create(shipment, "InboundSample", **values)
+                inbound_sample.setSample(sample)
+                wf_id = "senaite_inbound_sample_workflow"
+                changeWorkflowState(inbound_sample, wf_id, "received")
+            else:
+                # Not a sample, but a representation of an inbound sample.
+                # Create the inbound sample using this representation
+                required = ["id", "sample_type", "date_sampled"]
+                values = map(lambda key: sample.get(key), required)
+                if not all(values):
+                    # Skip records w/o required info
+                    continue
 
-            required = ["sample_type", "date_sampled"]
-            values = map(lambda key: sample.get(key), required)
-            if all(values):
-                new_sample = copy.deepcopy(sample)
-                new_samples.append(new_sample)
+                # Create the inbound sample
+                date_sampled = sample.get("date_sampled")
+                values = {
+                    "referring_id": sample.get("id"),
+                    "date_sampled": api.to_date(date_sampled),
+                    "sample_type": sample.get("sample_type"),
+                    "analyses": sample.get("analyses", []),
+                }
+                api.create(shipment, "InboundSample", **values)
 
-        shipment.set_samples(new_samples)
+        # Delete the samples attr
+        delattr(shipment, "samples")
         shipment.reindexObject()
+
     logger.info("Fixing inbound shipments samples [DONE]")
