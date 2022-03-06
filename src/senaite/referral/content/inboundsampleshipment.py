@@ -16,6 +16,7 @@ from zope.interface import implementer
 from zope.interface import invariant
 
 from bika.lims import api
+from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 from bika.lims.interfaces import IClient
 
 
@@ -285,3 +286,32 @@ class InboundSampleShipment(Container):
         """
         set_uids_field_value(self, "referring_client", value,
                              validator=check_referring_client)
+
+    @security.protected(permissions.View)
+    def getInboundSamples(self):
+        """Returns the inbound samples assigned to this inbound
+        sample shipment
+        """
+        return self.objectValues("InboundSample")
+
+    @security.protected(permissions.View)
+    def getSamplesUIDs(self):
+        """Returns the UIDs of samples generated because of the partial or fully
+        reception of inbound samples assigned to this inbound shipment
+        """
+        inbound_samples = self.getInboundSamples()
+        uids = map(lambda inbound: inbound.getSampleUID(), inbound_samples)
+        return filter(api.is_uid, uids)
+
+    @security.protected(permissions.View)
+    def getSamples(self):
+        """Returns the samples generated because of the partial or fully
+        reception of inbound samples assigned to this inbound shipment
+        """
+        uids = self.getSamplesUIDs()
+        if not uids:
+            return []
+
+        query = {"portal_type": "AnalysisRequest", "UID": uids}
+        brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
+        return map(api.get_object, brains)

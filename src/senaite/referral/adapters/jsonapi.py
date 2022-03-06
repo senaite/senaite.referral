@@ -58,7 +58,7 @@ class InboundShipmentConsumer(object):
                 raise ValueError("Inbound shipment already exists: {}"
                                  .format(shipment_id))
 
-        # Create the inbound shipment
+        # Create the Inbound Shipment
         comments = self.data.get("comments", "")
         values = {
             "shipment_id": str(shipment_id),
@@ -71,6 +71,10 @@ class InboundShipmentConsumer(object):
         shipment = api.create(lab, "InboundSampleShipment", **values)
         if not api.is_object(shipment):
             raise ValueError("Cannot create the Inbound shipment")
+
+        # Create the Inbound Samples inside
+        for record in sample_records:
+            inbound_sample = self.create_inbound_sample(shipment, record)
 
         return True
 
@@ -124,3 +128,15 @@ class InboundShipmentConsumer(object):
             raise ValueError("Not a referring lab: {}".format(code))
 
         return lab
+
+    def create_inbound_sample(self, shipment, record):
+        """Creates an inbound sample inside the shipment with the information
+        provided
+        """
+        values = {
+            "referring_id": record.get("id"),
+            "date_sampled": record.get("date_sampled"),
+            "sample_type": record.get("sample_type"),
+            "analyses": record.get("analyses"),
+        }
+        return api.create(shipment, "InboundSample", **values)
