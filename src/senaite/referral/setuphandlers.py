@@ -108,7 +108,7 @@ def setup_handler(context):
     fix_analyses_permissions(portal)
     fix_inbound_shipments_review_history(portal)
     fix_inbound_shipments_samples(portal)
-
+    fix_inbound_samples_dates(portal)
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
 
@@ -554,3 +554,16 @@ def fix_inbound_shipments_samples(portal):
         shipment.reindexObject()
 
     logger.info("Fixing inbound shipments samples [DONE]")
+
+def fix_inbound_samples_dates(portal):
+    logger.info("Fixing inbound samples dates ...")
+    from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
+    query = {"portal_type": "InboundSample"}
+    brains = api.search(query, INBOUND_SAMPLE_CATALOG)
+    for brain in brains:
+        obj = api.get_object(brain)
+        date_sampled = obj.getDateSampled()
+        if not api.is_date(date_sampled):
+            date_sampled = api.to_date(date_sampled)
+            obj.setDateSampled(date_sampled)
+    logger.info("Fixing inbound samples dates [DONE]")
