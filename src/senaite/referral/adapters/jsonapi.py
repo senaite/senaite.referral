@@ -2,6 +2,8 @@
 
 import json
 import six
+from senaite.referral.interfaces import IInboundSampleShipment
+
 from bika.lims import api
 from senaite.jsonapi.request import is_json_deserializable
 from senaite.referral import utils
@@ -51,12 +53,13 @@ class InboundShipmentConsumer(object):
         lab = self.get_external_laboratory(lab_code)
 
         # Check if a shipment with the given id and lab exists already
-        # XXX Improve this with shipments own catalog
+        # TODO Improve this with shipments own catalog
         shipment_id = self.data.get("shipment_id")
-        for shipment in lab.objectValues("InboundSamplesShipment"):
-            if shipment.get_shipment_id() == shipment_id:
-                raise ValueError("Inbound shipment already exists: {}"
-                                 .format(shipment_id))
+        for shipment in lab.objectValues():
+            if IInboundSampleShipment.providedBy(shipment):
+                if shipment.get_shipment_id() == shipment_id:
+                    raise ValueError("Inbound shipment already exists: {}"
+                                     .format(shipment_id))
 
         # Create the Inbound Shipment and the Inbound Samples
         comments = self.data.get("comments", "")
@@ -129,9 +132,10 @@ class InboundShipmentConsumer(object):
         """Creates an inbound sample inside the shipment with the information
         provided
         """
+        date_sampled = api.to_date(record.get("date_sampled"))
         values = {
             "referring_id": record.get("id"),
-            "date_sampled": record.get("date_sampled"),
+            "date_sampled": date_sampled,
             "sample_type": record.get("sample_type"),
             "analyses": record.get("analyses"),
         }
