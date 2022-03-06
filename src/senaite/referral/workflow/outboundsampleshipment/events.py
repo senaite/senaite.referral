@@ -26,10 +26,7 @@ def notify_outbound_shipment(shipment):
         logger.error(msg)
         return msg
 
-    lab = shipment.get_reference_laboratory()
-    if api.is_uid(lab):
-        lab = api.get_object(lab)
-
+    lab = shipment.getReferenceLaboratory()
     if not IExternalLaboratory.providedBy(lab):
         # Not an external laboratory!
         msg = "Shipment does not belong to an external lab"

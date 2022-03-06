@@ -3,33 +3,18 @@
 import json
 import re
 import six
+from AccessControl import ClassSecurityInfo
 from plone.autoform import directives
 from plone.dexterity.content import Container
 from plone.supermodel import model
+from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
-from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.interfaces import IOutboundSampleShipment
 from senaite.referral.utils import get_action_date
 from zope import schema
 from zope.interface import implementer
-from zope.interface import invariant
 
 from bika.lims import api
-
-
-def check_reference_laboratory(thing):
-    """Checks if the reference laboratory passed in is valid
-    """
-    obj = api.get_object(thing, default=None)
-    if not IExternalLaboratory.providedBy(obj):
-        raise ValueError("Type is not supported: {}".format(repr(obj)))
-
-    if not obj.get_reference():
-        # The external laboratory must be enabled as reference laboratory
-        raise ValueError("The external laboratory cannot act as a "
-                         "reference laboratory")
-
-    return True
 
 
 class IOutboundSampleShipmentSchema(model.Schema):
@@ -46,15 +31,6 @@ class IOutboundSampleShipmentSchema(model.Schema):
     description = schema.Text(
         title=u"Description",
         required=False
-    )
-
-    reference_laboratory = schema.Choice(
-        title=_(u"label_outboundsampleshipment_reference_laboratory",
-                default=u"Destination reference laboratory"),
-        description=_(u"The external reference laboratory where the shipment "
-                      u"has to be sent"),
-        vocabulary="senaite.referral.vocabularies.referencelaboratories",
-        required=True,
     )
 
     comments = schema.TextLine(
@@ -97,15 +73,6 @@ class IOutboundSampleShipmentSchema(model.Schema):
         required=False,
     )
 
-    @invariant
-    def validate_reference_laboratory(data):
-        """Checks if the value for field referring_laboratory is valid
-        """
-        val = data.reference_laboratory
-        if not val:
-            return
-        check_reference_laboratory(val)
-
 
 @implementer(IOutboundSampleShipment, IOutboundSampleShipmentSchema)
 class OutboundSampleShipment(Container):
@@ -114,6 +81,7 @@ class OutboundSampleShipment(Container):
     """
     _catalogs = ["portal_catalog", ]
     exclude_from_nav = True
+    security = ClassSecurityInfo()
 
     @property
     def shipment_id(self):
@@ -128,24 +96,6 @@ class OutboundSampleShipment(Container):
         return
 
     title = property(_get_title, _set_title)
-
-    def get_reference_laboratory(self):
-        lab = self.reference_laboratory
-        if not lab:
-            return u""
-        return lab
-
-    def set_reference_laboratory(self, value):
-        if api.is_object(value):
-            value = api.get_uid(value)
-
-        value = value.strip()
-        if self.reference_laboratory == value:
-            # nothing changed
-            return
-
-        if check_reference_laboratory(value):
-            self.reference_laboratory = value
 
     def get_comments(self):
         comments = self.comments
@@ -337,3 +287,10 @@ class OutboundSampleShipment(Container):
         """Return whether the status of the shipment is "preparation"
         """
         return api.get_review_status(self) == "preparation"
+
+    @security.protected(permissions.View)
+    def getReferenceLaboratory(self):
+        """Returns the external reference laboratory where the shipment has to
+        be sent
+        """
+        return api.get_parent(self)

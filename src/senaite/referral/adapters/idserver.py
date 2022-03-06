@@ -41,7 +41,8 @@ class IDServerVariablesAdapter(object):
         """Returns the code of the laboratory the shipment is assigned to
         """
         if IOutboundSampleShipment.providedBy(shipment):
-            lab_uid = self.container.get_reference_laboratory()
+            lab = self.container.getReferenceLaboratory()
+            lab_uid = api.get_uid(lab)
         elif IInboundSampleShipment.providedBy(shipment):
             lab_uid = self.container.getReferringLaboratory()
         else:

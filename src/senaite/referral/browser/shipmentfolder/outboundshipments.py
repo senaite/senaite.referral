@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import collections
-from plone.memoize import view
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
 from senaite.referral.utils import get_image_url
 from senaite.referral.utils import translate as t
 
 from bika.lims import api
-from bika.lims.api.user import get_user
 from bika.lims.browser import ulocalized_time
 from bika.lims.utils import get_image
 from bika.lims.utils import get_link
@@ -140,8 +138,7 @@ class OutboundSampleShipmentFolderView(ListingView):
         item["shipment_id"] = shipment_id
         item["replace"]["shipment_id"] = get_link(href, shipment_id)
 
-        reference = obj.get_reference_laboratory()
-        reference = self.get_object(reference)
+        reference = obj.getReferenceLaboratory()
         item["reference_laboratory"] = api.get_title(reference)
         item["replace"]["reference_laboratory"] = get_link_for(reference)
 
@@ -207,10 +204,6 @@ class OutboundSampleShipmentFolderView(ListingView):
         if not date_value:
             return default
         return ulocalized_time(date_value, long_format=show_time)
-
-    @view.memoize
-    def get_object(self, uid):
-        return api.get_object_by_uid(uid)
 
     def get_creator_fullname(self, shipment):
         """Returns the fullname of the user who created the shipment
