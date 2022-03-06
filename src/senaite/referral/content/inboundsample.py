@@ -11,7 +11,6 @@ from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.interfaces import IInboundSample
 from senaite.referral.utils import get_action_date
 from senaite.referral.utils import get_uids_field_value
-from senaite.referral.utils import search
 from senaite.referral.utils import set_uids_field_value
 from zope import schema
 from zope.interface import implementer
