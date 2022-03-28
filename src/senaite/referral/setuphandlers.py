@@ -23,6 +23,7 @@ from senaite.referral import logger
 from senaite.referral.catalog.inbound_sample_catalog import InboundSampleCatalog
 from senaite.referral.config import PRODUCT_NAME
 from senaite.referral.config import PROFILE_ID
+from senaite.referral.config import SAMPLE_FROM_SHIPMENT_TYPE_ID
 from senaite.referral.config import UNINSTALL_ID
 
 from bika.lims import api
@@ -79,6 +80,14 @@ ID_FORMATTING = [
         "counter_type": "",
         "split_length": 2,
     },
+    {
+        "portal_type": SAMPLE_FROM_SHIPMENT_TYPE_ID,
+        "form": "{lab_code}{year}{alpha:2a3d}",
+        "prefix": SAMPLE_FROM_SHIPMENT_TYPE_ID.lower(),
+        "sequence_type": "generated",
+        "counter_type": "",
+        "split_length": 2,
+    }
 ]
 
 

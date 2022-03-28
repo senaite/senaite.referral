@@ -36,6 +36,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
+        "requests",
         "senaite.lims>=1.3.5",
         "senaite.lims<2",
         "senaite.jsonapi",

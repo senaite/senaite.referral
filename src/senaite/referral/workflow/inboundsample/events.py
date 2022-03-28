@@ -59,7 +59,8 @@ def create_sample(inbound_sample):
         "Contact": None,
         "ClientSampleID": inbound_sample.getReferringID(),
         "DateSampled": inbound_sample.getDateSampled(),
-        "SampleType": sample_type_uid
+        "SampleType": sample_type_uid,
+        "InboundShipment": api.get_uid(shipment),
     }
 
     #  Create the sample and assign the shipment

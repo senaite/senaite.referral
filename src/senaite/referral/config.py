@@ -27,3 +27,8 @@ PRODUCT_TYPES = (
     "ExternalLaboratory",
     "ExternalLaboratoryFolder",
 )
+
+# Portal type id used by idserver to identify samples that are created because
+# of the reception of sample shipments (InbounSampleShipments). This allows the
+# custom formatting of the IDs of such type of samples
+SAMPLE_FROM_SHIPMENT_TYPE_ID = "AnalysisRequestFromShipment"
