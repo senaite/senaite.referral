@@ -18,6 +18,8 @@
 # Copyright 2021 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+import copy
+
 from Products.DCWorkflow.Guard import Guard
 from senaite.referral import logger
 from senaite.referral.catalog.inbound_sample_catalog import InboundSampleCatalog
@@ -80,14 +82,6 @@ ID_FORMATTING = [
         "counter_type": "",
         "split_length": 2,
     },
-    {
-        "portal_type": SAMPLE_FROM_SHIPMENT_TYPE_ID,
-        "form": "{lab_code}{year}{alpha:2a3d}",
-        "prefix": SAMPLE_FROM_SHIPMENT_TYPE_ID.lower(),
-        "sequence_type": "generated",
-        "counter_type": "",
-        "split_length": 2,
-    }
 ]
 
 
@@ -108,6 +102,7 @@ def setup_handler(context):
 
     # Setup ID formatting
     setup_id_formatting(portal)
+    setup_sample_from_shipment_id_formatting(portal)
 
     # Setup catalogs
     setup_catalogs(portal)
@@ -370,6 +365,29 @@ def setup_id_formatting(portal, format_definition=None):
         ids.append(record)
     ids.append(format_definition)
     bs.setIDFormatting(ids)
+
+
+def setup_sample_from_shipment_id_formatting(portal):
+    """Setups the ID for Samples generated from an Inbound Shipment. Prepends
+    the code of the referring laboratory to the ID
+    """
+    logger.info("Setting up ID formatting for Inbound samples ...")
+    bs = portal.bika_setup
+    for record in bs.getIDFormatting():
+        if record.get("portal_type", "") == "AnalysisRequest":
+            formatting = copy.deepcopy(record)
+            split_length = formatting.get("split_length")
+            split_length = api.to_int(split_length, 0) + 1
+            formatting.update({
+                "portal_type": SAMPLE_FROM_SHIPMENT_TYPE_ID,
+                "form": "".join(["{lab_code}-", formatting.get("form")]),
+                "prefix": SAMPLE_FROM_SHIPMENT_TYPE_ID.lower(),
+                "split_length": split_length,
+            })
+            setup_id_formatting(portal, format_definition=formatting)
+            break
+
+    logger.info("Setting up ID formatting for Inbound samples [DONE]")
 
 
 def setup_catalogs(portal):
