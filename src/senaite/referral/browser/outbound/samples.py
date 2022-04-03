@@ -21,6 +21,7 @@ class SamplesListingView(ListingView):
         self.title = _("Samples")
         self.icon = get_image_url("shipment_samples_big.png")
         self.show_select_column = True
+        self.show_select_all_checkbox = True
         self.show_search = False
 
         self.catalog = CATALOG_ANALYSIS_REQUEST_LISTING
