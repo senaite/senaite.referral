@@ -33,7 +33,7 @@
     <permission-map name="View" acquired="True" />
   </state>
 
-  <!-- State: ready_for_shipment -->
+  <!-- State: ready -->
   <state state_id="ready" title="Ready for shipment" i18n:attributes="title">
     <exit-transition transition_id="cancel" />
     <exit-transition transition_id="dispatch" />
@@ -46,8 +46,8 @@
     <permission-map name="View" acquired="True" />
   </state>
 
-  <!-- State: undelivered -->
-  <state state_id="undelivered" title="Undelivered" i18n:attributes="title">
+  <!-- State: dispatched -->
+  <state state_id="dispatched" title="Dispatched" i18n:attributes="title">
     <exit-transition transition_id="deliver" />
     <exit-transition transition_id="lose" />
     <exit-transition transition_id="reject" />
@@ -116,7 +116,6 @@
     </guard>
   </transition>
 
-
   <!-- Transition: finalise_outbound_shipment -->
   <transition transition_id="finalise_outbound_shipment" title="Finalise" new_state="ready" trigger="USER" before_script="" after_script="" i18n:attributes="title">
     <action url="" category="workflow" icon="">Finalise</action>
@@ -126,7 +125,7 @@
   </transition>
 
   <!-- Transition: dispatch -->
-  <transition transition_id="dispatch" title="Dispatch" new_state="undelivered" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+  <transition transition_id="dispatch" title="Dispatch" new_state="dispatched" trigger="USER" before_script="" after_script="" i18n:attributes="title">
     <action url="" category="workflow" icon="">Dispatch</action>
     <guard>
       <guard-expression>python:here.guard_handler("dispatch")</guard-expression>

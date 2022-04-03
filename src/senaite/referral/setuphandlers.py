@@ -30,7 +30,6 @@ from senaite.referral.config import UNINSTALL_ID
 
 from bika.lims import api
 
-
 CATALOGS = (
     InboundSampleCatalog,
 )
@@ -594,3 +593,40 @@ def fix_inbound_samples_dates(portal):
             date_sampled = api.to_date(date_sampled)
             obj.setDateSampled(date_sampled)
     logger.info("Fixing inbound samples dates [DONE]")
+
+
+def fix_outbound_shipments_workflow(portal):
+    logger.info("Fixing outbound shipments workflow ...")
+    from bika.lims.utils import changeWorkflowState
+    wf_id = "senaite_outbound_shipment_workflow"
+    query = {
+        "portal_type": "OutboundSampleShipment",
+    }
+    for brain in api.search(query):
+        shipment = api.get_object(brain)
+
+        # Check if the status of the shipment is obsolete
+        undelivered = api.get_review_status(brain) == "undelivered"
+        if undelivered:
+            # undelivered --> dispatched
+            changeWorkflowState(shipment, wf_id, "dispatched")
+
+        new_history = []
+        old_history = api.get_review_history(shipment, rev=False)
+        for event in old_history:
+            new_event = event.copy()
+            status = new_event.get("review_state")
+
+            # undelivered --> dispatched
+            if status == "undelivered":
+                new_event.update({"review_state": "dispatched"})
+
+            if status == "dispatched" and undelivered:
+                # Ship this last event we've added manually
+                continue
+
+            new_history.append(new_event)
+
+        shipment.workflow_history[wf_id] = tuple(new_history)
+
+    logger.info("Fixing outbound shipments workflow [DONE]")

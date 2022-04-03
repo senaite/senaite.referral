@@ -82,7 +82,7 @@ class OutboundSampleShipmentFolderView(ListingView):
                 "id": "default",
                 "title": _("Active"),
                 "contentFilter": {
-                    "review_state": ["preparation", "undelivered"]
+                    "review_state": ["preparation", "ready", "dispatched"]
                 },
                 "columns": self.columns.keys(),
             },
@@ -92,9 +92,14 @@ class OutboundSampleShipmentFolderView(ListingView):
                 "contentFilter": {"review_state": "preparation"},
                 "columns": self.columns.keys(),
             }, {
-                "id": "undelivered",
-                "title": _("Undelivered"),
-                "contentFilter": {"review_state": "undelivered"},
+                "id": "ready",
+                "title": _("Ready"),
+                "contentFilter": {"review_state": "ready"},
+                "columns": self.columns.keys(),
+            }, {
+                "id": "dispatched",
+                "title": _("Dispatched"),
+                "contentFilter": {"review_state": "dispatched"},
                 "columns": self.columns.keys(),
             }, {
                 "id": "delivered",
