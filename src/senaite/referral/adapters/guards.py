@@ -60,7 +60,7 @@ class InboundSampleShipmentGuardAdapter(BaseGuardAdapter):
 @implementer(IGuardAdapter)
 class OutboundSampleShipmentGuardAdapter(BaseGuardAdapter):
 
-    def guard_dispatch(self):
+    def guard_dispatch_outbound_shipment(self):
         """Returns true if the outbound shipment can be dispatched
         """
         samples = self.context.get_samples()

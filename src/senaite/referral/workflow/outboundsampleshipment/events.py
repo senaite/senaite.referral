@@ -12,7 +12,7 @@ from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
 
 
-def after_dispatch(shipment):
+def after_dispatch_outbound_shipment(shipment):
     """ Event fired after transition "dispatch" is triggered
     """
     notify_outbound_shipment(shipment)

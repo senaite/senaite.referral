@@ -22,7 +22,7 @@
 
   <!-- State: preparation -->
   <state state_id="preparation" title="Preparation" i18n:attributes="title">
-    <exit-transition transition_id="cancel" />
+    <exit-transition transition_id="cancel_outbound_shipment" />
     <exit-transition transition_id="finalise_outbound_shipment" />
 
     <!-- Plone's permissions -->
@@ -35,8 +35,8 @@
 
   <!-- State: ready -->
   <state state_id="ready" title="Ready for shipment" i18n:attributes="title">
-    <exit-transition transition_id="cancel" />
-    <exit-transition transition_id="dispatch" />
+    <exit-transition transition_id="cancel_outbound_shipment" />
+    <exit-transition transition_id="dispatch_outbound_shipment" />
 
     <!-- Plone's permissions -->
     <permission-map name="Access contents information" acquired="True" />
@@ -48,9 +48,9 @@
 
   <!-- State: dispatched -->
   <state state_id="dispatched" title="Dispatched" i18n:attributes="title">
-    <exit-transition transition_id="deliver" />
-    <exit-transition transition_id="lose" />
-    <exit-transition transition_id="reject" />
+    <exit-transition transition_id="deliver_outbound_shipment" />
+    <exit-transition transition_id="lose_outbound_shipment" />
+    <exit-transition transition_id="reject_outbound_shipment" />
 
     <!-- Plone's permissions -->
     <permission-map name="Access contents information" acquired="True" />
@@ -109,10 +109,10 @@
   </state>
 
   <!-- Transition: cancel -->
-  <transition transition_id="cancel" title="Cancel" new_state="cancelled" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+  <transition transition_id="cancel_outbound_shipment" title="Cancel" new_state="cancelled" trigger="USER" before_script="" after_script="" i18n:attributes="title">
     <action url="" category="workflow" icon="">Cancel</action>
     <guard>
-      <guard-expression>python:here.guard_handler("cancel")</guard-expression>
+      <guard-expression>python:here.guard_handler("cancel_outbound_shipment")</guard-expression>
     </guard>
   </transition>
 
@@ -124,35 +124,35 @@
     </guard>
   </transition>
 
-  <!-- Transition: dispatch -->
-  <transition transition_id="dispatch" title="Dispatch" new_state="dispatched" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+  <!-- Transition: dispatch_outbound_shipment -->
+  <transition transition_id="dispatch_outbound_shipment" title="Dispatch" new_state="dispatched" trigger="USER" before_script="" after_script="" i18n:attributes="title">
     <action url="" category="workflow" icon="">Dispatch</action>
     <guard>
-      <guard-expression>python:here.guard_handler("dispatch")</guard-expression>
+      <guard-expression>python:here.guard_handler("dispatch_outbound_shipment")</guard-expression>
     </guard>
   </transition>
 
-  <!-- Transition: reject -->
-  <transition transition_id="reject" title="Reject" new_state="rejected" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+  <!-- Transition: reject_outbound_shipment -->
+  <transition transition_id="reject_outbound_shipment" title="Reject" new_state="rejected" trigger="USER" before_script="" after_script="" i18n:attributes="title">
     <action url="" category="workflow" icon="">Reject</action>
     <guard>
-      <guard-expression>python:here.guard_handler("reject")</guard-expression>
+      <guard-expression>python:here.guard_handler("reject_outbound_shipment")</guard-expression>
     </guard>
   </transition>
 
-  <!-- Transition: deliver -->
-  <transition transition_id="deliver" title="Deliver" new_state="delivered" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+  <!-- Transition: deliver_outbound_shipment -->
+  <transition transition_id="deliver_outbound_shipment" title="Deliver" new_state="delivered" trigger="USER" before_script="" after_script="" i18n:attributes="title">
     <action url="" category="workflow" icon="">Deliver</action>
     <guard>
-      <guard-expression>python:here.guard_handler("deliver")</guard-expression>
+      <guard-expression>python:here.guard_handler("deliver_outbound_shipment")</guard-expression>
     </guard>
   </transition>
 
   <!-- Transition: lose -->
-  <transition transition_id="lose" title="Lost" new_state="lost" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+  <transition transition_id="lose_outbound_shipment" title="Lost" new_state="lost" trigger="USER" before_script="" after_script="" i18n:attributes="title">
     <action url="" category="workflow" icon="">Lost</action>
     <guard>
-      <guard-expression>python:here.guard_handler("lose")</guard-expression>
+      <guard-expression>python:here.guard_handler("lose_outbound_shipment")</guard-expression>
     </guard>
   </transition>
 

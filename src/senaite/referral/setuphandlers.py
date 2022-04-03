@@ -598,6 +598,7 @@ def fix_inbound_samples_dates(portal):
 def fix_outbound_shipments_workflow(portal):
     logger.info("Fixing outbound shipments workflow ...")
     from bika.lims.utils import changeWorkflowState
+    action_suffix = "_outbound_shipment"
     wf_id = "senaite_outbound_shipment_workflow"
     query = {
         "portal_type": "OutboundSampleShipment",
@@ -620,10 +621,14 @@ def fix_outbound_shipments_workflow(portal):
             # undelivered --> dispatched
             if status == "undelivered":
                 new_event.update({"review_state": "dispatched"})
-
-            if status == "dispatched" and undelivered:
+            elif status == "dispatched" and undelivered:
                 # Ship this last event we've added manually
                 continue
+
+            action = new_event.get("action")
+            if not action.endswith(action_suffix):
+                action = "{}{}".format(action, action_suffix)
+                new_event.update({"action": action})
 
             new_history.append(new_event)
 

@@ -122,28 +122,28 @@ class OutboundSampleShipment(Container):
         """Returns the datetime when this shipment was dispatched to the
         destination reference laboratory
         """
-        return get_action_date(self, "dispatch", default=None)
+        return get_action_date(self, "dispatch_outbound_shipment", default=None)
 
     def get_delivered_datetime(self):
         """Returns the datetime when this shipment was delivered on the
         destination reference laboratory
         """
-        return get_action_date(self, "deliver", default=None)
+        return get_action_date(self, "deliver_outbound_shipment", default=None)
 
     def get_lost_datetime(self):
         """Returns the datetime when this shipment was labeled as lost
         """
-        return get_action_date(self, "lose", default=None)
+        return get_action_date(self, "lose_outbound_shipment", default=None)
 
     def get_rejected_datetime(self):
         """Returns the datetime when this shipment was rejected or None
         """
-        return get_action_date(self, "reject", default=None)
+        return get_action_date(self, "reject_outbound_shipment", default=None)
 
     def get_cancelled_datetime(self):
         """Returns the datetime when this shipment was rejected or None
         """
-        return get_action_date(self, "cancel", default=None)
+        return get_action_date(self, "cancel_outbound_shipment", default=None)
 
     def get_samples(self):
         """Returns the list of sample uids assigned to this shipment
