@@ -48,6 +48,12 @@ class ExternalLaboratoryFolderView(ListingView):
                 "title": _("Laboratory name"),
                 "index": "sortable_title",
             }),
+            ("reference", {
+                "title": _("Reference"),
+            }),
+            ("referring", {
+                "title": _("Referring"),
+            })
         ))
 
         self.review_states = [
@@ -89,6 +95,9 @@ class ExternalLaboratoryFolderView(ListingView):
         item["replace"]["title"] = obj_link
 
         code = obj.getCode()
-        item["code"] = obj.getCode()
+        item["code"] = code
         item["replace"]["code"] = get_link(href=obj_url, value=code)
+
+        item["reference"] = obj.get_reference()
+        item["referring"] = obj.get_referring()
         return item
