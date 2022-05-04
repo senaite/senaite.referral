@@ -39,15 +39,15 @@ def notify_outbound_shipment(shipment):
         logger.error(msg)
         return msg
 
-    url = lab.get_reference_url()
+    url = lab.getUrl()
     if not is_valid_url(url):
         # External Lab URL not valid
         msg = "External lab's URL is not valid: {}".format(url)
         logger.error(msg)
         return msg
 
-    username = lab.get_reference_username()
-    password = lab.get_reference_password()
+    username = lab.getUsername()
+    password = lab.getPassword()
     if not all([username, password]):
         # Empty username or password
         msg = "No valid credentials"

@@ -108,6 +108,7 @@ def setup_handler(context):
 
 
     #TODO TO REMOVE AFTER TESTING
+    fix_external_connectivity(portal)
     fix_analyses_permissions(portal)
     fix_inbound_shipments_review_history(portal)
     fix_inbound_shipments_samples(portal)
@@ -524,6 +525,7 @@ def fix_inbound_shipments_review_history(portal):
 
     logger.info("Fixing inbound shipments review history [DONE]")
 
+
 def fix_inbound_shipments_samples(portal):
     import collections
     from bika.lims.workflow import changeWorkflowState
@@ -581,6 +583,7 @@ def fix_inbound_shipments_samples(portal):
 
     logger.info("Fixing inbound shipments samples [DONE]")
 
+
 def fix_inbound_samples_dates(portal):
     logger.info("Fixing inbound samples dates ...")
     from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
@@ -635,3 +638,27 @@ def fix_outbound_shipments_workflow(portal):
         shipment.workflow_history[wf_id] = tuple(new_history)
 
     logger.info("Fixing outbound shipments workflow [DONE]")
+
+
+def fix_external_connectivity(portal):
+    logger.info("Fixing connectivity configuration of external labs ...")
+    for lab in portal.external_labs.objectValues():
+        attr_name = "reference_url"
+        if hasattr(lab, attr_name):
+            url = getattr(lab, attr_name, lab.getUrl())
+            lab.setUrl(url)
+            delattr(lab, attr_name)
+
+        attr_name = "reference_username"
+        if hasattr(lab, attr_name):
+            user = getattr(lab, attr_name, lab.getUsername())
+            lab.setUsername(user)
+            delattr(lab, attr_name)
+
+        attr_name = "reference_password"
+        if hasattr(lab, attr_name):
+            password = getattr(lab, attr_name, lab.getPassword())
+            lab.setPassword(password)
+            delattr(lab, attr_name)
+
+    logger.info("Fixing connectivity configuration of external labs [DONE]")

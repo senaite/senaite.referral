@@ -56,10 +56,10 @@ class ShipmentsSupportViewlet(ViewletBase):
         return self.context.get_reference()
 
     def is_valid_lab_url(self):
-        url = self.context.get_reference_url()
+        url = self.context.getUrl()
         return is_valid_url(url)
 
     def is_valid_credentials(self):
-        username = self.context.get_reference_username()
-        password = self.context.get_reference_password()
+        username = self.context.getUsername()
+        password = self.context.getPassword()
         return all([username, password])

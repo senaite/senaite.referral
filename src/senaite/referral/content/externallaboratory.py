@@ -5,6 +5,7 @@ from plone.autoform import directives
 from plone.dexterity.content import Container
 from plone.supermodel import model
 from Products.CMFCore import permissions
+from Products.CMFPlone.utils import safe_unicode
 from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_by_code
@@ -12,6 +13,7 @@ from senaite.referral.utils import get_uids_field_value
 from senaite.referral.utils import is_valid_code
 from senaite.referral.utils import is_valid_url
 from senaite.referral.utils import set_uids_field_value
+from six import string_types
 from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
@@ -47,36 +49,6 @@ class IExternalLaboratorySchema(model.Schema):
         required=False,
     )
 
-    reference_url = schema.TextLine(
-        title=_(u"label_externallaboratory_reference_url", default=u"URL"),
-        description=_(
-            u"URL of the external laboratory. If filled, your system will use "
-            u"this URL to automatically dispatch the samples to the external "
-            u"laboratory"
-        ),
-        required=False,
-    )
-
-    reference_username = schema.TextLine(
-        title=_(u"label_externallaboratory_reference_username",
-                default=u"Username"),
-        description=_(
-            u"Username of the user to use for the automatic creation of inbound "
-            u"sample shipments on the reference laboratory on dispatch"
-        ),
-        required=False,
-    )
-
-    reference_password = schema.Password(
-        title=_(u"label_externallaboratory_reference_password",
-                default=u"Password"),
-        description=_(
-            u"Password of the user to use for the automatic creation of inbound "
-            u"sample shipments on the reference laboratory on dispatch"
-        ),
-        required=False,
-    )
-
     referring = schema.Bool(
         title=_(u"label_externallaboratory_referring",
                 default=u"Referring Laboratory"),
@@ -100,6 +72,44 @@ class IExternalLaboratorySchema(model.Schema):
         required=False,
     )
 
+    url = schema.TextLine(
+        title=_(u"label_externallaboratory_url", default=u"URL"),
+        description=_(
+            u"URL of the external laboratory's SENAITE instance. If the "
+            u"external laboratory is configured as a reference laboratory "
+            u"(destination), your system will use this URL to remotely create "
+            u"the dispatched samples on the destination laboratory. When the "
+            u"external laboratory is configured as a referring laboratory "
+            u"(origin), your system will use this URL to send updates about "
+            u"the referred samples to the laboratory of origin"
+        ),
+        required=False,
+    )
+
+    username = schema.TextLine(
+        title=_(u"label_externallaboratory_username", default=u"Username"),
+        description=_(
+            u"Username of the user account from the external laboratory that"
+            u"will be used for the remote creation of dispatched samples when "
+            u"the external laboratory is configured as a reference laboratory "
+            u"or for updates regarding referred samples when configured as a "
+            u"referring laboratory"
+        ),
+        required=False,
+    )
+
+    password = schema.Password(
+        title=_(u"label_externallaboratory_password", default=u"Password"),
+        description=_(
+            u"Password of the user account from the external laboratory that"
+            u"will be used for the remote creation of dispatched samples when "
+            u"the external laboratory is configured as a reference laboratory "
+            u"or for updates regarding referred samples when configured as a "
+            u"referring laboratory"
+        ),
+        required=False,
+    )
+
     # Make the code the first field
     directives.order_before(code='*')
 
@@ -107,8 +117,7 @@ class IExternalLaboratorySchema(model.Schema):
     model.fieldset(
         "reference_laboratory",
         label=_(u"Reference Laboratory"),
-        fields=["reference", "reference_url", "reference_username",
-                "reference_password"]
+        fields=["reference"]
     )
 
     # Referring Laboratory fieldset
@@ -116,6 +125,13 @@ class IExternalLaboratorySchema(model.Schema):
         "referring_laboratory",
         label=_(u"Referring Laboratory"),
         fields=["referring", "referring_client"]
+    )
+
+    # Connectivity fieldset
+    model.fieldset(
+        "connectivity",
+        label=_(u"Connectivity"),
+        fields=["url", "username", "password"]
     )
 
     @invariant
@@ -139,14 +155,15 @@ class IExternalLaboratorySchema(model.Schema):
             raise Invalid(_("Code must be unique"))
 
     @invariant
-    def validate_reference_url(data):
-        """Checks if the value for field reference_url is a well-formed URL
+    def validate_url(data):
+        """Checks if the value for field url is a well-formed URL
         """
-        if not data.reference_url:
+        if not data.url:
             return
 
-        if not is_valid_url(data.reference_url):
-            raise Invalid(_("Reference URL is not valid"))
+        url = data.url.strip()
+        if not is_valid_url(url):
+            raise Invalid(_("URL is not valid"))
 
     @invariant
     def validate_referring(data):
@@ -178,10 +195,6 @@ class IExternalLaboratorySchema(model.Schema):
 class ExternalLaboratory(Container):
     """Organization that can act as a reference laboratory, as a referring
     laboratory or both
-    Item(PasteBehaviourMixin, BrowserDefaultMixin, DexterityContent):
-
-        PasteBehaviourMixin, DAVCollectionMixin, BrowserDefaultMixin,
-        CMFCatalogAware, CMFOrderedBTreeFolderBase, DexterityContent):
     """
     _catalogs = ["portal_catalog", ]
 
@@ -206,6 +219,29 @@ class ExternalLaboratory(Container):
             return None
         return schema[fieldname].set
 
+    @security.private
+    def set_string_value(self, field_name, value, validator=None):
+        """Stores the value for the field with the given name as unicode
+        """
+        if not isinstance(value, string_types):
+            value = u""
+
+        value = value.strip()
+        if validator:
+            validator(value)
+
+        mutator = self.mutator(field_name)
+        mutator(self, safe_unicode(value))
+
+    @security.private
+    def get_string_value(self, field_name, default=""):
+        """Returns the value stored for the field with the given name as an
+        utf-8 encoded string
+        """
+        accessor = self.accessor(field_name)
+        value = accessor(self) or default
+        return value.encode("utf-8")
+
     def get_reference(self):
         return self.reference
 
@@ -213,15 +249,6 @@ class ExternalLaboratory(Container):
         if self.reference == value:
             return
         self.reference = value
-
-    def get_reference_url(self):
-        return self.reference_url
-
-    def set_reference_url(self, value):
-        value = value.strip()
-        if self.reference_url == value:
-            return
-        self.reference_url = value
 
     def get_referring(self):
         return self.referring
@@ -231,31 +258,10 @@ class ExternalLaboratory(Container):
             return
         self.referring = value
 
-    def get_reference_username(self):
-        return self.reference_username
-
-    def set_reference_username(self, value):
-        value = value.strip()
-        if self.reference_username == value:
-            return
-        self.reference_username = value
-
-    def get_reference_password(self):
-        return self.reference_password
-
-    def set_reference_password(self, value):
-        value = value.strip()
-        if self.reference_password == value:
-            return
-        self.reference_password = value
-
-    @security.protected(permissions.View)
-    def getCode(self):
-        accessor = self.accessor("code")
-        return accessor(self)
-
     @security.protected(permissions.ModifyPortalContent)
     def setCode(self, value):
+        """Sets the code that uniquely identifies this external laboratory
+        """
         if not is_valid_code(value):
             raise ValueError("Code cannot contain special characters or spaces")
 
@@ -263,8 +269,20 @@ class ExternalLaboratory(Container):
         if lab and lab != self:
             raise Invalid("Code must be unique")
 
-        mutator = self.mutator("code")
-        mutator(self, value)
+        self.set_string_value("code", value)
+
+    @security.protected(permissions.View)
+    def getCode(self):
+        """Returns the code that uniquely identifies this external laboratory
+        """
+        return self.get_string_value("code")
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setReferringClient(self, value):
+        """Sets the default client the samples from inbound shipments will
+        be assigned to
+        """
+        set_uids_field_value(self, "referring_client", value)
 
     @security.protected(permissions.View)
     def getReferringClient(self):
@@ -277,8 +295,49 @@ class ExternalLaboratory(Container):
         return value[0]
 
     @security.protected(permissions.ModifyPortalContent)
-    def setReferringClient(self, value):
-        """Sets the default client the samples from inbound shipments will
-        be assigned to
+    def setUrl(self, value):
+        """Sets the URL of the SENAITE instance of the external laboratory
         """
-        set_uids_field_value(self, "referring_client", value)
+        def validate_url(url):
+            if url and not is_valid_url(url):
+                raise ValueError("URL is not valid")
+
+        self.set_string_value("url", value, validator=validate_url)
+
+    @security.protected(permissions.View)
+    def getUrl(self):
+        """The URL of the SENAITE instance of the external laboratory, if any
+        """
+        return self.get_string_value("url")
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setUsername(self, value):
+        """Sets the username of the account used to authenticate against the
+        SENAITE instance of the external laboratory in order to send POST
+        requests
+        """
+        self.set_string_value("username", value)
+
+    @security.protected(permissions.View)
+    def getUsername(self):
+        """Returns the username of the account used to authenticate against the
+        SENAITE instance of the external laboratory in order to send POST
+        requests
+        """
+        return self.get_string_value("username")
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setPassword(self, value):
+        """Sets the password of the account used to authenticate against the
+        SENAITE instance of the external laboratory in order to send POST
+        requests
+        """
+        self.set_string_value("password", value)
+
+    @security.protected(permissions.View)
+    def getPassword(self):
+        """Returns the password of the account used to authenticate against the
+        SENAITE instance of the external laboratory in order to send POST
+        requests
+        """
+        return self.get_string_value("password")
