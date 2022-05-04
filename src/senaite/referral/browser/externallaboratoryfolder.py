@@ -98,6 +98,6 @@ class ExternalLaboratoryFolderView(ListingView):
         item["code"] = code
         item["replace"]["code"] = get_link(href=obj_url, value=code)
 
-        item["reference"] = obj.get_reference()
-        item["referring"] = obj.get_referring()
+        item["reference"] = obj.getReference()
+        item["referring"] = obj.getReferring()
         return item

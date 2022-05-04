@@ -23,6 +23,16 @@ from bika.lims import api
 from bika.lims.interfaces import IDeactivable
 
 
+def is_true(value):
+    """Checks whether the value passed-in has to be evaluated as True
+    """
+    if isinstance(value, bool):
+        return value is True
+    if isinstance(value, string_types):
+        return value.lower() in ["y", "yes", "1", "true", True]
+    return is_true(str(value))
+
+
 class IExternalLaboratorySchema(model.Schema):
     """ExternalLaboratory content schema
     """
@@ -242,21 +252,37 @@ class ExternalLaboratory(Container):
         value = accessor(self) or default
         return value.encode("utf-8")
 
-    def get_reference(self):
-        return self.reference
+    @security.protected(permissions.ModifyPortalContent)
+    def setReference(self, value):
+        """Sets whether this external laboratory can act as reference
+        laboratory, that can receive dispatched samples from this instance
+        """
+        mutator = self.mutator("reference")
+        mutator(self, is_true(value))
 
-    def set_reference(self, value):
-        if self.reference == value:
-            return
-        self.reference = value
+    @security.protected(permissions.View)
+    def getReference(self):
+        """Returns whether this external laboratory can act as a reference
+        laboratory that can receive dispatched samples from this instance
+        """
+        accessor = self.accessor("reference")
+        return is_true(accessor(self))
 
-    def get_referring(self):
-        return self.referring
+    @security.protected(permissions.ModifyPortalContent)
+    def setReferring(self, value):
+        """Sets whether this external laboratory can act as referring
+        laboratory, that can dispatch samples to this instance
+        """
+        mutator = self.mutator("referring")
+        mutator(self, is_true(value))
 
-    def set_referring(self, value):
-        if self.referring == value:
-            return
-        self.referring = value
+    @security.protected(permissions.View)
+    def getReferring(self):
+        """Returns whether this external laboratory can act as a referring
+        laboratory that can dispatch sampels to this instance
+        """
+        accessor = self.accessor("referring")
+        return is_true(accessor(self))
 
     @security.protected(permissions.ModifyPortalContent)
     def setCode(self, value):

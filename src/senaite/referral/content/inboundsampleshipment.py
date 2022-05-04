@@ -28,7 +28,7 @@ def check_referring_laboratory(thing):
     if not IExternalLaboratory.providedBy(obj):
         raise ValueError("Type is not supported: {}".format(repr(obj)))
 
-    if not obj.get_referring():
+    if not obj.getReferring():
         # The external laboratory must be enabled as referring laboratory
         raise ValueError("The external laboratory cannot act as a "
                          "referring laboratory")

@@ -53,7 +53,7 @@ class ShipmentsSupportViewlet(ViewletBase):
         return False
 
     def is_reference_lab(self):
-        return self.context.get_reference()
+        return self.context.getReference()
 
     def is_valid_lab_url(self):
         url = self.context.getUrl()

@@ -122,7 +122,7 @@ class InboundShipmentConsumer(object):
             # The External laboratory is not active
             raise ValueError("Referring lab is not active: {}".format(code))
 
-        if not lab.get_referring():
+        if not lab.getReferring():
             # External Laboratory found, but not a referring lab
             raise ValueError("Not a referring lab: {}".format(code))
 

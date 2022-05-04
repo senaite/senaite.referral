@@ -33,7 +33,7 @@ def notify_outbound_shipment(shipment):
         logger.error(msg)
         return msg
 
-    if not lab.get_reference():
+    if not lab.getReference():
         # External lab not set as reference lab
         msg = "External lab is not set as a reference laboratory"
         logger.error(msg)

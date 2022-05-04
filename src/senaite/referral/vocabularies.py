@@ -43,7 +43,7 @@ class ReferringLaboratoriesVocabulary(object):
         items = []
         for brain in api.search(query, "portal_catalog"):
             obj = api.get_object(brain)
-            if obj.get_referring():
+            if obj.getReferring():
                 # Only those external labs that can act as referring labs
                 items.append(to_simple_term(obj))
 
@@ -66,7 +66,7 @@ class ReferenceLaboratoriesVocabulary(object):
         items = []
         for brain in api.search(query, "portal_catalog"):
             obj = api.get_object(brain)
-            if obj.get_reference():
+            if obj.getReference():
                 # Only those external labs that can act as referring labs
                 items.append(to_simple_term(obj))
 
