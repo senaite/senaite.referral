@@ -2,6 +2,8 @@
 
 import collections
 import copy
+import json
+from datetime import datetime
 
 from senaite.referral import logger
 from senaite.referral import messageFactory as _
@@ -10,13 +12,14 @@ from six.moves.urllib import parse
 from slugify import slugify
 
 from bika.lims import api
-from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils import render_html_attributes
 from bika.lims.utils import t as _t
 from bika.lims.utils import to_utf8
 from bika.lims.workflow import getTransitionDate
 
 _marker = object()
+
+RESPONSES_ATTR_NAME = "_referal_post_responses"
 
 
 def set_field_value(instance, field_name, value):
@@ -261,3 +264,33 @@ def is_from_shipment(sample):
     if shipment:
         return True
     return False
+
+
+def add_post_response(context, url, payload, status_code, response_text):
+    """Stores the information about a given request in the context passed-in
+    """
+    prev = get_post_responses(context)
+    prev.append({
+        "url": url,
+        "payload": json.dumps(payload),
+        "datetime": datetime.now().isoformat(),
+        "status_code": str(status_code),
+        "response": response_text,
+    })
+    setattr(context, RESPONSES_ATTR_NAME, prev)
+    context._p_changed = 1
+
+
+def get_post_responses(context):
+    """Returns the historic post responses for the given context
+    """
+    return getattr(context, RESPONSES_ATTR_NAME, [])
+
+
+def get_post_response(context):
+    """Returns the last historic post response for the given context, if any
+    """
+    posts = get_post_responses(context)
+    if posts:
+        return posts[-1]
+    return None

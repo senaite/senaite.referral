@@ -1,0 +1,23 @@
+<configure
+  xmlns="http://namespaces.zope.org/zope"
+  i18n_domain="senaite.referral">
+
+  <!-- Adapter for inbound shipment consumer
+  Receives samples dispatched by a referring laboratory and creates the inbound
+  shipment in accordance -->
+  <adapter
+    for="*"
+    provides="senaite.jsonapi.interfaces.IPushConsumer"
+    factory=".inboundshipment.InboundShipmentConsumer"
+    name="senaite.referral.inbound_shipment" />
+
+  <!-- Adapter for outbound sample consumer
+  Receives information from a sample that was dispatched to a reference
+  laboratory and updates the analyses results in accordance -->
+  <adapter
+      for="*"
+      provides="senaite.jsonapi.interfaces.IPushConsumer"
+      factory=".outboundsample.OutboundSampleConsumer"
+      name="senaite.referral.outbound_sample" />
+
+</configure>

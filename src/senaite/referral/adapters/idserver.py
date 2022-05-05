@@ -49,17 +49,15 @@ class IDServerVariablesAdapter(object):
     def get_lab_code(self, shipment):
         """Returns the code of the laboratory the shipment is assigned to
         """
+        laboratory = None
         shipment = api.get_object(shipment)
         if IOutboundSampleShipment.providedBy(shipment):
-            lab = shipment.getReferenceLaboratory()
-            lab_uid = api.get_uid(lab)
+            laboratory = shipment.getReferenceLaboratory()
         elif IInboundSampleShipment.providedBy(shipment):
-            lab_uid = shipment.getReferringLaboratory()
+            laboratory = shipment.getReferringLaboratory()
         else:
             str_type = repr(type(shipment))
             return ValueError("Type not supported: {}".format(str_type))
-
-        laboratory = api.get_object_by_uid(lab_uid)
         return laboratory.getCode()
 
 

@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 
 import json
-import six
-from senaite.referral.interfaces import IInboundSampleShipment
 
-from bika.lims import api
+import six
+from Products.ATContentTypes.utils import DT2dt
+from senaite.jsonapi.interfaces import IPushConsumer
 from senaite.jsonapi.request import is_json_deserializable
 from senaite.referral import utils
-from senaite.jsonapi.interfaces import IPushConsumer
+from senaite.referral.interfaces import IInboundSampleShipment
 from zope.interface import implementer
-from Products.ATContentTypes.utils import DT2dt
+
+from bika.lims import api
 
 
 @implementer(IPushConsumer)
 class InboundShipmentConsumer(object):
-    """Adapter that handles push requests for name
-    senaite.referral.inbound_shipment
+    """Handles push requests for name senaite.referral.inbound_shipment
+    Receives samples dispatched by a referring laboratory and creates the
+    inbound shipment in accordance
     """
 
     def __init__(self, data):

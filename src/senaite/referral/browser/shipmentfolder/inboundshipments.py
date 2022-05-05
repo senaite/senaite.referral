@@ -116,7 +116,6 @@ class InboundSampleShipmentFolderView(ListingView):
         item["created_by"] = self.get_creator_fullname(obj)
 
         referring = obj.getReferringLaboratory()
-        referring = self.get_object(referring)
         item["referring_laboratory"] = api.get_title(referring)
         item["replace"]["referring_laboratory"] = get_link_for(referring)
 

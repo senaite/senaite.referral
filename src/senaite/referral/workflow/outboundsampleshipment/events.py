@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import json
-import requests
 from datetime import datetime
+
 from senaite.referral import logger
 from senaite.referral.interfaces import IExternalLaboratory
+from senaite.referral.remotesession import RemoteSession
 from senaite.referral.utils import get_lab_code
 from senaite.referral.utils import is_valid_url
 
@@ -57,7 +58,7 @@ def notify_outbound_shipment(shipment):
     dispatcher = ShipmentDispatcher(url)
     if not dispatcher.auth(username, password):
         # Unable to authenticate
-        msg = "Cannot authenticate against reference laboratory"
+        msg = "Cannot authenticate with '{}': {}".format(username, url)
         logger.error(msg)
         return msg
 
@@ -73,12 +74,7 @@ def notify_outbound_shipment(shipment):
     return None
 
 
-class ShipmentDispatcher(object):
-
-    session = None
-
-    def __init__(self, host):
-        self.host = host
+class ShipmentDispatcher(RemoteSession):
 
     def send(self, shipment, timeout=5):
         dispatched = shipment.get_dispatched_datetime() or datetime.now()
@@ -95,7 +91,7 @@ class ShipmentDispatcher(object):
         shipment.set_dispatch_notification_datetime(now)
         shipment.set_dispatch_notification_payload(payload)
 
-        response = self.post("push", payload, timeout)
+        response = self.post_old("push", payload, timeout)
         response_text = "[{}] {}".format(response.status_code, response.text)
         shipment.set_dispatch_notification_response(response_text)
 
@@ -116,30 +112,3 @@ class ShipmentDispatcher(object):
             "analyses": map(lambda an: an.getKeyword, analyses)
         }
 
-    def get(self, url, payload=None):
-        url = self.resolve_api_slug(url)
-        response = self.session.get(url, params=payload)
-        logger.info("[GET] {}".format(response.url))
-        if response.status_code != 200:
-            logger.error(response.status_code)
-        return response
-
-    def post(self, url, payload, timeout):
-        url = self.resolve_api_slug(url)
-        logger.info("[POST] {}".format(url))
-        response = self.session.post(url, json=payload, timeout=timeout)
-        return response
-
-    def auth(self, user, password):
-        if not is_valid_url(self.host):
-            return False
-        self.session = requests.Session()
-        self.session.auth = (user, password)
-        r = self.get("auth")
-        return r.status_code == 200
-
-    def resolve_api_slug(self, url):
-        if self.host not in url:
-            api_slug = "@@API/senaite/v1"
-            url = "{}/{}/{}".format(self.host, api_slug, url)
-        return url
