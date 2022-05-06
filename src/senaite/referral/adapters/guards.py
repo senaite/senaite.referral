@@ -35,6 +35,15 @@ class SampleGuardAdapter(BaseGuardAdapter):
             return False
         return True
 
+    def guard_ship(self):
+        """Returns true if the sample can be added to a shipment. This is when
+        all analyses from the sample are in unassigned status
+        """
+        allowed = ["unassigned"]
+        analyses = self.context.getAnalyses(full_objects=True)
+        valid = map(lambda an: api.get_review_status(an) in allowed, analyses)
+        return all(valid)
+
 
 @implementer(IGuardAdapter)
 class InboundSampleShipmentGuardAdapter(BaseGuardAdapter):

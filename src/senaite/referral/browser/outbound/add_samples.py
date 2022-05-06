@@ -24,6 +24,7 @@ class AddSamplesListingView(SamplesListingView):
 
         self.contentFilter = {
             "review_state": "sample_received",
+            "assigned_state": "unassigned",
             "sort_on": "created",
             "sort_order": "descending",
             "isRootAncestor": True
