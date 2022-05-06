@@ -8,6 +8,7 @@ from datetime import datetime
 from senaite.referral import logger
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
+from six import string_types
 from six.moves.urllib import parse
 from slugify import slugify
 
@@ -287,3 +288,13 @@ def get_post_response(context):
     if posts:
         return posts[-1]
     return None
+
+
+def is_true(value):
+    """Checks whether the value passed-in evaluates to True
+    """
+    if isinstance(value, bool):
+        return value is True
+    if isinstance(value, string_types):
+        return value.lower() in ["y", "yes", "1", "true", True]
+    return is_true(str(value))

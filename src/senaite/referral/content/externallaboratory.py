@@ -10,6 +10,7 @@ from senaite.referral import messageFactory as _
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_by_code
 from senaite.referral.utils import get_uids_field_value
+from senaite.referral.utils import is_true
 from senaite.referral.utils import is_valid_code
 from senaite.referral.utils import is_valid_url
 from senaite.referral.utils import set_uids_field_value
@@ -21,16 +22,6 @@ from zope.interface import invariant
 
 from bika.lims import api
 from bika.lims.interfaces import IDeactivable
-
-
-def is_true(value):
-    """Checks whether the value passed-in has to be evaluated as True
-    """
-    if isinstance(value, bool):
-        return value is True
-    if isinstance(value, string_types):
-        return value.lower() in ["y", "yes", "1", "true", True]
-    return is_true(str(value))
 
 
 class IExternalLaboratorySchema(model.Schema):
