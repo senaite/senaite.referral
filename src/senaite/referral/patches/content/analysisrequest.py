@@ -11,7 +11,7 @@ def setInboundShipment(self, value):
     """
     obj = api.get_object(value, default=None)
     if obj and not IInboundSampleShipment.providedBy(obj):
-        raise ValueError("Not supported type: {}".format(repr(value)))
+        raise ValueError("Type is not supported")
     self.getField("InboundShipment").set(self, obj)
 
 
@@ -37,7 +37,7 @@ def setOutboundShipment(self, value):
     """
     obj = api.get_object(value, default=None)
     if obj and not IOutboundSampleShipment.providedBy(obj):
-        raise ValueError("Not supported type: {}".format(repr(value)))
+        raise ValueError("Type is not supported")
     self.getField("OutboundShipment").set(self, obj)
 
 
