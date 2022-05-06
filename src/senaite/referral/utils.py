@@ -269,6 +269,8 @@ def is_from_shipment(sample):
 def add_post_response(context, url, payload, status_code, response_text):
     """Stores the information about a given request in the context passed-in
     """
+    if not api.is_object(context):
+        return
     prev = get_post_responses(context)
     prev.append({
         "url": url,

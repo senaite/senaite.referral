@@ -2,6 +2,13 @@
   xmlns="http://namespaces.zope.org/zope"
   i18n_domain="senaite.referral">
 
+  <!-- Adapter for referral generic consumer -->
+  <adapter
+      for="*"
+      provides="senaite.jsonapi.interfaces.IPushConsumer"
+      factory=".consumer.ReferralConsumer"
+      name="senaite.referral.consumer" />
+
   <!-- Adapter for inbound shipment consumer
   Receives samples dispatched by a referring laboratory and creates the inbound
   shipment in accordance -->

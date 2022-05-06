@@ -5,6 +5,7 @@ from datetime import datetime
 
 from senaite.referral import logger
 from senaite.referral.interfaces import IExternalLaboratory
+from senaite.referral.remotelab import RemoteLab
 from senaite.referral.remotesession import RemoteSession
 from senaite.referral.utils import get_lab_code
 from senaite.referral.utils import is_valid_url
@@ -14,9 +15,56 @@ from bika.lims.interfaces import IAnalysisRequest
 
 
 def after_dispatch_outbound_shipment(shipment):
-    """ Event fired after transition "dispatch" is triggered
+    """ Event fired after transition "dispatch" for an Outbound Shipment is
+    triggered. It sends a POST request for the creation of an Inbound Shipment
+    counterpart in the receiving (reference) laboratory
     """
     notify_outbound_shipment(shipment)
+
+
+def after_reject_outbound_shipment(shipment):
+    """Event fired after a transition "reject" for an Outbound Shipment is
+    triggered. It sends a POST request to reject the Inbound Shipment
+    counterpart and samples in the receiving (reference) laboratory
+    """
+    lab = shipment.getReferenceLaboratory()
+    remote_lab = get_remote_connection(lab)
+    if not remote_lab:
+        return
+
+    # Reject the shipment in the receiving laboratory
+    remote_lab.do_action(shipment, "reject_inbound_shipment")
+
+
+def get_remote_connection(laboratory):
+    """Returns a RemoteLab object for the laboratory passed-in if a remote
+    connection is supported. Returns None otherwise
+    """
+    if not IExternalLaboratory.providedBy(laboratory):
+        return None
+
+    url = laboratory.getUrl()
+    if not is_valid_url(url):
+        return None
+
+    username = laboratory.getUsername()
+    password = laboratory.getPassword()
+    if not all([username, password]):
+        return None
+
+    # Try to authenticate
+    remote_lab = RemoteLab(laboratory)
+    auth = False
+    try:
+        auth = remote_lab.auth()
+    except Exception as e:
+        logger.error(str(e))
+
+    if not auth:
+        logger.error("Cannot authenticate: {}".format(url))
+        return None
+
+    return remote_lab
 
 
 def notify_outbound_shipment(shipment):
@@ -111,4 +159,3 @@ class ShipmentDispatcher(RemoteSession):
             "date_sampled": date_sampled.strftime("%Y-%m-%d"),
             "analyses": map(lambda an: an.getKeyword, analyses)
         }
-
