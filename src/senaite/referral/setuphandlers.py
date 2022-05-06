@@ -632,7 +632,7 @@ def fix_outbound_shipments_workflow(portal):
                 continue
 
             action = new_event.get("action")
-            if not action.endswith(action_suffix):
+            if action and not action.endswith(action_suffix):
                 action = "{}{}".format(action, action_suffix)
                 new_event.update({"action": action})
 
