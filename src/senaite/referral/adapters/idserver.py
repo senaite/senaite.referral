@@ -49,7 +49,6 @@ class IDServerVariablesAdapter(object):
     def get_lab_code(self, shipment):
         """Returns the code of the laboratory the shipment is assigned to
         """
-        laboratory = None
         shipment = api.get_object(shipment)
         if IOutboundSampleShipment.providedBy(shipment):
             laboratory = shipment.getReferenceLaboratory()

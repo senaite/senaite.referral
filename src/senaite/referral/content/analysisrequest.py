@@ -10,7 +10,6 @@ from zope.component import adapter
 from zope.interface import implementer
 
 from bika.lims.browser.widgets import ReferenceWidget
-from bika.lims.fields import ExtStringField
 from bika.lims.interfaces import IAnalysisRequest
 
 

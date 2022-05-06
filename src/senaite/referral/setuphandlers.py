@@ -110,6 +110,7 @@ def setup_handler(context):
     #TODO TO REMOVE AFTER TESTING
     fix_external_connectivity(portal)
     fix_analyses_permissions(portal)
+    fix_outbound_shipments_workflow(portal)
     fix_inbound_shipments_review_history(portal)
     fix_inbound_shipments_samples(portal)
     fix_inbound_samples_dates(portal)
@@ -603,6 +604,8 @@ def fix_outbound_shipments_workflow(portal):
     from bika.lims.utils import changeWorkflowState
     action_suffix = "_outbound_shipment"
     wf_id = "senaite_outbound_shipment_workflow"
+    wf_tool = api.get_tool("portal_workflow")
+    wf = wf_tool.getWorkflowById(wf_id)
     query = {
         "portal_type": "OutboundSampleShipment",
     }
@@ -636,6 +639,8 @@ def fix_outbound_shipments_workflow(portal):
             new_history.append(new_event)
 
         shipment.workflow_history[wf_id] = tuple(new_history)
+        wf.updateRoleMappingsFor(shipment)
+        shipment.reindexObject()
 
     logger.info("Fixing outbound shipments workflow [DONE]")
 
