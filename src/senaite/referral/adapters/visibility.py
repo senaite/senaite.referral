@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from senaite.referral.utils import get_field_value
-
 from bika.lims import api
 from bika.lims.adapters.widgetvisibility import SenaiteATWidgetVisibility
 
@@ -26,7 +24,7 @@ class InboundShipmentFieldVisibility(SenaiteATWidgetVisibility):
             return "invisible"
 
         # In view mode, do not display the field unless it has a value set
-        shipment = get_field_value(self.context, "InboundShipment", raw=True)
+        shipment = self.context.getInboundShipment()
         if not shipment:
             return "invisible"
 
@@ -59,7 +57,7 @@ class OutboundShipmentFieldVisibility(SenaiteATWidgetVisibility):
             return "invisible"
 
         # In view mode, do not display the field unless it has a value set
-        shipment = get_field_value(self.context, "OutboundShipment", raw=True)
+        shipment = self.context.getOutboundShipment()
         if not shipment:
             return "invisible"
 

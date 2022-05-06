@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from senaite.referral.config import SAMPLE_FROM_SHIPMENT_TYPE_ID
-from senaite.referral.utils import is_from_shipment
 
 from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
@@ -25,7 +24,7 @@ def get_type_id(context, **kw):
     elif IAnalysisRequestSecondary.providedBy(context):
         return "AnalysisRequestSecondary"
     elif IAnalysisRequest.providedBy(context):
-        if is_from_shipment(context):
+        if context.getInboundShipment():
             return SAMPLE_FROM_SHIPMENT_TYPE_ID
 
     return api.get_portal_type(context)

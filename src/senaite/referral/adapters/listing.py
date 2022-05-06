@@ -5,7 +5,6 @@ from senaite.core.listing import utils as listing_utils
 from senaite.core.listing.interfaces import IListingView
 from senaite.core.listing.interfaces import IListingViewAdapter
 from senaite.referral import messageFactory as _
-from senaite.referral.utils import get_field_value
 from zope.component import adapter
 from zope.interface import implementer
 
@@ -30,7 +29,7 @@ class AnalysisRequestsListingViewAdapter(object):
         obj = api.get_object(obj)
 
         # Outbound shipment
-        outbound = get_field_value(obj, "OutboundShipment", default="")
+        outbound = obj.getOutboundShipment()
         if outbound:
             link = get_link_for(outbound)
             ico = self.get_glyphicon("export")
@@ -38,7 +37,7 @@ class AnalysisRequestsListingViewAdapter(object):
             outbound = api.get_title(outbound)
 
         # Inbound shipment
-        inbound = get_field_value(obj, "InboundShipment", default="")
+        inbound = obj.getInboundShipment()
         if inbound:
             link = get_link_for(inbound)
             ico = self.get_glyphicon("import")

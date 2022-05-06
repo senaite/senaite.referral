@@ -19,8 +19,6 @@
 # Some rights reserved, see README and LICENSE.
 from senaite.referral import logger
 from senaite.referral.interfaces import IOutboundSampleShipment
-from senaite.referral.utils import get_field_value
-from senaite.referral.utils import set_field_value
 from zope.lifecycleevent import modified
 
 from bika.lims import api
@@ -75,8 +73,7 @@ def ship_sample(sample, shipment):
     shipment.add_sample(sample)
 
     # Assign the shipment to the sample
-    shipment_uid = api.get_uid(shipment)
-    set_field_value(sample, "OutboundShipment", shipment_uid)
+    sample.setOutboundShipment(shipment)
     doActionFor(sample, "ship")
 
     # Revoke edition permissions of analyses
@@ -96,7 +93,7 @@ def recover_sample(sample, shipment=None):
 
     if not shipment:
         # Extract the shipment from the sample
-        shipment = get_field_value(sample, "OutboundShipment")
+        shipment = sample.getOutboundShipment()
 
     if api.is_uid(shipment):
         shipment = api.get_object(shipment, default=None)
@@ -106,7 +103,7 @@ def recover_sample(sample, shipment=None):
         shipment.remove_sample(sample)
 
     # Remove the shipment assignment from sample
-    set_field_value(sample, "OutboundShipment", None)
+    sample.setOutboundShipment(None)
 
     # Transition the sample to the state before it was shipped
     status = api.get_review_status(sample)

@@ -1,0 +1,36 @@
+<configure
+  xmlns="http://namespaces.zope.org/zope"
+  xmlns:monkey="http://namespaces.plone.org/monkey"
+  i18n_domain="senaite.referral">
+
+  <monkey:patch
+      class="bika.lims.content.analysisrequest.AnalysisRequest"
+      original="setInboundShipment"
+      ignoreOriginal="True"
+      replacement=".analysisrequest.setInboundShipment" />
+
+  <monkey:patch
+      class="bika.lims.content.analysisrequest.AnalysisRequest"
+      original="getInboundShipment"
+      ignoreOriginal="True"
+      replacement=".analysisrequest.getInboundShipment" />
+
+  <monkey:patch
+      class="bika.lims.content.analysisrequest.AnalysisRequest"
+      original="hasInboundShipment"
+      ignoreOriginal="True"
+      replacement=".analysisrequest.hasInboundShipment" />
+
+  <monkey:patch
+      class="bika.lims.content.analysisrequest.AnalysisRequest"
+      original="setOutboundShipment"
+      ignoreOriginal="True"
+      replacement=".analysisrequest.setOutboundShipment" />
+
+  <monkey:patch
+      class="bika.lims.content.analysisrequest.AnalysisRequest"
+      original="getOutboundShipment"
+      ignoreOriginal="True"
+      replacement=".analysisrequest.getOutboundShipment" />
+
+</configure>

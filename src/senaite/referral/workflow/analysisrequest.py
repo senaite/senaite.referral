@@ -2,7 +2,6 @@
 
 from senaite.referral import check_installed
 from senaite.referral.remotelab import get_remote_connection
-from senaite.referral.utils import get_field_value
 from senaite.referral.workflow import revoke_analyses_permissions
 from senaite.referral.workflow import ship_sample
 
@@ -30,7 +29,7 @@ def after_no_sampling_workflow(sample):
     """Automatically receive and ship samples for which an outbound shipment
     has been specified on creation (Add sample form)
     """
-    shipment = get_field_value(sample, "OutboundShipment")
+    shipment = sample.getOutboundShipment()
     if not shipment:
         return
 
@@ -48,7 +47,7 @@ def after_ship(sample):
 def after_verify(sample):
     """Notify the referring laboratory about this sample
     """
-    shipment = get_field_value(sample, "InboundShipment")
+    shipment = sample.getInboundShipment()
     if not shipment:
         return
 

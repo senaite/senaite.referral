@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from senaite.referral.utils import set_field_value
-
 from bika.lims import api
 from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils.analysisrequest import create_analysisrequest
@@ -23,7 +21,7 @@ def after_receive_inbound_sample(inbound_sample):
 
     # Get the shipment that contains this inbound sample
     shipment = inbound_sample.getInboundShipment()
-    set_field_value(sample, "InboundShipment", api.get_uid(shipment))
+    sample.setInboundShipment(shipment)
 
     # If all inbound samples have been transitioned, try with the whole shipment
     received = shipment.getInboundSamples()

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from senaite.referral import check_installed
-from senaite.referral.utils import is_from_shipment
 from zope.interface import implementer
 from bika.lims import api
 from bika.lims.interfaces import IGuardAdapter
@@ -31,7 +30,7 @@ class SampleGuardAdapter(BaseGuardAdapter):
     def guard_cancel(self):
         """Returns true if the sample was not created from a Sample Shipment
         """
-        if is_from_shipment(self.context):
+        if self.context.getInboundShipment():
             return False
         return True
 

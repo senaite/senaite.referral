@@ -257,15 +257,6 @@ def get_uids_field_value(instance, field_name):
     return filter(api.is_uid, value)
 
 
-def is_from_shipment(sample):
-    """Returns whether the sample comes from an inbound sample shipment
-    """
-    shipment = get_field_value(sample, "InboundShipment", raw=True)
-    if shipment:
-        return True
-    return False
-
-
 def add_post_response(context, url, payload, status_code, response_text):
     """Stores the information about a given request in the context passed-in
     """

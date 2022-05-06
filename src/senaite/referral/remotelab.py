@@ -10,7 +10,6 @@ from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.remotesession import RemoteSession
 from senaite.referral.utils import get_lab_code
 from senaite.referral.utils import is_valid_url
-from senaite.referral.utils import get_field_value
 
 from bika.lims.utils import format_supsub
 from bika.lims.utils.analysis import format_uncertainty
@@ -155,7 +154,7 @@ class RemoteLab(object):
 
         def get_sample_info(sample):
             # Extract the shipment the sample belongs to
-            shipment = get_field_value(sample, "InboundShipment")
+            shipment = sample.getInboundShipment()
 
             # We are only interested in analyses results. Referring laboratory
             # does not care about the information set at sample level

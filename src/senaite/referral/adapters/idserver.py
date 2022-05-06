@@ -2,8 +2,6 @@
 from senaite.referral.config import SAMPLE_FROM_SHIPMENT_TYPE_ID
 from senaite.referral.interfaces import IInboundSampleShipment
 from senaite.referral.interfaces import IOutboundSampleShipment
-from senaite.referral.utils import get_field_value
-from senaite.referral.utils import is_from_shipment
 from zope.interface import implementer
 
 from bika.lims import api
@@ -34,7 +32,7 @@ class IDServerVariablesAdapter(object):
         portal_type = get_type_id(self.context, **kw)
 
         if portal_type == SAMPLE_FROM_SHIPMENT_TYPE_ID:
-            shipment = get_field_value(self.context, "InboundShipment")
+            shipment = self.context.getInboundShipment()
             variables.update({
                 "lab_code": self.get_lab_code(shipment)
             })
@@ -75,6 +73,6 @@ class IDServerTypeIDAdapter(object):
         """
         type_id = None
         if IAnalysisRequest.providedBy(self.context):
-            if is_from_shipment(self.context):
+            if self.context.getInboundShipment():
                 type_id = SAMPLE_FROM_SHIPMENT_TYPE_ID
         return type_id
