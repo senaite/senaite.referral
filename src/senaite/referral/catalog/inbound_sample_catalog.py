@@ -41,7 +41,7 @@ TYPES = [
 
 @implementer(IInboundSampleCatalog)
 class InboundSampleCatalog(BaseCatalog):
-    """Catalog for Patients
+    """Catalog for InboundSample objects
     """
     def __init__(self):
         BaseCatalog.__init__(self, CATALOG_ID, title=CATALOG_TITLE)

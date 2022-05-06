@@ -106,8 +106,8 @@ def setup_handler(context):
     # Setup catalogs
     setup_catalogs(portal)
 
-
     #TODO TO REMOVE AFTER TESTING
+    fix_root_folders_visibility(portal)
     fix_external_connectivity(portal)
     fix_analyses_permissions(portal)
     fix_outbound_shipments_workflow(portal)
@@ -667,3 +667,17 @@ def fix_external_connectivity(portal):
             delattr(lab, attr_name)
 
     logger.info("Fixing connectivity configuration of external labs [DONE]")
+
+
+def fix_root_folders_visibility(portal):
+    logger.info("Fixing referral root folders visibility ...")
+    wf_tool = api.get_tool("portal_workflow")
+    wf_id = "senaite_referral_folder_workflow"
+    workflow = wf_tool.getWorkflowById(wf_id)
+
+    folders = [portal.external_labs, portal.shipments]
+    for folder in folders:
+        workflow.updateRoleMappingsFor(folder)
+        folder.reindexObjectSecurity()
+
+    logger.info("Fixing referral root folders visibility [DONE]")
