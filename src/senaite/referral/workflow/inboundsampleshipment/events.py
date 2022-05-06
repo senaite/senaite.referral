@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from bika.lims.workflow import doActionFor as do_action_for
+from senaite.referral.remotelab import get_remote_connection
 
 
 def after_receive_inbound_shipment(shipment):
@@ -12,3 +13,12 @@ def after_receive_inbound_shipment(shipment):
         # Try to receive the inbound sample. Won't be transitioned unless the
         # transition is allowed for its current status
         do_action_for(inbound_sample, "receive_inbound_sample")
+
+    # Notify the remote laboratory
+    lab = shipment.getReferringLaboratory()
+    remote_lab = get_remote_connection(lab)
+    if not remote_lab:
+        return
+
+    # Mark the outbound shipment counterpart as delivered
+    remote_lab.do_action(shipment, "deliver_outbound_shipment")

@@ -6,6 +6,7 @@ import json
 from senaite.jsonapi.interfaces import IPushConsumer
 from senaite.referral import utils
 from senaite.referral.interfaces import IInboundSampleShipment
+from senaite.referral.interfaces import IOutboundSampleShipment
 from zope.interface import implementer
 
 from bika.lims import api
@@ -92,15 +93,25 @@ class ReferralConsumer(BaseConsumer):
 
     def get_object_for(self, lab, item):
         """Returns the object from current instance that is related with the
-        information provied in the item passed-in, if any
+        information provided in the item passed-in, if any
         """
         portal_type = self.get_value(item, "portal_type")
         if portal_type == "OutboundSampleShipment":
             # The object in this instance should be an InboundShipment
             # TODO Improve this with shipments own catalog
-            shipment_id = self.get_value(item, "id")
+            shipment_id = self.get_value(item, "shipment_id")
             for shipment in lab.objectValues():
                 if IInboundSampleShipment.providedBy(shipment):
                     if shipment.get_shipment_id() == shipment_id:
                         return shipment
+
+        elif portal_type == "InboundSampleShipment":
+            # The object in this instance should be an OutboundShipment
+            # TODO Improve this with shipments own catalog
+            shipment_id = self.get_value(item, "shipment_id")
+            for shipment in lab.objectValues():
+                if IOutboundSampleShipment.providedBy(shipment):
+                    if shipment.get_shipment_id() == shipment_id:
+                        return shipment
+
         return None
