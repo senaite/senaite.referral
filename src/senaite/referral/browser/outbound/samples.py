@@ -26,7 +26,7 @@ class SamplesListingView(ListingView):
 
         self.catalog = CATALOG_ANALYSIS_REQUEST_LISTING
         self.contentFilter = {
-            "UID": context.get_samples(),
+            "UID": context.getRawSamples(),
             "sort_on": "sortable_title",
             "sort_order": "ascending"
         }

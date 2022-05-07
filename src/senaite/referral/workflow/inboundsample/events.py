@@ -11,11 +11,8 @@ def after_receive_inbound_sample(inbound_sample):
     InboundSample object is triggered. System creates the counterpart sample
     in current instance
     """
-    sample_uid = inbound_sample.getSampleUID()
-    if api.is_uid(sample_uid):
-        # This inbound sample does have a Sample assigned already
-        sample = api.get_object_by_uid(sample_uid)
-    else:
+    sample = inbound_sample.getSample()
+    if not sample:
         # This inbound sample does not have a Sample assigned yet
         sample = create_sample(inbound_sample)
 

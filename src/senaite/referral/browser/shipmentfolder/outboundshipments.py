@@ -139,7 +139,7 @@ class OutboundSampleShipmentFolderView(ListingView):
         """
         obj = api.get_object(obj)
         href = api.get_url(obj)
-        shipment_id = obj.get_shipment_id()
+        shipment_id = obj.getShipmentID()
         item["shipment_id"] = shipment_id
         item["replace"]["shipment_id"] = get_link(href, shipment_id)
 
@@ -152,15 +152,15 @@ class OutboundSampleShipmentFolderView(ListingView):
         item["lab_code"] = lab_code
         item["replace"]["lab_code"] = get_link(lab_url, value=lab_code)
 
-        item["num_samples"] = len(obj.get_samples())
+        item["num_samples"] = len(obj.getRawSamples())
         item["created_by"] = self.get_creator_fullname(obj)
 
         # dispatched, received, rejected, cancelled
-        dispatched = obj.get_dispatched_datetime()
-        delivered = obj.get_delivered_datetime()
-        rejected = obj.get_rejected_datetime()
-        lost = obj.get_lost_datetime()
-        cancelled = obj.get_cancelled_datetime()
+        dispatched = obj.getDispatchedDateTime()
+        delivered = obj.getDeliveredDateTime()
+        rejected = obj.getRejectedDateTime()
+        lost = obj.getLostDateTime()
+        cancelled = obj.getCancelledDateTime()
         item.update({
             "dispatched": self.get_localized_date(dispatched, show_time=True),
             "delivered": self.get_localized_date(delivered, show_time=True),

@@ -70,7 +70,7 @@ def ship_sample(sample, shipment):
         raise ValueError("Type not supported: {}".format(portal_type))
 
     # Add the sample to the shipment
-    shipment.add_sample(sample)
+    shipment.addSample(sample)
 
     # Assign the shipment to the sample
     sample.setOutboundShipment(shipment)
@@ -100,7 +100,7 @@ def recover_sample(sample, shipment=None):
 
     if IOutboundSampleShipment.providedBy(shipment):
         # Remove the sample from the shipment
-        shipment.remove_sample(sample)
+        shipment.removeSample(sample)
 
     # Remove the shipment assignment from sample
     sample.setOutboundShipment(None)

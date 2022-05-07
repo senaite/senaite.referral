@@ -123,8 +123,8 @@ class RemoteLab(object):
                 "analyses": map(lambda an: an.getKeyword, analyses)
             }
 
-        dispatched = shipment.get_dispatched_datetime()
-        samples = map(get_sample_info, shipment.get_samples())
+        dispatched = shipment.getDispatchedDateTime()
+        samples = map(get_sample_info, shipment.getSamples())
         payload = {
             "consumer": "senaite.referral.inbound_shipment",
             "lab_code": get_lab_code(),
@@ -165,7 +165,7 @@ class RemoteLab(object):
             return {
                 "id": api.get_id(sample),
                 "referring_id": sample.getClientSampleID(),
-                "shipment_id": shipment.get_shipment_id(),
+                "shipment_id": shipment.getShipmentID(),
                 "analyses": analyses,
             }
 

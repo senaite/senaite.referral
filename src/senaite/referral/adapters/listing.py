@@ -47,7 +47,8 @@ class AnalysisRequestsListingViewAdapter(object):
             item["replace"]["Shipment"] = val
             inbound = api.get_title(inbound)
 
-        item["Shipment"] = "{} {}".format(outbound, inbound).strip()
+        shipment = filter(None, [outbound, inbound])
+        item["Shipment"] = " ".join(shipment)
 
         return item
 

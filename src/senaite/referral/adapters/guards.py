@@ -71,7 +71,7 @@ class OutboundSampleShipmentGuardAdapter(BaseGuardAdapter):
     def guard_dispatch_outbound_shipment(self):
         """Returns true if the outbound shipment can be dispatched
         """
-        samples = self.context.get_samples()
+        samples = self.context.getRawSamples()
         if not samples:
             return False
         return True

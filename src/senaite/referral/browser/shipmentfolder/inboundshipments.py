@@ -109,7 +109,7 @@ class InboundSampleShipmentFolderView(ListingView):
         """
         obj = api.get_object(obj)
         href = api.get_url(obj)
-        shipment_id = obj.get_shipment_id()
+        shipment_id = obj.getShipmentID()
         item["shipment_id"] = shipment_id
         item["replace"]["shipment_id"] = get_link(href, shipment_id)
         item["num_samples"] = len(obj.getInboundSamples())
@@ -125,10 +125,10 @@ class InboundSampleShipmentFolderView(ListingView):
         item["replace"]["lab_code"] = get_link(lab_url, value=lab_code)
 
         # dispatched, received, rejected, cancelled
-        dispatched = obj.get_dispatched_datetime()
-        received = obj.get_received_datetime()
-        rejected = obj.get_rejected_datetime()
-        cancelled = obj.get_cancelled_datetime()
+        dispatched = obj.getDispatchedDateTime()
+        received = obj.getReceivedDateTime()
+        rejected = obj.getRejectedDateTime()
+        cancelled = obj.getCancelledDateTime()
         item.update({
             "dispatched": self.get_localized_date(dispatched, show_time=True),
             "received": self.get_localized_date(received, show_time=True),

@@ -5,16 +5,17 @@ from plone.autoform import directives
 from plone.dexterity.content import Container
 from plone.supermodel import model
 from Products.CMFCore import permissions
-from Products.CMFPlone.utils import safe_unicode
 from senaite.referral import messageFactory as _
+from senaite.referral.content import get_bool_value
+from senaite.referral.content import get_string_value
+from senaite.referral.content import get_uids_field_value
+from senaite.referral.content import set_bool_value
+from senaite.referral.content import set_string_value
+from senaite.referral.content import set_uids_field_value
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_by_code
-from senaite.referral.utils import get_uids_field_value
-from senaite.referral.utils import is_true
 from senaite.referral.utils import is_valid_code
 from senaite.referral.utils import is_valid_url
-from senaite.referral.utils import set_uids_field_value
-from six import string_types
 from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
@@ -202,97 +203,52 @@ class ExternalLaboratory(Container):
     security = ClassSecurityInfo()
     exclude_from_nav = True
 
-    @security.private
-    def accessor(self, fieldname):
-        """Return the field accessor for the fieldname
-        """
-        schema = api.get_schema(self)
-        if fieldname not in schema:
-            return None
-        return schema[fieldname].get
-
-    @security.private
-    def mutator(self, fieldname):
-        """Return the field mutator for the fieldname
-        """
-        schema = api.get_schema(self)
-        if fieldname not in schema:
-            return None
-        return schema[fieldname].set
-
-    @security.private
-    def set_string_value(self, field_name, value, validator=None):
-        """Stores the value for the field with the given name as unicode
-        """
-        if not isinstance(value, string_types):
-            value = u""
-
-        value = value.strip()
-        if validator:
-            validator(value)
-
-        mutator = self.mutator(field_name)
-        mutator(self, safe_unicode(value))
-
-    @security.private
-    def get_string_value(self, field_name, default=""):
-        """Returns the value stored for the field with the given name as an
-        utf-8 encoded string
-        """
-        accessor = self.accessor(field_name)
-        value = accessor(self) or default
-        return value.encode("utf-8")
-
     @security.protected(permissions.ModifyPortalContent)
     def setReference(self, value):
         """Sets whether this external laboratory can act as reference
         laboratory, that can receive dispatched samples from this instance
         """
-        mutator = self.mutator("reference")
-        mutator(self, is_true(value))
+        set_bool_value(self, "reference", value)
 
     @security.protected(permissions.View)
     def getReference(self):
         """Returns whether this external laboratory can act as a reference
         laboratory that can receive dispatched samples from this instance
         """
-        accessor = self.accessor("reference")
-        return is_true(accessor(self))
+        return get_bool_value(self, "reference")
 
     @security.protected(permissions.ModifyPortalContent)
     def setReferring(self, value):
         """Sets whether this external laboratory can act as referring
         laboratory, that can dispatch samples to this instance
         """
-        mutator = self.mutator("referring")
-        mutator(self, is_true(value))
+        set_bool_value(self, "referring", value)
 
     @security.protected(permissions.View)
     def getReferring(self):
         """Returns whether this external laboratory can act as a referring
         laboratory that can dispatch sampels to this instance
         """
-        accessor = self.accessor("referring")
-        return is_true(accessor(self))
+        return get_bool_value(self, "referring")
 
     @security.protected(permissions.ModifyPortalContent)
     def setCode(self, value):
         """Sets the code that uniquely identifies this external laboratory
         """
-        if not is_valid_code(value):
-            raise ValueError("Code cannot contain special characters or spaces")
+        def validate_code(code):
+            if not is_valid_code(code):
+                raise ValueError("Code cannot contain special chars or spaces")
+            lab = get_by_code("ExternalLaboratory", code)
+            if lab and lab != self:
+                raise ValueError("Code must be unique")
 
-        lab = get_by_code("ExternalLaboratory", value)
-        if lab and lab != self:
-            raise Invalid("Code must be unique")
-
-        self.set_string_value("code", value)
+        set_string_value(self, "code", value, validator=validate_code)
 
     @security.protected(permissions.View)
     def getCode(self):
         """Returns the code that uniquely identifies this external laboratory
         """
-        return self.get_string_value("code")
+        return get_string_value(self, "code")
 
     @security.protected(permissions.ModifyPortalContent)
     def setReferringClient(self, value):
@@ -319,13 +275,13 @@ class ExternalLaboratory(Container):
             if url and not is_valid_url(url):
                 raise ValueError("URL is not valid")
 
-        self.set_string_value("url", value, validator=validate_url)
+        set_string_value(self, "url", value, validator=validate_url)
 
     @security.protected(permissions.View)
     def getUrl(self):
         """The URL of the SENAITE instance of the external laboratory, if any
         """
-        return self.get_string_value("url")
+        return get_string_value(self, "url")
 
     @security.protected(permissions.ModifyPortalContent)
     def setUsername(self, value):
@@ -333,7 +289,7 @@ class ExternalLaboratory(Container):
         SENAITE instance of the external laboratory in order to send POST
         requests
         """
-        self.set_string_value("username", value)
+        set_string_value(self, "username", value)
 
     @security.protected(permissions.View)
     def getUsername(self):
@@ -341,7 +297,7 @@ class ExternalLaboratory(Container):
         SENAITE instance of the external laboratory in order to send POST
         requests
         """
-        return self.get_string_value("username")
+        return get_string_value(self, "username")
 
     @security.protected(permissions.ModifyPortalContent)
     def setPassword(self, value):
@@ -349,7 +305,7 @@ class ExternalLaboratory(Container):
         SENAITE instance of the external laboratory in order to send POST
         requests
         """
-        self.set_string_value("password", value)
+        set_string_value(self, "password", value)
 
     @security.protected(permissions.View)
     def getPassword(self):
@@ -357,4 +313,4 @@ class ExternalLaboratory(Container):
         SENAITE instance of the external laboratory in order to send POST
         requests
         """
-        return self.get_string_value("password")
+        return get_string_value(self, "password")

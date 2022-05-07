@@ -102,7 +102,7 @@ class ReferralConsumer(BaseConsumer):
             shipment_id = self.get_value(item, "shipment_id")
             for shipment in lab.objectValues():
                 if IInboundSampleShipment.providedBy(shipment):
-                    if shipment.get_shipment_id() == shipment_id:
+                    if shipment.getShipmentID() == shipment_id:
                         return shipment
 
         elif portal_type == "InboundSampleShipment":
@@ -111,7 +111,7 @@ class ReferralConsumer(BaseConsumer):
             shipment_id = self.get_value(item, "shipment_id")
             for shipment in lab.objectValues():
                 if IOutboundSampleShipment.providedBy(shipment):
-                    if shipment.get_shipment_id() == shipment_id:
+                    if shipment.getShipmentID() == shipment_id:
                         return shipment
 
         return None

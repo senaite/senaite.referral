@@ -9,12 +9,17 @@ from plone.dexterity.content import Container
 from plone.supermodel import model
 from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
+from senaite.referral.content import get_string_value
+from senaite.referral.content import get_uids_field_value
+from senaite.referral.content import set_string_value
+from senaite.referral.content import set_uids_field_value
 from senaite.referral.interfaces import IOutboundSampleShipment
 from senaite.referral.utils import get_action_date
 from zope import schema
 from zope.interface import implementer
 
 from bika.lims import api
+from bika.lims.interfaces import IAnalysisRequest
 
 
 class IOutboundSampleShipmentSchema(model.Schema):
@@ -74,6 +79,15 @@ class IOutboundSampleShipmentSchema(model.Schema):
     )
 
 
+def check_sample(thing):
+    """Checks if the thing is an object of AnalysisRequest type
+    """
+    obj = api.get_object(thing, default=None)
+    if not IAnalysisRequest.providedBy(obj):
+        raise ValueError("Type is not supported: {}".format(repr(obj)))
+    return True
+
+
 @implementer(IOutboundSampleShipment, IOutboundSampleShipmentSchema)
 class OutboundSampleShipment(Container):
     """Single physical package containing one or more samples to be sent to an
@@ -97,70 +111,71 @@ class OutboundSampleShipment(Container):
 
     title = property(_get_title, _set_title)
 
-    def get_comments(self):
-        comments = self.comments
-        if not comments:
-            return u""
-        return comments
+    @security.protected(permissions.ModifyPortalContent)
+    def setComments(self, value):
+        """Sets the comment text for this Outbound Shipment
+        """
+        set_string_value(self, "comments", value)
 
-    def set_comments(self, value):
-        value = value.strip()
-        if self.comments == value:
-            # nothing changed
-            return
-        self.comments = value
+    @security.protected(permissions.View)
+    def getComments(self):
+        """Returns the comments for this Outbound shipment
+        """
+        return get_string_value(self, "comments")
 
-    def get_shipment_id(self):
+    @security.protected(permissions.View)
+    def getShipmentID(self):
+        """Returns the unique identifier of this Outbound Shipment
+        """
         return self.shipment_id
 
-    def get_created_datetime(self):
+    def getCreatedDateTime(self):
         """Returns the datetime when this shipment was created in the system
         """
         return api.get_creation_date(self)
 
-    def get_dispatched_datetime(self):
+    def getDispatchedDateTime(self):
         """Returns the datetime when this shipment was dispatched to the
         destination reference laboratory
         """
         return get_action_date(self, "dispatch_outbound_shipment", default=None)
 
-    def get_delivered_datetime(self):
+    def getDeliveredDateTime(self):
         """Returns the datetime when this shipment was delivered on the
         destination reference laboratory
         """
         return get_action_date(self, "deliver_outbound_shipment", default=None)
 
-    def get_lost_datetime(self):
+    def getLostDateTime(self):
         """Returns the datetime when this shipment was labeled as lost
         """
         return get_action_date(self, "lose_outbound_shipment", default=None)
 
-    def get_rejected_datetime(self):
+    def getRejectedDateTime(self):
         """Returns the datetime when this shipment was rejected or None
         """
         return get_action_date(self, "reject_outbound_shipment", default=None)
 
-    def get_cancelled_datetime(self):
+    def getCancelledDateTime(self):
         """Returns the datetime when this shipment was rejected or None
         """
         return get_action_date(self, "cancel_outbound_shipment", default=None)
 
-    def get_samples(self):
+    def getRawSamples(self):
         """Returns the list of sample uids assigned to this shipment
         """
-        samples = self.samples
-        if not samples:
-            return []
-        return samples
+        return get_uids_field_value(self, "samples")
 
-    def set_samples(self, value):
+    def getSamples(self):
+        """Returns the list of samples assigned to this shipment
+        """
+        uids = self.getRawSamples()
+        return [api.get_object(samp) for samp in uids]
+
+    def setSamples(self, value):
         """Assigns the samples assigned to this shipment
         """
-        if not isinstance(value, (list, tuple)):
-            value = [value]
-
-        self.samples = []
-        map(self.add_sample, value)
+        set_uids_field_value(self, "samples", value, validator=check_sample)
 
     def get_dispatch_notification_datetime(self):
         """Returns the datetime when the reference laboratory was notified
@@ -259,29 +274,33 @@ class OutboundSampleShipment(Container):
 
         return error
 
-    def add_sample(self, value):
+    def addSample(self, value):
         """Adds a sample to this shipment
         """
         if not value:
             return
 
-        samples = self.samples or []
+        uids = self.getRawSamples()
         sample_uid = api.get_uid(value)
-        if sample_uid not in samples:
-            samples.append(sample_uid)
-            self.samples = samples
+        if sample_uid in uids:
+            return
 
-    def remove_sample(self, value):
+        uids.append(sample_uid)
+        self.setSamples(uids)
+
+    def removeSample(self, value):
         """Removes a sample from this shipment
         """
         if not value:
             return
 
-        samples = self.samples or []
+        uids = self.getRawSamples()
         sample_uid = api.get_uid(value)
-        if sample_uid in samples:
-            samples.pop(sample_uid)
-            self.samples = samples
+        if sample_uid not in uids:
+            return
+
+        uids.pop(sample_uid)
+        self.setSamples(uids)
 
     def in_preparation(self):
         """Return whether the status of the shipment is "preparation"

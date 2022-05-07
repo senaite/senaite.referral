@@ -66,8 +66,8 @@ def sample_uid(instance):
     If the instance has no available sample assigned, it returns a tuple with
     a None value. This allows searches for `MissingValue` entries too.
     """
-    uid = instance.getSampleUID()
-    if uid:
+    uid = instance.getRawSample()
+    if api.is_uid(uid):
         return (uid,)
     return (None, )
 

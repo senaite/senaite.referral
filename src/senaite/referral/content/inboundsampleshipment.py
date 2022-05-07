@@ -6,18 +6,21 @@ from plone.dexterity.content import Container
 from plone.supermodel import model
 from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
+from senaite.referral.content import get_datetime_value
+from senaite.referral.content import get_string_value
+from senaite.referral.content import get_uids_field_value
+from senaite.referral.content import set_datetime_value
+from senaite.referral.content import set_string_value
+from senaite.referral.content import set_uids_field_value
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.interfaces import IInboundSample
 from senaite.referral.interfaces import IInboundSampleShipment
 from senaite.referral.utils import get_action_date
-from senaite.referral.utils import get_uids_field_value
-from senaite.referral.utils import set_uids_field_value
 from zope import schema
 from zope.interface import implementer
 from zope.interface import invariant
 
 from bika.lims import api
-from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 from bika.lims.interfaces import IClient
 
 
@@ -148,87 +151,65 @@ class InboundSampleShipment(Container):
     exclude_from_nav = True
 
     def _get_title(self):
-        code = self.get_shipment_id()
-        return code.encode("utf-8")
+        return self.getShipmentID()
 
     def _set_title(self, title):
         return
 
     title = property(_get_title, _set_title)
 
-    @security.private
-    def accessor(self, fieldname):
-        """Return the field accessor for the fieldname
+    @security.protected(permissions.ModifyPortalContent)
+    def setComments(self, value):
+        """Sets the comment text for this Inbound Shipment
         """
-        schema = api.get_schema(self)
-        if fieldname not in schema:
-            return None
-        return schema[fieldname].get
+        set_string_value(self, "comments", value)
 
-    @security.private
-    def mutator(self, fieldname):
-        """Return the field mutator for the fieldname
+    @security.protected(permissions.View)
+    def getComments(self):
+        """Returns the comments for this Inbound shipment
         """
-        schema = api.get_schema(self)
-        if fieldname not in schema:
-            return None
-        return schema[fieldname].set
+        return get_string_value(self, "comments")
 
-    def get_comments(self):
-        comments = self.comments
-        if not comments:
-            return u""
-        return comments
-
-    def set_comments(self, value):
-        value = value.strip()
-        if self.comments == value:
-            # nothing changed
-            return
-        self.comments = value
-
-    def get_shipment_id(self):
-        shipment_id = self.shipment_id
-        if not shipment_id:
-            return u""
-        return shipment_id
-
-    def set_shipment_id(self, value):
-        value = value.strip()
-        if self.shipment_id == value:
-            # nothing changed
-            return
-        self.shipment_id = value
-
-    def get_dispatched_datetime(self):
-        """Returns the datetime when the shipment was dispatched from the
-        referral laboratory
+    @security.protected(permissions.ModifyPortalContent)
+    def setShipmentID(self, value):
+        """Sets the unique identifier provided by the referring laboratory
         """
-        dispatched_datetime = self.dispatched_datetime
-        if not dispatched_datetime:
-            return u""
-        return dispatched_datetime
+        set_string_value(self, "shipment_id", value)
 
-    def set_dispatched_datetime(self, value):
+    @security.protected(permissions.View)
+    def getShipmentID(self):
+        """Returns the unique identifier provided by the referring laboratory
+        """
+        return get_string_value(self, "shipment_id")
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setDispatchedDateTime(self, value):
         """Sets the datetime when the shipment was dispatched from the referral
         laboratory
         """
-        value = api.to_date(value)
-        if not value:
-            raise ValueError("Dispatch date time is not valid")
-        self.dispatched_datetime = value
+        set_datetime_value(self, "dispatched_datetime", value)
 
-    def get_received_datetime(self):
+    @security.protected(permissions.View)
+    def getDispatchedDateTime(self):
+        """Returns the datetime when the shipment was dispatched from the
+        referral laboratory
+        """
+        return get_datetime_value(self, "dispatched_datetime")
+
+    @security.protected(permissions.View)
+    def getReceivedDateTime(self):
         """Returns the datetime when this shipment was received or None
         """
         return get_action_date(self, "receive_inbound_shipment", default=None)
 
-    def get_rejected_datetime(self):
+    @security.protected(permissions.View)
+    def getRejectedDateTime(self):
         """Returns the datetime when this shipment was rejected or None
         """
         return get_action_date(self, "reject_inbound_shipment", default=None)
 
-    def get_cancelled_datetime(self):
+    @security.protected(permissions.View)
+    def getCancelledDateTime(self):
         """Returns the datetime when this shipment was rejected or None
         """
         return get_action_date(self, "cancel", default=None)
@@ -272,19 +253,17 @@ class InboundSampleShipment(Container):
 
     @security.protected(permissions.View)
     def getInboundSamples(self):
-        """Returns the inbound samples assigned to this inbound
-        sample shipment
+        """Returns the inbound samples assigned to this inbound sample shipment
         """
         samples = self.objectValues() or []
         return filter(IInboundSample.providedBy, samples)
 
     @security.protected(permissions.View)
-    def getSamplesUIDs(self):
+    def getRawSamples(self):
         """Returns the UIDs of samples generated because of the partial or fully
         reception of inbound samples assigned to this inbound shipment
         """
-        inbound_samples = self.getInboundSamples()
-        uids = map(lambda inbound: inbound.getSampleUID(), inbound_samples)
+        uids = [samp.getRawSample() for samp in self.getInboundSamples()]
         return filter(api.is_uid, uids)
 
     @security.protected(permissions.View)
@@ -292,10 +271,4 @@ class InboundSampleShipment(Container):
         """Returns the samples generated because of the partial or fully
         reception of inbound samples assigned to this inbound shipment
         """
-        uids = self.getSamplesUIDs()
-        if not uids:
-            return []
-
-        query = {"portal_type": "AnalysisRequest", "UID": uids}
-        brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
-        return map(api.get_object, brains)
+        return [api.get_object(samp) for samp in self.getRawSamples()]

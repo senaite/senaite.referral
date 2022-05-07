@@ -220,42 +220,13 @@ def is_manual_inbound_shipment_permitted():
 def to_uids(value):
     """Returns the value passed-in as a list of UIDs
     """
-    if not isinstance(value, list):
+    if not isinstance(value, (list, tuple, set)):
         value = [value]
 
     value = filter(None, value)
     value = map(api.get_uid, value)
     value = list(collections.OrderedDict.fromkeys(value))
     return value
-
-
-def set_uids_field_value(instance, field_name, value, validator=None):
-    """Sets the value to a field that stores UIDs
-    """
-    # Convert the value to a list of UIDs
-    uids = to_uids(value)
-    if get_field_value(instance, field_name, raw=True) == uids:
-        # Nothing changed
-        return
-
-    # Check the values
-    if validator:
-        map(validator, uids)
-
-    # Assign the value
-    mutator = instance.mutator(field_name)
-    mutator(instance, uids)
-
-
-def get_uids_field_value(instance, field_name):
-    """Returns the value from a field that stores UIDs
-    """
-    value = get_field_value(instance, field_name, raw=True)
-    if not value:
-        value = []
-    if not isinstance(value, list):
-        value = [value]
-    return filter(api.is_uid, value)
 
 
 def add_post_response(context, url, payload, status_code, response_text):

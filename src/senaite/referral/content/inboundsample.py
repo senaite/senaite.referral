@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 from AccessControl import ClassSecurityInfo
 from plone.autoform import directives
 from plone.dexterity.content import Container
@@ -8,10 +7,16 @@ from plone.supermodel import model
 from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
 from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
+from senaite.referral.content import get_datetime_value
+from senaite.referral.content import get_string_list_value
+from senaite.referral.content import get_string_value
+from senaite.referral.content import get_uids_field_value
+from senaite.referral.content import set_datetime_value
+from senaite.referral.content import set_string_list_value
+from senaite.referral.content import set_string_value
+from senaite.referral.content import set_uids_field_value
 from senaite.referral.interfaces import IInboundSample
 from senaite.referral.utils import get_action_date
-from senaite.referral.utils import get_uids_field_value
-from senaite.referral.utils import set_uids_field_value
 from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
@@ -132,24 +137,6 @@ class InboundSample(Container):
     security = ClassSecurityInfo()
     exclude_from_nav = True
 
-    @security.private
-    def accessor(self, fieldname):
-        """Return the field accessor for the fieldname
-        """
-        schema = api.get_schema(self)
-        if fieldname not in schema:
-            return None
-        return schema[fieldname].get
-
-    @security.private
-    def mutator(self, fieldname):
-        """Return the field mutator for the fieldname
-        """
-        schema = api.get_schema(self)
-        if fieldname not in schema:
-            return None
-        return schema[fieldname].set
-
     def Title(self):
         """Returns the unique ID provided by the referring laboratory
         """
@@ -176,8 +163,7 @@ class InboundSample(Container):
         """Returns the unique ID provided by the referring laboratory for this
         inbound sample
         """
-        accessor = self.accessor("referring_id")
-        return accessor(self)
+        return get_string_value(self, "referring_id")
 
     @security.protected(permissions.ModifyPortalContent)
     def setReferringID(self, value):
@@ -187,44 +173,35 @@ class InboundSample(Container):
         # Check uniqueness
         if value and not is_referring_id_unique(self, value):
             raise ValueError("Referring ID must be unique")
-        mutator = self.mutator("referring_id")
-        mutator(self, value)
+        set_string_value(self, "referring_id", value)
 
     @security.protected(permissions.View)
     def getDateSampled(self):
         """Returns the date when the sample was originally collected, either by
         the referring laboratory or by the client of the referring laboratory
         """
-        accessor = self.accessor("date_sampled")
-        return accessor(self)
+        return get_datetime_value(self, "date_sampled")
 
     @security.protected(permissions.ModifyPortalContent)
     def setDateSampled(self, value):
         """Sets the date when the sample was originally collected, either by the
         referring laboratory or by the client of the referring laboratory
         """
-        if value and not api.is_date(value):
-            raise ValueError("Type is not supported")
-        mutator = self.mutator("date_sampled")
-        mutator(self, value)
+        set_datetime_value(self, "date_sampled", value)
 
     @security.protected(permissions.View)
     def getSampleType(self):
         """Returns the name or identifier provided by the referring laboratory
         for the type of the inbound sample
         """
-        accessor = self.accessor("sample_type")
-        return accessor(self)
+        return get_string_value(self, "sample_type")
 
     @security.protected(permissions.ModifyPortalContent)
     def setSampleType(self, value):
         """Sets the name or identifier provided by the referring laboratory for
         the type of the inbound sample
         """
-        if value and not isinstance(value, six.string_types):
-            raise ValueError("Type is not supported")
-        mutator = self.mutator("sample_type")
-        mutator(self, value)
+        set_string_value(self, "sample_type", value)
 
     @security.protected(permissions.View)
     def getAnalyses(self):
@@ -232,8 +209,7 @@ class InboundSample(Container):
         by the referring laboratory that have to be carried out by the current
         laboratory
         """
-        accessor = self.accessor("analyses")
-        return accessor(self)
+        return get_string_list_value(self, "analyses")
 
     @security.protected(permissions.ModifyPortalContent)
     def setAnalyses(self, value):
@@ -241,28 +217,20 @@ class InboundSample(Container):
         the referring laboratory that have to be carried out by the current
         laboratory
         """
-        if not isinstance(value, (list, tuple)):
-            value = [value]
-        value = filter(None, value)
-        strings = map(lambda val: isinstance(val, six.string_types), value)
-        if not all(strings):
-            raise ValueError("Only list of string types is supported")
-
-        mutator = self.mutator("analyses")
-        mutator(self, value)
+        set_string_list_value(self, "analyses", value)
 
     @security.protected(permissions.View)
     def getSample(self):
         """Returns the AnalysisRequest object type counterpart in current
         instance, if any
         """
-        uid = self.getSampleUID()
-        if api.is_uid(uid):
-            return api.get_object_by_uid(uid)
-        return None
+        uid = self.getRawSample()
+        if not api.is_uid(uid):
+            return None
+        return api.get_object(uid, default=None)
 
     @security.protected(permissions.View)
-    def getSampleUID(self):
+    def getRawSample(self):
         """Returns the UID of the AnalysisRequest counterpart in current
         instance, if any
         """

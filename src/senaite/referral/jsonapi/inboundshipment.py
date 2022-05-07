@@ -59,7 +59,7 @@ class InboundShipmentConsumer(object):
         shipment_id = self.data.get("shipment_id")
         for shipment in lab.objectValues():
             if IInboundSampleShipment.providedBy(shipment):
-                if shipment.get_shipment_id() == shipment_id:
+                if shipment.getShipmentID() == shipment_id:
                     raise ValueError("Inbound shipment already exists: {}"
                                      .format(shipment_id))
 

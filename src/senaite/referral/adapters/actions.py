@@ -20,14 +20,14 @@ class RecoverFromShipmentAdapter(RequestContextAware):
         """
 
         # Remove samples from current context (OutboundShipment)
-        shipped_samples = self.context.get_samples()
+        shipped_samples = self.context.getRawSamples()
 
         # Bail out those uids that are not present in the OutboundShipment
         uids = filter(lambda uid: uid in shipped_samples, uids)
 
         # Remove the samples from the outbound shipment
         shipped_samples = filter(lambda uid: uid not in uids, shipped_samples)
-        self.context.set_samples(shipped_samples)
+        self.context.setSamples(shipped_samples)
 
         sample_ids = []
         for uid in uids:
