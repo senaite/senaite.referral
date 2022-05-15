@@ -16,7 +16,7 @@ class RetryShipmentNotificationView(BaseView):
 
         if form_submitted and form_retry:
             # Try to re-send the notification
-            message = events.notify_outbound_shipment(self.context)
+            message = events.after_dispatch_outbound_shipment(self.context)
             if message:
                 self.add_status_message(_(message), level="error")
             else:
