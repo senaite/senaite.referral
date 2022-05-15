@@ -108,6 +108,8 @@ def get_datetime_value(obj, field_name, default=None):
     value = getter(obj)
     if not value:
         return default
+    # TODO 2.x Avoid `UnknownTimeZoneError` by using the date API for conversion
+    # also see https://github.com/senaite/senaite.patient/pull/29
     if not isinstance(value, datetime):
         value = api.to_date(value, None)
         if not value:
