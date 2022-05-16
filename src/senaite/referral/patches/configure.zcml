@@ -13,16 +13,4 @@
     original="available"
     replacement=".contentmenu.available" />
 
-  <!--
-  TODO 2.x Add an adapter in core's idserver.get_type_id instead
-   adapter = queryAdapter(context, IIdServerTypeID)
-   if adapter:
-       return adapter.get_type_id(**kw)
-  -->
-  <monkey:patch
-      description="Custom ID formatting for samples from Inbound Shipments"
-      class="bika.lims.idserver"
-      original="get_type_id"
-      replacement=".idserver.get_type_id" />
-
 </configure>

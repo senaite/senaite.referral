@@ -4,10 +4,6 @@
 
   <!-- Adapter that returns additional variables for ID Server -->
   <adapter
-    for="bika.lims.interfaces.IAnalysisRequest"
-    provides="bika.lims.interfaces.IIdServerVariables"
-    factory=".idserver.IDServerVariablesAdapter" />
-  <adapter
     for="senaite.referral.interfaces.IInboundSampleShipment"
     provides="bika.lims.interfaces.IIdServerVariables"
     factory=".idserver.IDServerVariablesAdapter" />
@@ -15,12 +11,6 @@
     for="senaite.referral.interfaces.IOutboundSampleShipment"
     provides="bika.lims.interfaces.IIdServerVariables"
     factory=".idserver.IDServerVariablesAdapter" />
-
-  <!-- Adapter for type id resolution by ID Server -->
-  <adapter
-    for="bika.lims.interfaces.IAnalysisRequest"
-    provides="bika.lims.interfaces.IIdServerTypeID"
-    factory=".idserver.IDServerTypeIDAdapter" />
 
   <!-- Guard handler for Sample (aka AnalysisRequest) content type -->
   <adapter
