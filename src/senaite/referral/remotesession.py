@@ -42,8 +42,5 @@ class RemoteSession(object):
         logger.info("[POST PAYLOAD] {}".format(repr(payload)))
         resp = requests.post(url, json=payload, auth=self.auth, timeout=timeout)
 
-        # Check the request is successful. Raise exception otherwise
-        resp.raise_for_status()
-
         # Return the response
         return resp

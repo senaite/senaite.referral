@@ -4,36 +4,40 @@
 
   <div class="visualClear"></div>
 
-  <div id="portal-alert" tal:define="errored python: view.is_error()">
+  <div id="portal-alert" tal:define="errored python: view.is_error();
+                                     post python: view.get_notification();">
 
     <div class="portal-alert-item alert alert-info"
          tal:condition="python: not errored">
-      <strong i18n:translate="">Reference Laboratory has been notified successfully</strong>
+      <strong i18n:translate="">Remote laboratory has been notified successfully</strong>
       <p class="title">
         <span i18n:translate="">Date time</span>:&nbsp;
-        <span tal:content="python: view.get_notification_date()"/><br/>
+        <span tal:content="python: post.get('datetime')"/><br/>
         <span i18n:translate="">Server response</span>:&nbsp;
         <span style="font-family:monospace;font-size:0.9em">
-          [<span tal:replace="python: view.get_status_code()"/>]
-          <span tal:replace="python: view.get_message()"/>
+          [<span tal:replace="python: post.get('status')"/>]
+          <span tal:replace="python: post.get('message')"/>
         </span>
       </p>
     </div>
 
     <div class="portlet-alert-item alert alert-warning"
          tal:condition="errored">
-      <strong i18n:translate="">Unable to notify the Reference Laboratory about this shipment</strong>
+      <strong i18n:translate="">Unable to notify the remote laboratory</strong>
       <p class="title">
         <span i18n:translate="">Date time</span>:&nbsp;
-        <span tal:content="python: view.get_notification_date()"/><br/>
+        <span tal:content="python: post.get('datetime')"/><br/>
         <span i18n:translate="">Server response</span>:&nbsp;
         <span style="font-family:monospace;font-size:0.9em">
-          [<span tal:replace="python: view.get_status_code()"/>]
-          <span tal:replace="python: view.get_message()"/>
+          [<span tal:replace="python: post.get('status')"/>]
+          <span tal:replace="python: post.get('reason')"/>
         </span>
+        <div style="font-family:monospace;font-size:0.9em">
+          <span tal:replace="python: post.get('message')"/>
+        </div>
       </p>
-      <form id="dispatch_retry_notification"
-            name="dispatch_retry_notification"
+      <form id="retry_notification"
+            name="retry_notification"
             action="retry_notification"
             enctype="multipart/form-data"
             method="POST">

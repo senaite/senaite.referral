@@ -50,6 +50,8 @@ class OutboundSampleConsumer(object):
 
         # XXX Rollback the sample to previous status?
 
+        return True
+
     def get_data(self):
         out = {}
         for key in self.data.keys():

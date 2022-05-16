@@ -5,12 +5,14 @@ import copy
 import json
 from datetime import datetime
 
+from persistent.list import PersistentList
 from senaite.referral import logger
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
 from six import string_types
 from six.moves.urllib import parse
 from slugify import slugify
+from zope.annotation.interfaces import IAnnotations
 
 from bika.lims import api
 from bika.lims.utils import render_html_attributes

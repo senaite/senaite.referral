@@ -3,6 +3,8 @@
 import collections
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
+from senaite.referral.notifications import get_last_post
+from senaite.referral.notifications import is_error
 from senaite.referral.utils import get_image_url
 from senaite.referral.utils import translate as t
 
@@ -170,21 +172,21 @@ class OutboundSampleShipmentFolderView(ListingView):
         })
 
         # If the notification errored, then add an icon
-        if dispatched:
-            if not obj.get_dispatch_notification_datetime():
-                # Not notified to the reference lab
-                msg = t(_("Reference lab not notified"))
-                icon = get_image("warning.png", title=msg)
-                self._append_html_element(item, "shipment_id", icon)
+        post = get_last_post(obj)
+        if not post:
+            # Not notified to the reference lab
+            msg = t(_("Reference lab not notified"))
+            icon = get_image("warning.png", title=msg)
+            self._append_html_element(item, "shipment_id", icon)
 
-            else:
-                error = obj.get_dispatch_notification_error()
-                if error:
-                    # Notification to the reference lab errored
-                    msg = t(_("The notification to reference lab errored: {}"))
-                    msg = msg.format(error)
-                    icon = get_image("warning.png", title=msg)
-                    self._append_html_element(item, "shipment_id", icon)
+        elif is_error(post):
+            # Notification to the reference lab errored
+            msg = t(_("The notification to reference lab errored: {}"))
+            message = "[{}] {}".format(post.get("status"), post.get("message"))
+            msg = msg.format(message)
+
+            icon = get_image("warning.png", title=msg)
+            self._append_html_element(item, "shipment_id", icon)
 
         return item
 

@@ -43,9 +43,9 @@
 
   <!-- Retry notification -->
   <browser:page
-      for="senaite.referral.interfaces.IOutboundSampleShipment"
+      for="*"
       name="retry_notification"
-      class=".retry_notification.RetryShipmentNotificationView"
+      class=".retry_notification.RetryNotificationView"
       permission="senaite.core.permissions.ManageBika"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 

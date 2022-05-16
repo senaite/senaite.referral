@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 
-import json
-
-from datetime import datetime
+from remotesession import RemoteSession
 from requests.auth import HTTPBasicAuth
 from senaite.core.supermodel import SuperModel
 from senaite.referral import logger
 from senaite.referral.interfaces import IExternalLaboratory
-from senaite.referral.remotesession import RemoteSession
+from senaite.referral.notifications import get_post_base_info
+from senaite.referral.notifications import save_post
 from senaite.referral.utils import get_lab_code
 from senaite.referral.utils import is_valid_url
 
-from bika.lims.utils import format_supsub
-from bika.lims.utils.analysis import format_uncertainty
 from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
-from remotesession import RemoteSession
+from bika.lims.utils import format_supsub
+from bika.lims.utils.analysis import format_uncertainty
 
 
 def get_remote_connection(laboratory):
@@ -86,6 +84,13 @@ class RemoteLab(object):
             self._session = RemoteSession(self.laboratory_url, auth)
         return self._session
 
+    def get_payload_base_info(self):
+        return {
+            "consumer": "senaite.referral.consumer",
+            "remote_lab": api.get_uid(self.laboratory),
+            "lab_code": get_lab_code(),
+        }
+
     def do_action(self, obj, action, timeout=5):
         """Sends a POST request to the remote laboratory for the object and
         action passed-in
@@ -95,11 +100,10 @@ class RemoteLab(object):
         items = [get_object_info(obj) for obj in obj]
         payload = {
             "consumer": "senaite.referral.consumer",
-            "lab_code": get_lab_code(),
             "action": action,
             "items": items,
         }
-        return self.session.post("push", payload, timeout=timeout)
+        self.notify(obj, payload, timeout=timeout)
 
     def create_inbound_shipment(self, shipment, timeout=5):
         """Creates an Inbound Shipment counterpart object for the shipment
@@ -127,25 +131,11 @@ class RemoteLab(object):
         samples = map(get_sample_info, shipment.getSamples())
         payload = {
             "consumer": "senaite.referral.inbound_shipment",
-            "lab_code": get_lab_code(),
             "shipment_id": api.get_id(shipment),
             "dispatched": dispatched.strftime("%Y-%m-%d %H:%M:%S"),
             "samples": filter(None, samples),
         }
-
-        now = datetime.now()
-        shipment.set_dispatch_notification_datetime(now)
-        shipment.set_dispatch_notification_payload(payload)
-
-        try:
-            response = self.session.post("push", payload, timeout=timeout)
-            response_text = "[{}] {}".format(response.status_code, response.text)
-            shipment.set_dispatch_notification_response(response_text)
-        except Exception as e:
-            logger.error(str(e))
-            response = json.dumps({"success": False, "message": str(e)})
-            response_text = "[500] {}".format(response)
-            shipment.set_dispatch_notification_response(response_text)
+        self.notify(shipment, payload, timeout=timeout)
 
     def update_analyses(self, sample, timeout=5):
         """Update the analyses from the remote laboratory with the information
@@ -206,9 +196,31 @@ class RemoteLab(object):
             "lab_code": get_lab_code(),
             "sample": get_sample_info(sample),
         }
+        self.notify(sample, payload, timeout=timeout)
 
+    def notify(self, obj, payload, timeout=5):
+        """Sends a post for the given payload and stores the response to the
+        object passed-in
+        """
+        # Be sure we have the basics in place in the payload
+        data = self.get_payload_base_info()
+        data.update(payload)
+
+        # Do the POST request and store the response for later use if required
         try:
-            self.session.post("push", payload, timeout=timeout)
+            response = self.session.post("push", data, timeout=timeout)
         except Exception as e:
+            # Dummy response
+            response = get_post_base_info()
+            response.update({
+                "url": self.session.get_api_url("push"),
+                "status": 500,
+                "reason": type(e).__name__,
+                "message": str(e),
+                "success": False,
+            })
             logger.error(str(e))
 
+        # Store the response, so we can keep track of the POSTs made for this
+        # given object and retry if necessary
+        save_post(obj, data, response)
