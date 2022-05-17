@@ -2,15 +2,15 @@
 
 import copy
 import json
-
 from datetime import datetime
 
+from senaite.jsonapi.exceptions import APIError
 from senaite.jsonapi.interfaces import IPushConsumer
 from zope.interface import implementer
 
 from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
-from bika.lims.workflow import doActionFor
+from bika.lims.utils import changeWorkflowState
 
 
 @implementer(IPushConsumer)
@@ -46,7 +46,10 @@ class OutboundSampleConsumer(object):
         for analysis_record in analysis_records:
             keyword = analysis_record.get("keyword")
             analysis = analyses.get(keyword)
-            self.update_analysis(analysis, analysis_record)
+            try:
+                self.update_analysis(analysis, analysis_record)
+            except Exception as e:
+                raise APIError(500, "{}: {}".format(type(e).__name__, str(e)))
 
         # XXX Rollback the sample to previous status?
 
@@ -115,9 +118,6 @@ class OutboundSampleConsumer(object):
         # Set the formatted result, cause we do not know if the configuration
         # of the analysis in the reference lab is the same
         result = record.get("formatted_result")
-        original_result = analysis.getFormattedResult()
-        if result == original_result:
-            return
 
         # Cleanup the analysis object to prioritize the formatted result
         analysis.setStringResult(True)
@@ -126,6 +126,9 @@ class OutboundSampleConsumer(object):
         analysis.setCalculation(None)
         analysis.setDetectionLimitSelector(False)
         analysis.setDetectionLimitOperand("")
+        analysis.setInterimFields([])
+        analysis.setAttachmentOption("")
+        analysis.setPointOfCapture("lab")
         analysis.setUnit("")
 
         # Avoid all analysis built-in logic for result assignment
@@ -137,5 +140,15 @@ class OutboundSampleConsumer(object):
         capture_date = api.to_date(capture_date, default_date)
         analysis.setResultCaptureDate(capture_date)
 
-        # Submit
-        doActionFor(analysis, "submit")
+        # Do a manual transition to overcome core's default guards. For
+        # instance system won't allow the submission of an analysis if the
+        # setting "Allow to submit analysis if not assigned" from setup is set
+        # to False. Obviously, this analysis is not assigned to a Worksheet,
+        # cause is processed externally.
+        # TODO 2.x Do not do manual transition, fix getAllowToSubmitNotAssigned
+        wf_id = "bika_analysis_workflow"
+        wf_state = {
+            "action": "submit",
+        }
+        changeWorkflowState(analysis, wf_id, "to_be_verified", **wf_state)
+        analysis.reindexObject()
