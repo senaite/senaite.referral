@@ -95,6 +95,17 @@ def recover_sample(sample, shipment=None):
         # Remove the sample from the shipment
         shipment.removeSample(sample)
 
+    # Restore the status of sample and referred analyses
+    restore_referred_sample(sample)
+
+    # Reindex the shipment
+    shipment.reindexObject()
+
+
+def restore_referred_sample(sample):
+    """Rolls the status of the referred sample back to the status they had
+    before being referred
+    """
     # Remove the shipment assignment from sample
     sample.setOutboundShipment(None)
 
@@ -105,25 +116,15 @@ def recover_sample(sample, shipment=None):
         changeWorkflowState(sample, "bika_ar_workflow", prev)
 
     # Restore status of referred analyses
-    restore_referred_analyses(sample)
-
-    # Notify the sample has ben modified
-    modified(sample)
-
-    # Reindex the sample
-    sample.reindexObject()
-
-    # Reindex the shipment
-    shipment.reindexObject()
-
-
-def restore_referred_analyses(sample):
-    """Rolls the status of referred analyses from the given sample back to the
-    status they had before being referred
-    """
     wf_id = "bika_analysis_workflow"
     analyses = sample.getAnalyses(full_objects=True, review_state="referred")
     for analysis in analyses:
         prev = get_previous_status(analysis, default="unassigned")
         wf_state = {"action": "restore_referred"}
         changeWorkflowState(analysis, wf_id, prev, **wf_state)
+
+    # Notify the sample has ben modified
+    modified(sample)
+
+    # Reindex the sample
+    sample.reindexObject()

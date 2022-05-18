@@ -24,6 +24,8 @@ from senaite.referral.catalog.inbound_sample_catalog import InboundSampleCatalog
 from senaite.referral.config import PRODUCT_NAME
 from senaite.referral.config import PROFILE_ID
 from senaite.referral.config import UNINSTALL_ID
+from senaite.referral.workflow.outboundshipment.events import \
+    after_cancel_outbound_shipment
 from zope.interface.declarations import alsoProvides
 
 from bika.lims import api
@@ -136,6 +138,7 @@ def setup_handler(context):
     #TODO TO REMOVE AFTER TESTING
     fix_referred_not_autoverified(portal)
     fix_status_referred_analyses(portal)
+    fix_reinstate_samples_from_cancelled_shipments(portal)
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
 
@@ -545,3 +548,17 @@ def fix_status_referred_analyses(portal):
             doActionFor(analysis, "refer")
 
     logger.info("Fixing status of referred analyses [DONE]")
+
+
+def fix_reinstate_samples_from_cancelled_shipments(portal):
+    logger.info("Reinstate samples from cancelled shipments ...")
+    query = {
+        "portal_type": "OutboundSampleShipment",
+        "review_state": "cancelled"
+    }
+    for shipment in api.search(query, "portal_catalog"):
+        logger.info("Reinstate samples from {}".format(api.get_path(shipment)))
+        shipment = api.get_object(shipment)
+        after_cancel_outbound_shipment(shipment)
+
+    logger.info("Reinstate samples from cancelled shipments [DONE]")
