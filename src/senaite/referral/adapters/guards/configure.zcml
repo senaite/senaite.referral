@@ -9,6 +9,13 @@
       factory=".sample.SampleGuardAdapter"
       name="senaite.referral.adapter.guard.sample" />
 
+  <!-- Guard handler for Analysis content type -->
+  <adapter
+      for="bika.lims.interfaces.IAnalysis"
+      provides="bika.lims.interfaces.IGuardAdapter"
+      factory=".analysis.AnalysisGuardAdapter"
+      name="senaite.referral.adapter.guard.analysis" />
+
   <!-- Guard handler for InboundSampleShipment content type -->
   <adapter
       for="senaite.referral.interfaces.IInboundSampleShipment"

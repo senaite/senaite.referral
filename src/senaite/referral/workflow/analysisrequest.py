@@ -2,7 +2,6 @@
 
 from senaite.referral import check_installed
 from senaite.referral.remotelab import get_remote_connection
-from senaite.referral.workflow import revoke_analyses_permissions
 from senaite.referral.workflow import ship_sample
 
 from bika.lims.workflow import doActionFor
@@ -39,9 +38,10 @@ def after_no_sampling_workflow(sample):
 
 
 def after_ship(sample):
-    """Automatically revoke edit permissions for analyses from this sample
+    """Automatically transitions the analyses from the sample to referred status
     """
-    revoke_analyses_permissions(sample)
+    for analysis in sample.getAnalyses(full_objects=True):
+        doActionFor(analysis, "refer")
 
 
 def after_verify(sample):

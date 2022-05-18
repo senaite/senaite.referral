@@ -17,15 +17,11 @@
 #
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
-from senaite.referral import logger
+
 from senaite.referral.interfaces import IOutboundSampleShipment
 from zope.lifecycleevent import modified
 
 from bika.lims import api
-from bika.lims import EditFieldResults
-from bika.lims import EditResults
-from bika.lims import FieldEditAnalysisResult
-from bika.lims.api import security
 from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.utils import changeWorkflowState
 from bika.lims.workflow import doActionFor
@@ -76,9 +72,6 @@ def ship_sample(sample, shipment):
     sample.setOutboundShipment(shipment)
     doActionFor(sample, "ship")
 
-    # Revoke edition permissions of analyses
-    revoke_analyses_permissions(sample)
-
     # Reindex the sample
     sample.reindexObject()
 
@@ -105,14 +98,14 @@ def recover_sample(sample, shipment=None):
     # Remove the shipment assignment from sample
     sample.setOutboundShipment(None)
 
-    # Transition the sample to the state before it was shipped
+    # Transition the sample and analyses to the state before sample was shipped
     status = api.get_review_status(sample)
     if status == "shipped":
         prev = get_previous_status(sample, default="sample_received")
         changeWorkflowState(sample, "bika_ar_workflow", prev)
 
-    # Restore analyses permissions
-    restore_analyses_permissions(sample)
+    # Restore status of referred analyses
+    restore_referred_analyses(sample)
 
     # Notify the sample has ben modified
     modified(sample)
@@ -124,23 +117,16 @@ def recover_sample(sample, shipment=None):
     shipment.reindexObject()
 
 
-def revoke_analyses_permissions(sample):
-    """Revoke edit permissions for analsyes from the sample passed-in
+def restore_referred_analyses(sample):
+    """Rolls the status of referred analyses from the given sample back to the
+    status they had before being referred
     """
-    def revoke_permission(obj, perm, roles):
-        try:
-            security.revoke_permission_for(obj, perm, roles)
-        except ValueError as e:
-            # Keep invalid permission silent
-            logger.warn(str(e))
-
-    analyses = sample.getAnalyses(full_objects=True)
+    wf_id = "bika_analysis_workflow"
+    analyses = sample.getAnalyses(full_objects=True, review_state="referred")
     for analysis in analyses:
-        roles = security.get_valid_roles_for(analysis)
-        revoke_permission(analysis, EditFieldResults, roles)
-        revoke_permission(analysis, EditResults, roles)
-        revoke_permission(analysis, FieldEditAnalysisResult, roles)
-        analysis.reindexObject()
+        prev = get_previous_status(analysis, default="unassigned")
+        wf_state = {"action": "restore_referred"}
+        changeWorkflowState(analysis, wf_id, prev, **wf_state)
 
 
 def restore_analyses_permissions(sample):

@@ -4,9 +4,16 @@
 
   <!-- Samples listing with additional filters and columns -->
   <subscriber
-    for="bika.lims.browser.analysisrequest.AnalysisRequestsView
-         *"
-    provides="senaite.core.listing.interfaces.IListingViewAdapter"
-    factory=".samples.SamplesListingViewAdapter" />
+      for="bika.lims.browser.analysisrequest.AnalysisRequestsView
+           *"
+      provides="senaite.core.listing.interfaces.IListingViewAdapter"
+      factory=".samples.SamplesListingViewAdapter" />
+
+  <!-- Analyses listing -->
+  <subscriber
+      for="bika.lims.browser.analyses.view.AnalysesView
+           bika.lims.interfaces.IAnalysisRequest"
+      provides="senaite.core.listing.interfaces.IListingViewAdapter"
+      factory=".analyses.SampleAnalysesListingAdapter" />
 
 </configure>

@@ -40,8 +40,8 @@ class OutboundSampleConsumer(object):
         sample = self.get_sample(sample_id)
 
         # Create a keyword -> analysis mapping
-        allowed = ["registered", "assigned", "unassigned"]
-        analyses = sample.getAnalyses(full_objects=True, review_status=allowed)
+        allowed = ["referred"]
+        analyses = sample.getAnalyses(full_objects=True, review_state=allowed)
         analyses = dict([(an.getKeyword(), an) for an in analyses])
 
         # Update the analyses passed-in
@@ -53,8 +53,6 @@ class OutboundSampleConsumer(object):
                 self.update_analysis(analysis, analysis_record)
             except Exception as e:
                 raise APIError(500, "{}: {}".format(type(e).__name__, str(e)))
-
-        # XXX Rollback the sample to previous status?
 
         return True
 

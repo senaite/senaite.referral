@@ -70,6 +70,33 @@ WORKFLOWS_TO_UPDATE = {
             },
         }
     },
+    "bika_analysis_workflow": {
+        "states": {
+            "unassigned": {
+                "preserve_transitions": True,
+                "transitions": ("refer",),
+            },
+            "referred": {
+                "title": "Referred",
+                "description": "Analysis is referred to reference laboratory",
+                "transitions": ("submit",),
+                # Analysis is read-only
+                "permissions_copy_from": "rejected",
+            }
+        },
+        "transitions": {
+            "refer": {
+                "title": "Refer the analysis to a reference laboratory",
+                "new_state": "referred",
+                "action": "Refer to reference laboratory",
+                "guard": {
+                    "guard_permissions": "",
+                    "guard_roles": "",
+                    "guard_expr": "python:here.guard_handler('refer')",
+                }
+            },
+        }
+    }
 }
 
 ID_FORMATTING = [
@@ -108,6 +135,7 @@ def setup_handler(context):
 
     #TODO TO REMOVE AFTER TESTING
     fix_referred_not_autoverified(portal)
+    fix_status_referred_analyses(portal)
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
 
@@ -496,3 +524,24 @@ def fix_referred_not_autoverified(portal):
 
         # Reindex the sample
         sample.reindexObject()
+
+
+def fix_status_referred_analyses(portal):
+    logger.info("Fixing status of referred analyses ...")
+    query = {"portal_type": "AnalysisRequest", "review_status": "shipped"}
+    samples = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
+    for sample in samples:
+        sample = api.get_object(sample)
+
+        analyses = sample.getAnalyses(full_objects=True,
+                                      review_state="unassigned")
+        if not analyses:
+            continue
+
+        logger.info("Fixing referred status: {}".format(api.get_path(sample)))
+
+        for analysis in analyses:
+            # Transition the analysis from unassigned --> referred
+            doActionFor(analysis, "refer")
+
+    logger.info("Fixing status of referred analyses [DONE]")
