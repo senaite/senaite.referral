@@ -14,7 +14,7 @@ from bika.lims.utils import get_link_for
 
 @adapter(IListingView)
 @implementer(IListingViewAdapter)
-class AnalysisRequestsListingViewAdapter(object):
+class SamplesListingViewAdapter(object):
 
     def __init__(self, listing, context):
         self.listing = listing

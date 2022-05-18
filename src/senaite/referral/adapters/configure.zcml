@@ -4,6 +4,7 @@
 
   <!-- Package includes -->
   <include package=".guards"/>
+  <include package=".listing"/>
 
   <!-- Adapter that returns additional variables for ID Server -->
   <adapter
@@ -44,24 +45,5 @@
     factory=".actions.RecoverFromShipmentAdapter"
     name="workflow_action_recover_from_shipment"
     permission="zope.Public" />
-
-  <!-- Samples listing with additional filters and columns -->
-  <subscriber
-    for="bika.lims.browser.analysisrequest.AnalysisRequestsView
-         bika.lims.interfaces.IAnalysisRequestsFolder"
-    provides="senaite.core.listing.interfaces.IListingViewAdapter"
-    factory=".listing.AnalysisRequestsListingViewAdapter" />
-
-  <subscriber
-    for="bika.lims.browser.analysisrequest.AnalysisRequestsView
-         bika.lims.interfaces.IClient"
-    provides="senaite.core.listing.interfaces.IListingViewAdapter"
-    factory=".listing.AnalysisRequestsListingViewAdapter" />
-
-  <subscriber
-    for="bika.lims.browser.analysisrequest.AnalysisRequestsView
-         bika.lims.interfaces.IBatch"
-    provides="senaite.core.listing.interfaces.IListingViewAdapter"
-    factory=".listing.AnalysisRequestsListingViewAdapter" />
 
 </configure>
