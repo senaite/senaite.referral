@@ -127,16 +127,3 @@ def restore_referred_analyses(sample):
         prev = get_previous_status(analysis, default="unassigned")
         wf_state = {"action": "restore_referred"}
         changeWorkflowState(analysis, wf_id, prev, **wf_state)
-
-
-def restore_analyses_permissions(sample):
-    """Restore the permissions of the analyses from the sample passed-in
-    """
-    wf_id = "bika_analysis_workflow"
-    wf_tool = api.get_tool("portal_workflow")
-    wf = wf_tool.getWorkflowById(wf_id)
-
-    analyses = sample.getAnalyses(full_objects=True)
-    for analysis in analyses:
-        wf.updateRoleMappingsFor(analysis)
-        analysis.reindexObject()
