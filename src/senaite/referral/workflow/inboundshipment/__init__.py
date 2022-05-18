@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from senaite.referral.workflow import TransitionEventHandler
-from senaite.referral.workflow.inboundsampleshipment import events
+from senaite.referral.workflow.inboundshipment import events
 
 
 def AfterTransitionEventHandler(shipment, event): # noqa lowercase
