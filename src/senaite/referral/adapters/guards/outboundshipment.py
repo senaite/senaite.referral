@@ -8,10 +8,19 @@ from bika.lims.interfaces import IGuardAdapter
 @implementer(IGuardAdapter)
 class OutboundShipmentGuardAdapter(BaseGuardAdapter):
 
+    def has_samples(self, shipment):
+        """Returns whether the shipment passed-in has samples or not
+        """
+        if not shipment.getRawSamples():
+            return False
+        return True
+
     def guard_dispatch_outbound_shipment(self):
         """Returns true if the outbound shipment can be dispatched
         """
-        samples = self.context.getRawSamples()
-        if not samples:
-            return False
-        return True
+        return self.has_samples(self.context)
+
+    def guard_finalise_outbound_shipment(self):
+        """Returns true if the outbound shipment contains at least one sample
+        """
+        return self.has_samples(self.context)
