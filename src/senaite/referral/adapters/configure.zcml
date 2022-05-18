@@ -2,6 +2,9 @@
   xmlns="http://namespaces.zope.org/zope"
   i18n_domain="senaite.referral">
 
+  <!-- Package includes -->
+  <include package=".guards"/>
+
   <!-- Adapter that returns additional variables for ID Server -->
   <adapter
     for="senaite.referral.interfaces.IInboundSampleShipment"
@@ -11,27 +14,6 @@
     for="senaite.referral.interfaces.IOutboundSampleShipment"
     provides="bika.lims.interfaces.IIdServerVariables"
     factory=".idserver.IDServerVariablesAdapter" />
-
-  <!-- Guard handler for Sample (aka AnalysisRequest) content type -->
-  <adapter
-    for="bika.lims.interfaces.IAnalysisRequest"
-    provides="bika.lims.interfaces.IGuardAdapter"
-    factory=".guards.SampleGuardAdapter"
-    name="senaite.referral.adapter.guard.sample" />
-
-  <!-- Guard handler for InboundSampleShipment content type -->
-  <adapter
-    for="senaite.referral.interfaces.IInboundSampleShipment"
-    provides="bika.lims.interfaces.IGuardAdapter"
-    factory=".guards.InboundSampleShipmentGuardAdapter"
-    name="senaite.referral.adapter.guard.inbound_sample_shipment" />
-
-  <!-- Guard handler for OutboundSampleShipment content type -->
-  <adapter
-    for="senaite.referral.interfaces.IOutboundSampleShipment"
-    provides="bika.lims.interfaces.IGuardAdapter"
-    factory=".guards.OutboundSampleShipmentGuardAdapter"
-    name="senaite.referral.adapter.guard.outbound_sample_shipment" />
 
   <!-- Default value for OutboundShipment field in Add Sample form -->
   <adapter
