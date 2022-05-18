@@ -6,11 +6,14 @@ from datetime import datetime
 
 from senaite.jsonapi.exceptions import APIError
 from senaite.jsonapi.interfaces import IPushConsumer
+from zope.interface import alsoProvides
 from zope.interface import implementer
 
 from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
+from bika.lims.interfaces import ISubmitted
 from bika.lims.utils import changeWorkflowState
+from bika.lims.workflow import doActionFor
 
 
 @implementer(IPushConsumer)
@@ -146,9 +149,15 @@ class OutboundSampleConsumer(object):
         # to False. Obviously, this analysis is not assigned to a Worksheet,
         # cause is processed externally.
         # TODO 2.x Do not do manual transition, fix getAllowToSubmitNotAssigned
+        alsoProvides(analysis, ISubmitted)
         wf_id = "bika_analysis_workflow"
-        wf_state = {
-            "action": "submit",
-        }
+        wf_state = {"action": "submit"}
         changeWorkflowState(analysis, wf_id, "to_be_verified", **wf_state)
+
+        # Auto-verify the analysis
+        analysis.setSelfVerification(1)
+        analysis.setNumberOfRequiredVerifications(1)
+        doActionFor(analysis, "verify")
+
+        # Reindex the analysis
         analysis.reindexObject()

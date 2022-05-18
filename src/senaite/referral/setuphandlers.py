@@ -24,8 +24,12 @@ from senaite.referral.catalog.inbound_sample_catalog import InboundSampleCatalog
 from senaite.referral.config import PRODUCT_NAME
 from senaite.referral.config import PROFILE_ID
 from senaite.referral.config import UNINSTALL_ID
+from zope.interface.declarations import alsoProvides
 
 from bika.lims import api
+from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
+from bika.lims.interfaces import ISubmitted
+from bika.lims.workflow import doActionFor
 
 CATALOGS = (
     InboundSampleCatalog,
@@ -48,7 +52,7 @@ WORKFLOWS_TO_UPDATE = {
             "shipped": {
                 "title": "Referred",
                 "description": "Sample is referred to reference laboratory",
-                "transitions": (),
+                "transitions": ("verify",),
                 # Sample is read-only
                 "permissions_copy_from":  "invalid",
             }
@@ -103,13 +107,7 @@ def setup_handler(context):
     setup_catalogs(portal)
 
     #TODO TO REMOVE AFTER TESTING
-    fix_root_folders_visibility(portal)
-    fix_external_connectivity(portal)
-    fix_analyses_permissions(portal)
-    fix_outbound_shipments_workflow(portal)
-    fix_inbound_shipments_review_history(portal)
-    fix_inbound_shipments_samples(portal)
-    fix_inbound_samples_dates(portal)
+    fix_referred_not_autoverified(portal)
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
 
@@ -464,193 +462,37 @@ def setup_catalogs(portal):
 
 # TODO Remove functions below after testing
 
-def fix_analyses_permissions(portal):
-    from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
-    from senaite.referral.workflow import revoke_analyses_permissions
-    logger.info("Fixing analyses permissions ...")
-    query = {
-        "portal_type": "AnalysisRequest",
-        "review_state": "shipped",
-    }
-    brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
-    for brain in brains:
-        sample = api.get_object(brain)
-        revoke_analyses_permissions(sample)
-    logger.info("Fixing analyses permissions [DONE]")
+def fix_referred_not_autoverified(portal):
+    logger.info("Fixing referred analyses not auto-verified ...")
+    wf_tool = api.get_tool("portal_workflow")
+    wf_id = "bika_ar_workflow"
+    workflow = wf_tool.getWorkflowById(wf_id)
+    query = {"portal_type": "AnalysisRequest", "review_status": "shipped"}
+    samples = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
+    for sample in samples:
+        sample = api.get_object(sample)
 
-def fix_inbound_shipments_review_history(portal):
-    logger.info("Fixing inbound shipments review history ...")
-    wf_id = "senaite_inbound_shipment_workflow"
-    query = {
-        "portal_type": "InboundSampleShipment",
-    }
-    for brain in api.search(query):
-        shipment = api.get_object(brain)
-        new_history = []
-        old_history = api.get_review_history(shipment, rev=False)
-        for event in old_history:
-            new_event = event.copy()
-            action = new_event.get("action")
-            if action in ["receive", "reject"]:
-                action = "{}_inbound_shipment".format(action)
-                new_event.update({"action": action})
-            new_history.append(new_event)
-        shipment.workflow_history[wf_id] = tuple(new_history)
+        # We've added the new transition "verify" in "shipped" status
+        workflow.updateRoleMappingsFor(sample)
 
-    logger.info("Fixing inbound shipments review history [DONE]")
-
-
-def fix_inbound_shipments_samples(portal):
-    import collections
-    from bika.lims.workflow import changeWorkflowState
-    logger.info("Fixing inbound shipments samples ...")
-    query = {
-        "portal_type": "InboundSampleShipment",
-    }
-    for brain in api.search(query):
-        shipment = api.get_object(brain)
-        if not hasattr(shipment, "samples"):
+        analyses = sample.getAnalyses(full_objects=True,
+                                      review_state="to_be_verified")
+        if not analyses:
             continue
 
-        for sample in shipment.samples:
-            if api.is_uid(sample) or api.is_object(sample):
-                # A sample was created already for an inbound sample. Let's
-                # create an inbound sample with the information from the sample
-                sample = api.get_object(sample)
-                sample_type = sample.getSampleType()
-                if sample_type:
-                    sample_type = api.get_title(sample_type)
-                keywords = map(lambda an: an.getKeyword, sample.getAnalyses())
-                keywords = list(collections.OrderedDict.fromkeys(keywords))
-                values = {
-                    "referring_id": sample.getClientSampleID(),
-                    "date_sampled": sample.getDateSampled(),
-                    "sample_type": sample_type,
-                    "analyses": keywords,
-                }
-                inbound_sample = api.create(shipment, "InboundSample", **values)
-                inbound_sample.setSample(sample)
-                wf_id = "senaite_inbound_sample_workflow"
-                changeWorkflowState(inbound_sample, wf_id, "received")
-            else:
-                # Not a sample, but a representation of an inbound sample.
-                # Create the inbound sample using this representation
-                required = ["id", "sample_type", "date_sampled"]
-                values = map(lambda key: sample.get(key), required)
-                if not all(values):
-                    # Skip records w/o required info
-                    continue
+        logger.info("Auto-verifying: {}".format(api.get_path(sample)))
 
-                # Create the inbound sample
-                date_sampled = sample.get("date_sampled")
-                values = {
-                    "referring_id": sample.get("id"),
-                    "date_sampled": api.to_date(date_sampled),
-                    "sample_type": sample.get("sample_type"),
-                    "analyses": sample.get("analyses", []),
-                }
-                api.create(shipment, "InboundSample", **values)
+        for analysis in analyses:
+            if not ISubmitted.providedBy(analysis):
+                alsoProvides(analysis, ISubmitted)
 
-        # Delete the samples attr
-        delattr(shipment, "samples")
-        shipment.reindexObject()
+            # Auto-verify the analysis
+            analysis.setSelfVerification(1)
+            analysis.setNumberOfRequiredVerifications(1)
+            doActionFor(analysis, "verify")
 
-    logger.info("Fixing inbound shipments samples [DONE]")
+            # Reindex the analysis
+            analysis.reindexObject()
 
-
-def fix_inbound_samples_dates(portal):
-    logger.info("Fixing inbound samples dates ...")
-    from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
-    query = {"portal_type": "InboundSample"}
-    brains = api.search(query, INBOUND_SAMPLE_CATALOG)
-    for brain in brains:
-        obj = api.get_object(brain)
-        date_sampled = obj.getDateSampled()
-        if not api.is_date(date_sampled):
-            date_sampled = api.to_date(date_sampled)
-            obj.setDateSampled(date_sampled)
-    logger.info("Fixing inbound samples dates [DONE]")
-
-
-def fix_outbound_shipments_workflow(portal):
-    logger.info("Fixing outbound shipments workflow ...")
-    from bika.lims.utils import changeWorkflowState
-    action_suffix = "_outbound_shipment"
-    wf_id = "senaite_outbound_shipment_workflow"
-    wf_tool = api.get_tool("portal_workflow")
-    wf = wf_tool.getWorkflowById(wf_id)
-    query = {
-        "portal_type": "OutboundSampleShipment",
-    }
-    for brain in api.search(query):
-        shipment = api.get_object(brain)
-
-        # Check if the status of the shipment is obsolete
-        undelivered = api.get_review_status(brain) == "undelivered"
-        if undelivered:
-            # undelivered --> dispatched
-            changeWorkflowState(shipment, wf_id, "dispatched")
-
-        new_history = []
-        old_history = api.get_review_history(shipment, rev=False)
-        for event in old_history:
-            new_event = event.copy()
-            status = new_event.get("review_state")
-
-            # undelivered --> dispatched
-            if status == "undelivered":
-                new_event.update({"review_state": "dispatched"})
-            elif status == "dispatched" and undelivered:
-                # Ship this last event we've added manually
-                continue
-
-            action = new_event.get("action")
-            if action and not action.endswith(action_suffix):
-                action = "{}{}".format(action, action_suffix)
-                new_event.update({"action": action})
-
-            new_history.append(new_event)
-
-        shipment.workflow_history[wf_id] = tuple(new_history)
-        wf.updateRoleMappingsFor(shipment)
-        shipment.reindexObject()
-
-    logger.info("Fixing outbound shipments workflow [DONE]")
-
-
-def fix_external_connectivity(portal):
-    logger.info("Fixing connectivity configuration of external labs ...")
-    for lab in portal.external_labs.objectValues():
-        attr_name = "reference_url"
-        if hasattr(lab, attr_name):
-            url = getattr(lab, attr_name, lab.getUrl())
-            lab.setUrl(url)
-            delattr(lab, attr_name)
-
-        attr_name = "reference_username"
-        if hasattr(lab, attr_name):
-            user = getattr(lab, attr_name, lab.getUsername())
-            lab.setUsername(user)
-            delattr(lab, attr_name)
-
-        attr_name = "reference_password"
-        if hasattr(lab, attr_name):
-            password = getattr(lab, attr_name, lab.getPassword())
-            lab.setPassword(password)
-            delattr(lab, attr_name)
-
-    logger.info("Fixing connectivity configuration of external labs [DONE]")
-
-
-def fix_root_folders_visibility(portal):
-    logger.info("Fixing referral root folders visibility ...")
-    wf_tool = api.get_tool("portal_workflow")
-    wf_id = "senaite_referral_folder_workflow"
-    workflow = wf_tool.getWorkflowById(wf_id)
-
-    folders = [portal.external_labs, portal.shipments]
-    for folder in folders:
-        workflow.updateRoleMappingsFor(folder)
-        folder.reindexObjectSecurity()
-
-    logger.info("Fixing referral root folders visibility [DONE]")
+        # Reindex the sample
+        sample.reindexObject()
