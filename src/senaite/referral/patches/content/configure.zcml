@@ -3,6 +3,7 @@
   i18n_domain="senaite.referral">
 
   <!-- Includes -->
+  <include file="analysis.zcml"/>
   <include file="analysisrequest.zcml"/>
 
 </configure>

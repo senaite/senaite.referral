@@ -8,6 +8,7 @@ from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.notifications import get_post_base_info
 from senaite.referral.notifications import save_post
 from senaite.referral.utils import get_lab_code
+from senaite.referral.utils import get_user_info
 from senaite.referral.utils import is_valid_url
 
 from bika.lims import api
@@ -170,7 +171,21 @@ class RemoteLab(object):
                 "formatted_result": get_formatted_result(analysis) or "NA",
                 "result_date": result_date.strftime("%Y-%m-%d"),
                 "verification_date": verification_date.strftime("%Y-%m-%d"),
+                "verifiers": get_verifiers_info(analysis),
             }
+
+        def get_verifiers_info(analysis):
+            """Returns a list of dicts each one representing a verifier
+            """
+            verifiers = analysis.getVerificators() or []
+            verifiers_info = [get_user_info(verifier) for verifier in verifiers]
+            verifiers_info = filter(None, verifiers_info)
+
+            # Update with current's lab code
+            lab_code = get_lab_code()
+            for verifier in verifiers_info:
+                verifier.update({"lab_code": lab_code})
+            return verifiers_info
 
         def get_formatted_result(analysis):
             """Returns the result of the analysis formatted as to be stored in

@@ -6,8 +6,14 @@
 
   <!-- Extend AnalysisRequest Schema -->
   <adapter
-    name="senaite.referral.analysisrequest.schemaextender"
-    factory=".analysisrequest.AnalysisRequestSchemaExtender"
-    provides="archetypes.schemaextender.interfaces.ISchemaExtender" />
+      name="senaite.referral.analysisrequest.schemaextender"
+      factory=".analysisrequest.AnalysisRequestSchemaExtender"
+      provides="archetypes.schemaextender.interfaces.ISchemaExtender" />
+
+  <!-- Extend Analysis Schema -->
+  <adapter
+      name="senaite.referral.analysis.schemaextender"
+      factory=".analysis.AnalysisSchemaExtender"
+      provides="archetypes.schemaextender.interfaces.ISchemaExtender" />
 
 </configure>

@@ -141,6 +141,10 @@ class OutboundSampleConsumer(object):
         capture_date = api.to_date(capture_date, default_date)
         analysis.setResultCaptureDate(capture_date)
 
+        # Inject the remote verifiers
+        verifiers = record.get("verifiers")
+        analysis.setReferenceVerifiers(verifiers)
+
         # Do a manual transition to overcome core's default guards. For
         # instance system won't allow the submission of an analysis if the
         # setting "Allow to submit analysis if not assigned" from setup is set

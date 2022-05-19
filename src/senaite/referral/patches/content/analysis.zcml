@@ -1,0 +1,18 @@
+<configure
+  xmlns="http://namespaces.zope.org/zope"
+  xmlns:monkey="http://namespaces.plone.org/monkey"
+  i18n_domain="senaite.referral">
+
+  <monkey:patch
+      class="bika.lims.content.analysis.Analysis"
+      original="getReferenceVerifiers"
+      ignoreOriginal="True"
+      replacement=".analysis.getReferenceVerifiers" />
+
+  <monkey:patch
+      class="bika.lims.content.analysis.Analysis"
+      original="setReferenceVerifiers"
+      ignoreOriginal="True"
+      replacement=".analysis.setReferenceVerifiers" />
+
+</configure>

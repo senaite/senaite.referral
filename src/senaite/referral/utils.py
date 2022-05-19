@@ -5,14 +5,12 @@ import copy
 import json
 from datetime import datetime
 
-from persistent.list import PersistentList
 from senaite.referral import logger
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
 from six import string_types
 from six.moves.urllib import parse
 from slugify import slugify
-from zope.annotation.interfaces import IAnnotations
 
 from bika.lims import api
 from bika.lims.utils import render_html_attributes
@@ -271,3 +269,31 @@ def is_true(value):
     if isinstance(value, string_types):
         return value.lower() in ["y", "yes", "1", "true", True]
     return is_true(str(value))
+
+
+def get_user_info(user_or_username, default=_marker):
+    """Returns a dict with the properties of the user passed-in
+    """
+    user = api.get_user(user_or_username)
+    if not user:
+        if default is _marker:
+            raise ValueError("No valid user: {}".format(repr(user_or_username)))
+        return default
+
+    username = user.getUserName() or user_or_username
+    properties = {
+        "userid": user.getId(),
+        "username": username,
+        "email": user.getProperty("email"),
+        "fullname": user.getProperty("fullname") or username,
+    }
+
+    # Override with the properties from contact
+    contact = api.get_user_contact(user)
+    if contact:
+        properties.update({
+            "fullname": contact.getFullname() or properties["fullname"],
+            "email": contact.getEmailAddress() or properties["email"]
+        })
+
+    return properties
