@@ -31,7 +31,20 @@ class IReferralControlPanel(Interface):
             u"will only be possible via POST requests by referral laboratories"
         ),
         default=False,
-        required=False,)
+        required=False,
+    )
+
+    barcodes_preview_reception = schema.Bool(
+        title=_(u"label_barcodes_preview_reception",
+                default=u"Show barcode labels preview on shipment reception"),
+        description=_(
+            u"Whether the system must redirect the user to the barcode "
+            u"stickers preview when receiving samples from an incoming "
+            u"shipment"
+        ),
+        default=False,
+        required=False,
+    )
 
 
 class ReferralControlPanelForm(RegistryEditForm):

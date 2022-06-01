@@ -16,11 +16,11 @@ def after_receive_inbound_sample(inbound_sample):
         # This inbound sample does not have a Sample assigned yet
         sample = create_sample(inbound_sample)
 
-    # Get the shipment that contains this inbound sample
-    shipment = inbound_sample.getInboundShipment()
-    sample.setInboundShipment(shipment)
+        # Auto-receive the sample object
+        doActionFor(sample, "receive")
 
     # If all inbound samples have been transitioned, try with the whole shipment
+    shipment = inbound_sample.getInboundShipment()
     received = shipment.getInboundSamples()
     received = map(lambda i: api.get_review_status(i) == "received", received)
     if all(received):
