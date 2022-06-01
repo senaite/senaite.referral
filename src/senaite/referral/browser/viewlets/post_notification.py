@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from bika.lims import api
 from plone.app.layout.viewlets import ViewletBase
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from senaite.referral import check_installed
@@ -18,6 +19,8 @@ class PostNotificationViewlet(ViewletBase):
     def is_visible(self):
         """Returns whether the viewlet must be visible or not
         """
+        if not api.is_object(self.context):
+            return False
         if self.get_notification():
             return True
         return False
