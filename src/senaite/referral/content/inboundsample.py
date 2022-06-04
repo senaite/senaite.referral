@@ -88,6 +88,14 @@ class IInboundSampleSchema(model.Schema):
         required=True,
     )
 
+    priority = schema.TextLine(
+        title=_(u"label_inboundsample_priority", default=u"Priority"),
+        description=_(
+            u"The priority of the original sample in the referring laboratory"
+        ),
+        required=True,
+    )
+
     analyses = schema.List(
         title=_(u"label_inboundsample_analyses", default=u"Analyses"),
         description=_(
@@ -202,6 +210,18 @@ class InboundSample(Container):
         the type of the inbound sample
         """
         set_string_value(self, "sample_type", value)
+
+    @security.protected(permissions.View)
+    def getPriority(self):
+        """Returns the priority of the sample in the referring laboratory
+        """
+        return get_string_value(self, "priority")
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setPriority(self, value):
+        """Sets the priority of the sample in the referring laboratory
+        """
+        set_string_value(self, "priority", value)
 
     @security.protected(permissions.View)
     def getAnalyses(self):

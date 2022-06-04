@@ -55,6 +55,7 @@ def create_sample(inbound_sample):
         "ClientSampleID": inbound_sample.getReferringID(),
         "DateSampled": inbound_sample.getDateSampled(),
         "SampleType": sample_type_uid,
+        "Priority": inbound_sample.getPriority(),
         "InboundShipment": api.get_uid(shipment),
     }
 

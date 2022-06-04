@@ -8,6 +8,7 @@ from senaite.referral.utils import get_image_url
 
 from bika.lims import api
 from bika.lims import bikaMessageFactory as _c
+from bika.lims import PRIORITIES
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 
 
@@ -32,6 +33,8 @@ class SamplesListingView(ListingView):
         }
 
         self.columns = collections.OrderedDict((
+            ("priority", {
+               "title": ""}),
             ("getId", {
                 "title": _c("Sample ID"),
                 "attr": "getId",
@@ -103,6 +106,17 @@ class SamplesListingView(ListingView):
         """
         received = obj.getDateReceived
         sampled = obj.getDateSampled
+
+        sample = api.get_object(obj)
+        priority = sample.getPriority()
+        if priority:
+            priority_text = PRIORITIES.getValue(priority)
+            priority_div = """<div class="priority-ico priority-{}">
+                                  <span class="notext">{}</span><div>
+                               """
+            priority = priority_div.format(priority, priority_text)
+            item["replace"]["priority"] = priority
+
         item["getDateReceived"] = self.ulocalized_time(received, long_format=1)
         item["getDateSampled"] = self.ulocalized_time(sampled, long_format=1)
         return item

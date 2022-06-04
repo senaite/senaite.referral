@@ -6,6 +6,7 @@ from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.utils import get_image_url
 
 from bika.lims import api
+from bika.lims import PRIORITIES
 from bika.lims.utils import get_link_for
 
 
@@ -33,6 +34,10 @@ class SamplesListingView(ListingView):
         self.context_actions = {}
 
         self.columns = collections.OrderedDict((
+            ("priority", {
+                "title": "",
+                "sortable": False,
+            }),
             ("sample_id", {
                 "title": _("Sample ID"),
                 "sortable": False,
@@ -114,6 +119,7 @@ class SamplesListingView(ListingView):
                 "uid": api.get_uid(sample),
                 "sample_id": api.get_id(sample),
                 "client": api.get_title(client),
+                "priority": sample.getPriority(),
                 "sample_type": api.get_id(sample_type),
                 "date_sampled": date_sampled.strftime("%Y-%m-%d"),
                 "analyses": ", ".join(analyses),
@@ -137,9 +143,19 @@ class SamplesListingView(ListingView):
             item.update({
                 "sample_id": obj.getReferringID(),
                 "client": "",
+                "priority": obj.getPriority(),
                 "sample_type": obj.getSampleType(),
                 "date_sampled": date_sampled.strftime("%Y-%m-%d"),
                 "analyses": ", ".join(obj.getAnalyses()),
             })
+
+        priority = item.get("priority")
+        if priority:
+            priority_text = PRIORITIES.getValue(priority)
+            priority_div = """<div class="priority-ico priority-{}">
+                              <span class="notext">{}</span><div>
+                           """
+            priority = priority_div.format(priority, priority_text)
+            item["replace"]["priority"] = priority
 
         return item

@@ -139,6 +139,7 @@ class InboundShipmentConsumer(object):
             "referring_id": record.get("id"),
             "date_sampled": date_sampled,
             "sample_type": record.get("sample_type"),
+            "priority": record.get("priority", ""),
             "analyses": record.get("analyses"),
         }
         return api.create(shipment, "InboundSample", **values)
