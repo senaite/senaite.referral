@@ -4,8 +4,11 @@ from AccessControl import ClassSecurityInfo
 from plone.autoform import directives
 from plone.dexterity.content import Container
 from plone.supermodel import model
+from plone.namedfile.field import NamedBlobFile
 from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
+from senaite.referral.content import mutator
+from senaite.referral.content import accessor
 from senaite.referral.content import get_string_value
 from senaite.referral.content import get_uids_field_value
 from senaite.referral.content import set_string_value
@@ -52,6 +55,17 @@ class IOutboundSampleShipmentSchema(model.Schema):
     samples = schema.List(
         title=_(u"Samples"),
         required=True,
+    )
+
+    # Shipment manifest cannot be set manually. After a shipment is transitioned
+    # to finished status, user can create the manifest in pdf format via the
+    # browser view form "add_shipment_manifest". Transition "dispatch" is only
+    # available after a shipment manifest is present
+    directives.omitted("manifest")
+    manifest = NamedBlobFile(
+        title=_(u"label_outboundsampleshipment_manifest",
+                default=u"Shipment Manifest"),
+        required=False,
     )
 
 
@@ -192,3 +206,17 @@ class OutboundSampleShipment(Container):
         be sent
         """
         return api.get_parent(self)
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setManifest(self, value):
+        """Sets the manifest pdf file to this shipment
+        """
+        setter = mutator(self, "manifest")
+        setter(self, value)
+
+    @security.protected(permissions.View)
+    def getManifest(self):
+        """Returns the manifest (pdf file) assigned to this shipment
+        """
+        getter = accessor(self, "manifest")
+        return getter(self)

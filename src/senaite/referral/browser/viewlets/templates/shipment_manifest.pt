@@ -1,0 +1,39 @@
+<div tal:omit-tag=""
+     tal:condition="python:view.is_visible()"
+     i18n:domain="senaite.referral">
+
+  <div class="visualClear"></div>
+
+  <div id="portal-alert">
+
+    <div class="portlet-alert-item alert alert-warning"
+         tal:condition="python: not view.has_manifest()">
+      <strong i18n:translate="">
+        Shipment cannot be dispatched because no shipment manifest has been
+        generated yet
+      </strong>
+      <p class="title">
+        <a href="shipment_manifest" i18n:translate="">
+          Generate the shipment manifest
+        </a>
+      </p>
+    </div>
+
+    <div class="portlet-alert-item alert alert-info"
+         tal:condition="python: view.has_manifest()">
+      <strong i18n:translate="">
+        Shipment manifest has been generated
+      </strong>
+      <p class="title">
+        <a i18n:translate=""
+           tal:attributes="href python:view.get_manifest_download_url()">
+          Download
+        </a>
+        &nbsp;
+        <a i18n:translate="" href="shipment_manifest"
+           tal:condition="python: view.is_ready()">Regenerate</a>
+      </p>
+    </div>
+  </div>
+
+</div>

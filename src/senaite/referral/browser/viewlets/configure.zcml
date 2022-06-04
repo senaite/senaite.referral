@@ -6,7 +6,7 @@
   <!-- Referral configuration viewlet -->
   <browser:viewlet
       for="*"
-      name="senaite.referral.configuration_viewlet"
+      name="senaite.referral.viewlet.configuration"
       class=".configuration.ReferralConfigurationViewlet"
       manager="plone.app.layout.viewlets.interfaces.IAboveContent"
       template="templates/configuration_viewlet.pt"
@@ -16,7 +16,7 @@
   <!-- Shipments support viewlet -->
   <browser:viewlet
       for="senaite.referral.interfaces.IExternalLaboratory"
-      name="senaite.referral.shipment_support"
+      name="senaite.referral.viewlet.shipments_support"
       class=".shipments_support.ShipmentsSupportViewlet"
       manager="plone.app.layout.viewlets.interfaces.IAboveContent"
       template="templates/shipments_support.pt"
@@ -26,11 +26,21 @@
   <!-- POST notification viewlet -->
   <browser:viewlet
       for="*"
-      name="senaite.referral.post_notification_viewlet"
+      name="senaite.referral.viewlet.post_notification"
       class=".post_notification.PostNotificationViewlet"
       manager="plone.app.layout.viewlets.interfaces.IAboveContent"
       template="templates/post_notification.pt"
       permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+  <!-- Shipment Manifest viewlet -->
+  <browser:viewlet
+      for="senaite.referral.interfaces.IOutboundSampleShipment"
+      name="senaite.referral.viewlet.shipment_manifest"
+      class=".shipment_manifest.ShipmentManifestViewlet"
+      manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+      template="templates/shipment_manifest.pt"
+      permission="zope2.View"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
 </configure>

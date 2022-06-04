@@ -18,7 +18,14 @@ class OutboundShipmentGuardAdapter(BaseGuardAdapter):
     def guard_dispatch_outbound_shipment(self):
         """Returns true if the outbound shipment can be dispatched
         """
-        return self.has_samples(self.context)
+        if not self.has_samples(self.context):
+            return False
+
+        if not self.context.getManifest():
+            # Cannot dispatch unless the shipment manifest is present
+            return False
+
+        return True
 
     def guard_finalise_outbound_shipment(self):
         """Returns true if the outbound shipment contains at least one sample

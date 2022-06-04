@@ -1,0 +1,192 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      i18n:domain="senaite.referral"
+      tal:define="portal_url nocall:context/portal_url;
+                  laboratory python:view.laboratory;
+                  reflab python:view.context.getReferenceLaboratory()">
+  <head>
+      <span tal:replace="structure provider:plone.htmlhead" />
+      <style type="text/css">
+        body {
+            font-family: Arial, Verdana, serif;
+            font-size:9pt;
+            writing-mode: tb-rl;
+        }
+        h1 { font-size: 140%; font-weight:bold; }
+        h2 { font-size: 130%; font-weight:bold; }
+        h3 { font-size: 120%; }
+        address { margin: 1rem 0; }
+        .bold = {font-weight: bold;}
+        table { width: 100%; }
+        table td { vertical-align:top; };
+        table.noborder td, table.noborder th { border: none; }
+        table.nopadding td { padding: 0; }
+        table td.label { padding-right: 0.3rem; font-weight: bold; }
+        table th { border-bottom: 1px solid black; }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        .text-center { text-align: center; }
+        .section-header h1 { font-size: 175%; }
+        .section-header img.logo { height: 35px; margin: 20px 0; }
+        .section-header { border-bottom: 1px solid black; }
+        .section-from-to { border-bottom: 1px solid black; }
+        @page {
+          size: A4 portrait;
+          @bottom-right {
+            vertical-align: top;
+            margin-top: 2mm;
+            font-size: 9pt;
+            content: "<tal:t i18n:translate=''>Page</tal:t> " counter(page) " <tal:t i18n:translate=''>of</tal:t> " counter(pages);
+          }
+       }
+    </style>
+  </head>
+  <body>
+    <div class="shipment-manifest container">
+
+      <!-- HEADER -->
+      <div class="row section-header no-gutters">
+        <div class="w-100 mb-2">
+          <table class="w-100 mb-0 noborder">
+            <colgroup>
+              <col style="width:50%"/>
+              <col style="width:50%"/>
+            </colgroup>
+            <tr>
+              <td class="align-middle text-left">
+                <img class="logo"
+                     tal:attributes="src string:${portal_url}/logo.png"/>
+              </td>
+              <td class="align-middle text-center">
+                <h1 i18n:translate="">Shipment manifest</h1>
+                <div tal:define="barcode python:view.get_barcode()">
+                  <img tal:attributes="src barcode" tal:condition="barcode"/>
+                  <span tal:content="python: view.context.getShipmentID()"
+                        tal:condition="not:barcode"/>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <!-- /HEADER -->
+
+      <!-- FROM-TO -->
+      <div class="row section-from-to no-gutters">
+        <div class="w-100 mb-2">
+          <table class="w-100 mb-0 noborder">
+            <colgroup>
+              <col style="width:50%"/>
+              <col style="width:50%"/>
+            </colgroup>
+            <tr>
+              <!-- Shipment FROM -->
+              <td class="align-middle text-left">
+                <h2 i18n:translate="">Shipper</h2>
+                <address class="address">
+                  <div class="lab-title font-weight-bold" tal:content="laboratory/title|nothing"></div>
+                  <div class="lab-supervisor"
+                       tal:condition="laboratory/Supervisor"
+                       tal:content="laboratory/Supervisor/Fullname|nothing"></div>
+                  <div class="lab-address"
+                    tal:define="postal  laboratory/PostalAddress|nothing;
+                                address postal/address|nothing;
+                                zip     postal/zip|nothing;
+                                city    postal/city|nothing;
+                                country postal/country|nothing;
+                                zip_city python: ', '.join(filter(None, [zip, city]))">
+                    <div class="lab-street" tal:content="address"></div>
+                    <div class="lab-zip-city" tal:content="zip_city"></div>
+                    <div class="lab-country" tal:content="country"></div>
+                  </div>
+                  <div class="lab-contact-info">
+                    <div class="lab-url" tal:content="laboratory/LabURL|nothing"></div>
+                    <div class="lab-email" tal:content="laboratory/EmailAddress|nothing"></div>
+                    <div class="lab-phone" tal:content="laboratory/Phone|nothing"></div>
+                  </div>
+                </address>
+              </td>
+
+              <!-- Shipment TO -->
+              <td class="align-middle text-left">
+                <h2 i18n:translate="">Receiver</h2>
+                <address class="address">
+                  <div class="lab-title font-weight-bold" tal:content="reflab/code|nothing"></div>
+                </address>
+
+                <h2 i18n:translate="">Courier</h2>
+                <div class="courier-info" tal:content="python:view.request.form.get('courier')"></div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <!-- /FROM-TO -->
+
+      <!-- SHIPMENT INFORMATION -->
+      <div class="row section-shipment-info no-gutters">
+        <div class="w-100 mb-2">
+          <h2 i18n:translate="">Shipment information</h2>
+          <table class="w-100 mb-0 noborder">
+            <colgroup>
+              <col style="width:30%"/>
+              <col style="width:30%"/>
+              <col style="width:30%"/>
+            </colgroup>
+            <tr>
+              <td class="align-middle text-left">
+                <span i18n:translate="" class="bold">Shipment ID</span>:
+                <span tal:content="python: view.shipment.getShipmentID()"/>
+              </td>
+              <td class="align-middle text-left">
+                <span i18n:translate="" class="bold">Created</span>:
+                <span tal:content="python: view.long_date(view.shipment.getCreatedDateTime())"/>
+              </td>
+              <td class="align-middle text-left">
+                <span i18n:translate="" class="bold">Number of samples</span>:
+                <span tal:content="python:len(view.shipment.getRawSamples())"/>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="w-100 mb-2">
+          <div class="shipment-comments"
+               tal:content="python: view.shipment.getComments()">
+          </div>
+        </div>
+      </div>
+      <!-- /SHIPMENT INFORMATION -->
+
+      <!-- COMMENTS -->
+      <div class="row section-comments no-gutters">
+        <div class="w-100 mb-2">
+          <h2 i18n:translate="">Comments</h2>
+          <div class="comments"
+               tal:content="python:view.request.form.get('comments')"></div>
+        </div>
+      </div>
+      <!-- /COMMENTS -->
+
+      <!--- CONTENTS -->
+      <div class="row section-samples no-gutters">
+        <h2 i18n:translate="">Samples</h2>
+        <table class="w-100 mb-0 noborder">
+          <colgroup>
+            <col style="width:30%"/>
+            <col style="width:30%"/>
+            <col style="width:30%"/>
+          </colgroup>
+          <tr>
+            <th i18n:translate="">Sample ID</th>
+            <th i18n:translate="">Date Sampled</th>
+            <th i18n:translate="">Sample Type</th>
+          </tr>
+          <tr tal:repeat="sample python:view.shipment.getSamples()">
+            <td class="align-middle text-left" tal:content="python:sample.getId()"/>
+            <td class="align-middle text-left" tal:content="python:view.long_date(sample.getDateSampled())"/>
+            <td class="align-middle text-left" tal:content="python:sample.getSampleType().Title()"/>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

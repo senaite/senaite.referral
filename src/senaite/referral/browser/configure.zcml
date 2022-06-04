@@ -49,4 +49,12 @@
       permission="senaite.core.permissions.ManageBika"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
+  <!-- Shipment manifest -->
+  <browser:page
+      for="senaite.referral.interfaces.IOutboundSampleShipment"
+      name="shipment_manifest"
+      class=".shipment_manifest.ShipmentManifestView"
+      permission="zope2.View"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
 </configure>

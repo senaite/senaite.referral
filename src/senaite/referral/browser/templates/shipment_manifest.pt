@@ -1,0 +1,76 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="senaite.referral">
+
+  <head>
+  </head>
+
+  <body>
+    <!-- Title -->
+    <metal:title fill-slot="content-title">
+      <h1 i18n:translate="">
+        <span tal:content="python:view.context.Title()"/>
+        -
+        <span i18n:translate="">Shipment manifest</span>
+      </h1>
+    </metal:title>
+
+    <!-- Description -->
+    <metal:description fill-slot="content-description">
+      <p i18n:translate="">
+        <a tal:attributes="href view/back_url"
+           i18n:name="back_link"
+           i18n:translate="">
+          &larr; Back
+        </a>
+      </p>
+    </metal:description>
+
+    <!-- Content -->
+    <metal:core fill-slot="content-core">
+
+      <div id="shipment-manifest-view" class="row">
+        <div class="col-sm-12">
+          <form class="form"
+                id="shipment_manifest_form"
+                name="shipment_manifest_form"
+                method="POST">
+
+            <!-- Hidden Fields -->
+            <input type="hidden" name="submitted" value="1"/>
+            <input tal:replace="structure context/@@authenticator/authenticator"/>
+
+            <!-- Form fields -->
+            <div class="form-group">
+              <label for="courier" i18n:translate="">Courier</label>
+              <input type="text" class="form-control" id="courier" name="courier"/>
+            </div>
+            <div class="form-group">
+              <label for="comments">Comments</label>
+              <textarea class="form-control" id="comments" name="comments">
+              </textarea>
+            </div>
+
+            <!-- Form controls -->
+            <div>
+              <input class="btn btn-success btn-sm"
+                     type="submit"
+                     name="button_generate"
+                     i18n:attributes="value"
+                     value="Generate manifest"/>
+
+              <input class="btn btn-default btn-sm"
+                     type="submit"
+                     name="button_cancel"
+                     i18n:attributes="value"
+                     value="Cancel"/>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </metal:core>
+  </body>
+</html>
