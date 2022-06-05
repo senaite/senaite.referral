@@ -24,8 +24,7 @@ class InboundShipmentFieldVisibility(SenaiteATWidgetVisibility):
             return "invisible"
 
         # In view mode, do not display the field unless it has a value set
-        shipment = self.context.getInboundShipment()
-        if not shipment:
+        if not self.context.hasInboundShipment():
             return "invisible"
 
         return default
@@ -57,8 +56,7 @@ class OutboundShipmentFieldVisibility(SenaiteATWidgetVisibility):
             return "invisible"
 
         # In view mode, do not display the field unless it has a value set
-        shipment = self.context.getOutboundShipment()
-        if not shipment:
+        if not self.context.hasOutboundShipment():
             return "invisible"
 
         return default

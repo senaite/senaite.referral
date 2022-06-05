@@ -23,13 +23,11 @@ def getInboundShipment(self):
     return api.get_object(obj, default=None)
 
 
-def hasInboundShipment(sample):
+def hasInboundShipment(self):
     """Returns whether the sample comes from an inbound sample shipment
     """
-    shipment = sample.getInboundShipment()
-    if shipment:
-        return True
-    return False
+    uid = self.getField("InboundShipment").getRaw(self)
+    return api.is_uid(uid)
 
 
 def setOutboundShipment(self, value):
@@ -47,3 +45,9 @@ def getOutboundShipment(self):
     obj = self.getField("OutboundShipment").get(self)
     return api.get_object(obj, default=None)
 
+
+def hasOutboundShipment(self):
+    """Returns whether the sample has been assigned to an Outbound shipment
+    """
+    uid = self.getField("OutboundShipment").getRaw(self)
+    return api.is_uid(uid)

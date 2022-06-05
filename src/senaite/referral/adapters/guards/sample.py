@@ -14,7 +14,7 @@ class SampleGuardAdapter(BaseGuardAdapter):
     def guard_cancel(self):
         """Returns true if the sample was not created from a Sample Shipment
         """
-        if self.context.getInboundShipment():
+        if self.context.hasInboundShipment():
             return False
         return True
 

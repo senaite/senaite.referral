@@ -70,9 +70,7 @@ class SampleAnalysesListingAdapter(object):
         """Returns whether the obj has been referred to another laboratory
         """
         if IAnalysisRequest.providedBy(thing):
-            if thing.getOutboundShipment():
-                return True
-            return False
+            return thing.hasOutboundShipment()
 
         elif IRequestAnalysis.providedBy(thing):
             sample = thing.getRequest()
