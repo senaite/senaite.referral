@@ -15,4 +15,16 @@
       ignoreOriginal="True"
       replacement=".analysis.setReferenceVerifiers" />
 
+  <monkey:patch
+      class="bika.lims.content.analysis.Analysis"
+      original="getReferenceAnalysts"
+      ignoreOriginal="True"
+      replacement=".analysis.getReferenceAnalysts" />
+
+  <monkey:patch
+      class="bika.lims.content.analysis.Analysis"
+      original="setReferenceAnalysts"
+      ignoreOriginal="True"
+      replacement=".analysis.setReferenceAnalysts" />
+
 </configure>

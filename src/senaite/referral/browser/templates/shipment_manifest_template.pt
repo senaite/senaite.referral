@@ -59,7 +59,7 @@
               <td class="align-middle text-center">
                 <h1 i18n:translate="">Shipment manifest</h1>
                 <div tal:define="barcode python:view.get_barcode()">
-                  <img tal:attributes="src barcode" tal:condition="barcode"/>
+                  <img tal:attributes="src barcode" tal:condition="barcode" style="width:300px"/>
                   <span tal:content="python: view.context.getShipmentID()"
                         tal:condition="not:barcode"/>
                 </div>

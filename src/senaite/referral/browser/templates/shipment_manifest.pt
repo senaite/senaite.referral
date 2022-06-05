@@ -49,8 +49,7 @@
             </div>
             <div class="form-group">
               <label for="comments">Comments</label>
-              <textarea class="form-control" id="comments" name="comments">
-              </textarea>
+              <textarea class="form-control" id="comments" name="comments"></textarea>
             </div>
 
             <!-- Form controls -->

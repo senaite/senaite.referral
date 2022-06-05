@@ -119,7 +119,7 @@ class RemoteLab(object):
             sample_type = sample.getSampleType()
             date_sampled = sample.getDateSampled()
 
-            state = ["registered", "unassigned", "assigned"]
+            state = ["registered", "unassigned", "assigned", "referred"]
             analyses = sample.getAnalyses(full_objects=False, review_state=state)
             return {
                 "id": api.get_id(sample),
@@ -173,7 +173,21 @@ class RemoteLab(object):
                 "result_date": result_date.strftime("%Y-%m-%d"),
                 "verification_date": verification_date.strftime("%Y-%m-%d"),
                 "verifiers": get_verifiers_info(analysis),
+                "analysts": get_analysts_info(analysis),
             }
+
+        def get_analysts_info(analysis):
+            """Returns a list of dicts each one representing an analyst
+            """
+            analyst = analysis.getAnalyst()
+            if not analyst:
+                return []
+
+            analyst_info = get_user_info(analyst)
+            # Update with current's lab code
+            lab_code = get_lab_code()
+            analyst_info.update({"lab_code": lab_code})
+            return [analyst_info]
 
         def get_verifiers_info(analysis):
             """Returns a list of dicts each one representing a verifier

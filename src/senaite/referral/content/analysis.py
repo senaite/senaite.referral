@@ -21,6 +21,11 @@ class AnalysisSchemaExtender(object):
             "ReferenceVerifiers",
             required=False,
             subfields=("userid", "username", "email", "fullname", "lab_code"),
+        ),
+        ExtRecordsField(
+            "ReferenceAnalysts",
+            required=False,
+            subfields=("userid", "username", "email", "fullname", "lab_code"),
         )
     ]
 

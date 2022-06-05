@@ -47,6 +47,7 @@ class SampleAnalysesListingAdapter(object):
                 "Analyst": " ",
                 "SubmittedBy": " ",
             })
+
             # Display the reference lab verifiers instead of local
             verifiers = self.get_reference_verifiers(analysis)
             if verifiers:
@@ -55,16 +56,34 @@ class SampleAnalysesListingAdapter(object):
                 icon = get_image('warning.png', title=msg.format(verifiers))
                 self.listing._append_html_element(item, 'state_title', icon)
 
+            # Display the reference lab analysts instead of local
+            analysts = self.get_reference_analysts(analysis)
+            if analysts:
+                item["replace"]["Analyst"] = "".join(analysts)
+
         return item
+
+    def get_reference_analysts(self, analysis):
+        """Returns a list with the names of the reference verifiers for the
+        given analysis, with the reference laboratory code appended
+        """
+        analysts = analysis.getReferenceAnalysts()
+        return self.get_reference_actors(analysts)
 
     def get_reference_verifiers(self, analysis):
         """Returns a list with the names of the reference verifiers for the
         given analysis, with the reference laboratory code appended
         """
         verifiers = analysis.getReferenceVerifiers()
-        verifiers = ["{} ({})".format(ref.get("fullname"), ref.get("lab_code"))
-                     for ref in verifiers]
-        return filter(None, verifiers)
+        return self.get_reference_actors(verifiers)
+
+    def get_reference_actors(self, actors):
+        """Returns a list with the names of the actors, with the reference
+        laboratory code appended
+        """
+        actors = ["{} ({})".format(ref.get("fullname"), ref.get("lab_code"))
+                  for ref in actors]
+        return filter(None, actors)
 
     def is_referred(self, thing):
         """Returns whether the obj has been referred to another laboratory

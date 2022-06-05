@@ -141,6 +141,10 @@ class OutboundSampleConsumer(object):
         capture_date = api.to_date(capture_date, default_date)
         analysis.setResultCaptureDate(capture_date)
 
+        # Inject the remote analysts
+        analysts = record.get("analysts")
+        analysis.setReferenceAnalysts(analysts)
+
         # Inject the remote verifiers
         verifiers = record.get("verifiers")
         analysis.setReferenceVerifiers(verifiers)
