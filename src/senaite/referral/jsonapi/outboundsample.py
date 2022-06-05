@@ -141,6 +141,12 @@ class OutboundSampleConsumer(object):
         capture_date = api.to_date(capture_date, default_date)
         analysis.setResultCaptureDate(capture_date)
 
+        # Store the instrument and method
+        instrument = record.get("instrument", "")
+        analysis.setReferenceInstrument(instrument)
+        method = record.get("method", "")
+        analysis.setReferenceMethod(method)
+
         # Inject the remote analysts
         analysts = record.get("analysts")
         analysis.setReferenceAnalysts(analysts)

@@ -58,8 +58,19 @@ class SampleAnalysesListingAdapter(object):
 
             # Display the reference lab analysts instead of local
             analysts = self.get_reference_analysts(analysis)
-            if analysts:
-                item["replace"]["Analyst"] = "".join(analysts)
+            item["replace"]["Analyst"] = ", ".join(analysts)
+
+            # Display the instrument of the ref lab
+            instrument = analysis.getReferenceInstrument() or ""
+            item["replace"]["Instrument"] = instrument
+
+            # Display the method of the ref lab
+            method = analysis.getReferenceMethod() or ""
+            item["replace"]["Method"] = method
+
+            if any([instrument, method]):
+                # Tell the listing to display the instrument/method columns
+                self.listing.show_methodinstr_columns = True
 
         return item
 

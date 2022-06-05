@@ -27,3 +27,27 @@ def setReferenceVerifiers(self, value):
     """Sets the value for ReferenceVerifiers field from analysis
     """
     set_field_value(self, "ReferenceVerifiers", value)
+
+
+def getReferenceInstrument(self):
+    """Returns the name of the instrument used by the reference lab
+    """
+    return get_field_value(self, "ReferenceInstrument", default="")
+
+
+def setReferenceInstrument(self, value):
+    """Sets the name of the instrument used for this test by the reference lab
+    """
+    set_field_value(self, "ReferenceInstrument", value)
+
+
+def getReferenceMethod(self):
+    """Returns the name of the method used for this test by the reference lab
+    """
+    return get_field_value(self, "ReferenceMethod", default="")
+
+
+def setReferenceMethod(self, value):
+    """Sets the name of the method used for this test by the reference lab
+    """
+    set_field_value(self, "ReferenceMethod", value)

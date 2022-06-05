@@ -4,6 +4,7 @@ from archetypes.schemaextender.interfaces import IBrowserLayerAwareExtender
 from archetypes.schemaextender.interfaces import ISchemaExtender
 from senaite.referral import ISenaiteReferralLayer
 from senaite.referral.fields import ExtRecordsField
+from senaite.referral.fields import ExtStringField
 from zope.component import adapter
 from zope.interface import implementer
 
@@ -26,6 +27,16 @@ class AnalysisSchemaExtender(object):
             "ReferenceAnalysts",
             required=False,
             subfields=("userid", "username", "email", "fullname", "lab_code"),
+        ),
+        ExtStringField(
+            "ReferenceInstrument",
+            default="",
+            required=False,
+        ),
+        ExtStringField(
+            "ReferenceMethod",
+            default="",
+            required=False,
         )
     ]
 

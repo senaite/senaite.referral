@@ -170,6 +170,8 @@ class RemoteLab(object):
                 "result_options": analysis.getResultOptions(),
                 "interim_fields": analysis.getInterimFields(),
                 "formatted_result": get_formatted_result(analysis) or "NA",
+                "instrument": get_instrument(analysis) or "",
+                "method": get_method(analysis) or "",
                 "result_date": result_date.strftime("%Y-%m-%d"),
                 "verification_date": verification_date.strftime("%Y-%m-%d"),
                 "verifiers": get_verifiers_info(analysis),
@@ -220,6 +222,18 @@ class RemoteLab(object):
             # Return the whole thing joined as an string
             values = filter(None, [result, unit, uncertainty])
             return " ".join(values)
+
+        def get_instrument(analysis):
+            instrument = analysis.getInstrument()
+            if instrument:
+                return api.get_title(instrument)
+            return None
+
+        def get_method(analysis):
+            method = analysis.getMethod()
+            if method:
+                return api.get_title(method)
+            return None
 
         payload = {
             "consumer": "senaite.referral.outbound_sample",

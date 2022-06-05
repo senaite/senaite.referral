@@ -2,6 +2,7 @@
 
 import six
 from archetypes.schemaextender.interfaces import IExtensionField
+from Products.Archetypes.Field import StringField
 from Products.Archetypes.Storage.annotation import AnnotationStorage
 from Products.ATExtensions.field import RecordsField
 from zope.component.hooks import getSite
@@ -76,4 +77,9 @@ class ExtUIDReferenceField(ExtensionField, UIDReferenceField):
 
 class ExtRecordsField(ExtensionField, RecordsField):
     """Field Extender of RecordsField
+    """
+
+
+class ExtStringField(ExtensionField, StringField):
+    """Field Extender of StringField
     """

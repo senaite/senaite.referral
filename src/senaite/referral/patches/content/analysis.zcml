@@ -27,4 +27,28 @@
       ignoreOriginal="True"
       replacement=".analysis.setReferenceAnalysts" />
 
+  <monkey:patch
+      class="bika.lims.content.analysis.Analysis"
+      original="getReferenceInstrument"
+      ignoreOriginal="True"
+      replacement=".analysis.getReferenceInstrument" />
+
+  <monkey:patch
+      class="bika.lims.content.analysis.Analysis"
+      original="setReferenceInstrument"
+      ignoreOriginal="True"
+      replacement=".analysis.setReferenceInstrument" />
+
+  <monkey:patch
+      class="bika.lims.content.analysis.Analysis"
+      original="getReferenceMethod"
+      ignoreOriginal="True"
+      replacement=".analysis.getReferenceMethod" />
+
+  <monkey:patch
+      class="bika.lims.content.analysis.Analysis"
+      original="setReferenceMethod"
+      ignoreOriginal="True"
+      replacement=".analysis.setReferenceMethod" />
+
 </configure>
