@@ -531,7 +531,7 @@ def fix_referred_not_autoverified(portal):
 
 def fix_status_referred_analyses(portal):
     logger.info("Fixing status of referred analyses ...")
-    query = {"portal_type": "AnalysisRequest", "review_status": "shipped"}
+    query = {"portal_type": "AnalysisRequest", "review_state": "shipped"}
     samples = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
     for sample in samples:
         sample = api.get_object(sample)
