@@ -498,7 +498,7 @@ def fix_referred_not_autoverified(portal):
     wf_tool = api.get_tool("portal_workflow")
     wf_id = "bika_ar_workflow"
     workflow = wf_tool.getWorkflowById(wf_id)
-    query = {"portal_type": "AnalysisRequest", "review_status": "shipped"}
+    query = {"portal_type": "AnalysisRequest", "review_state": "shipped"}
     samples = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
     for sample in samples:
         sample = api.get_object(sample)
