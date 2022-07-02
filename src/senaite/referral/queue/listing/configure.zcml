@@ -1,0 +1,19 @@
+<configure
+  xmlns="http://namespaces.zope.org/zope"
+  i18n_domain="senaite.referral">
+
+  <!-- Inbound Sample Shipments listing -->
+  <subscriber
+      for="senaite.referral.browser.shipmentfolder.inboundshipments.InboundSampleShipmentFolderView
+           *"
+      provides="senaite.core.listing.interfaces.IListingViewAdapter"
+      factory=".inboundshipments.InboundShipmentsListingAdapter" />
+
+  <!-- Listing of samples from inside inbound sample shipment listing -->
+  <subscriber
+      for="senaite.referral.browser.inbound.samples.SamplesListingView
+           *"
+      provides="senaite.core.listing.interfaces.IListingViewAdapter"
+      factory=".inboundsamples.InboundSamplesListingAdapter" />
+
+</configure>

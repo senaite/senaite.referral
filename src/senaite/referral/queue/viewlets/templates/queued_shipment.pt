@@ -1,0 +1,23 @@
+<div tal:omit-tag=""
+     tal:condition="python: view.is_visible()"
+     i18n:domain="senaite.referral">
+
+  <div class="visualClear"></div>
+
+  <div id="portal-alert" tal:define="portal_url nocall:context/portal_url">
+    <div class="portlet-alert-item alert alert-warning alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <p class="title" style="margin-bottom:0">
+        <strong i18n:translate="">
+          The Queue is processing this shipment
+        </strong>&nbsp;
+      </p>
+      <p class="description">
+        Some of the actions and other functionalities for this shipment may
+        not be available until the process gets finished
+      </p>
+    </div>
+  </div>
+</div>

@@ -2,11 +2,14 @@
 
 import itertools
 
+from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
+from senaite.referral.queue import do_queue_action
 
 from bika.lims import api
 from bika.lims import senaiteMessageFactory as _s
 from bika.lims.browser.workflow import WorkflowActionGenericAdapter
+from bika.lims.workflow import isTransitionAllowed as is_transition_allowed
 
 
 class WorkflowActionReceiveAdapter(WorkflowActionGenericAdapter):
@@ -16,6 +19,21 @@ class WorkflowActionReceiveAdapter(WorkflowActionGenericAdapter):
     """
 
     def __call__(self, action, objects):
+        # Instead of receiving the whole shipment (up to down), receive the
+        # individual inbound samples each shipment contains, so the queue can
+        # handle these tasks in a more efficient way
+        task_uids = []
+        for shipment in objects:
+            task = self.do_queue_receive(shipment)
+            if task:
+                task_uids.append(task.task_short_uid)
+
+        if task_uids:
+            task_uids = ", ".join(task_uids)
+            msg = _("One or more tasks for the reception of inbound shipments "
+                    "have been added to the queue: {}").format(task_uids)
+            return self.redirect(message=msg)
+
         transitioned = self.do_action(action, objects)
         if not transitioned:
             return self.redirect(message=_s("No changes made"), level="warning")
@@ -54,3 +72,25 @@ class WorkflowActionReceiveAdapter(WorkflowActionGenericAdapter):
         """
         key = "{}.barcodes_preview_reception".format(PRODUCT_NAME)
         return api.get_registry_record(key, default=False)
+
+    def do_queue_receive(self, shipment_or_uid):
+        """Tries to queue the reception of this inbound shipment, but for all
+        individual contained instead, so samples are received in handy chunks
+        """
+        shipment = api.get_object(shipment_or_uid)
+        samples = shipment.getInboundSamples()
+
+        def can_receive(sample):
+            return api.get_review_status(sample) == "due"
+
+        # This is reception, so we are only interested on those that are in a
+        # suitable status for reception
+        samples = filter(can_receive, samples)
+        if not samples:
+            # Maybe the shipment is in an intermediate state. No option other
+            # than queueing the whole shipment
+            action = "receive_inbound_shipment"
+            return do_queue_action(shipment, action)
+
+        action = "receive_inbound_sample"
+        return do_queue_action(shipment, action, samples)

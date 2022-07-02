@@ -1,0 +1,11 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="senaite.referral">
+
+  <adapter
+      name="senaite.referral.queue.guards.inboundshipment"
+      for="senaite.referral.interfaces.IInboundSampleShipment"
+      factory=".inboundshipment.InboundShipmentGuardAdapter"
+      provides="bika.lims.interfaces.IGuardAdapter"/>
+
+</configure>

@@ -1,0 +1,16 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="senaite.referral">
+
+  <!-- Queued Inbound Shipment -->
+  <browser:viewlet
+      name="senaite.referral.queue.viewlets.inbdounshipment"
+      for="senaite.referral.interfaces.IInboundSampleShipment"
+      class=".inboundshipment.InboundShipmentViewlet"
+      manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+      template="templates/queued_shipment.pt"
+      permission="zope2.View"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+</configure>
