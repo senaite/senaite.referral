@@ -31,6 +31,13 @@ class RetryNotificationView(BaseView):
                 return self.redirect(message=message, level="error")
 
             connection = get_remote_connection(laboratory)
+            if not connection:
+                message = _(
+                    "Cannot connect to remote laboratory. Please check the "
+                    "URL is valid and remote user credentials are not empty"
+                )
+                return self.redirect(message=message, level="error")
+
             connection.notify(self.context, payload)
 
         return self.redirect()
