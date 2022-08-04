@@ -1,0 +1,76 @@
+<div tal:omit-tag=""
+     tal:condition="python:view.is_visible()"
+     i18n:domain="senaite.referral">
+
+  <div class="visualClear"></div>
+
+  <div id="portal-alert"
+       tal:define="in_sync python:view.is_synced();
+                   succeed python: len(view.get_succeed_samples_posts());
+                   total python: len(view.get_samples_posts());">
+
+    <div class="portal-alert-item alert alert-info"
+         tal:condition="in_sync">
+      <strong i18n:translate="">
+        Remote laboratory has been notified successfully
+      </strong>
+      <p class="title">
+        <span i18n:translate="">
+          Status and information about this shipment, samples and results have
+          been successfully synchronized with the referring laboratory
+        </span>
+        <tal:samples condition="python: total > 0">
+          :&nbsp;
+          <span tal:content="python: '{}/{}'.format(succeed, total)"/>
+        </tal:samples>
+      </p>
+      <p class="description">
+        <span i18n:translate="">Last notification</span>:&nbsp;
+        <span tal:content="python: view.get_last_notification_date()"/>
+      </p>
+    </div>
+
+
+    <div class="portlet-alert-item alert alert-error"
+         tal:condition="python: not in_sync">
+
+      <strong i18n:translate="" tal:condition="python: succeed &gt; 0">
+        Remote laboratory has been partially notified
+      </strong>
+      <strong i18n:translate="" tal:condition="python: succeed == 0">
+        Remote laboratory has not been notified
+      </strong>
+      <p class="title">
+        <span i18n:translate="">
+          The synchronization with the referring laboratory did not take place
+          or failed for some of the samples received from this shipment
+        </span>:
+        <span tal:content="python: '{}/{}'.format(succeed, total)"/>
+      </p>
+      <form id="retry_shipment_notification"
+            name="retry_shipment_notification"
+            action="retry_shipment_notification"
+            enctype="multipart/form-data"
+            method="POST">
+
+        <p class="description">
+
+          <!-- Hidden Fields -->
+          <input type="hidden" name="submitted" value="1"/>
+          <input tal:replace="structure context/@@authenticator/authenticator"/>
+
+          <div class="form-group field">
+
+            <!-- Button to retry notification -->
+            <input class="btn btn-primary btn-xs"
+                   name="retry"
+                   i18n:attributes="value"
+                   type="submit"
+                   value="Retry notification"/>
+          </div>
+        </p>
+      </form>
+    </div>
+  </div>
+
+</div>
