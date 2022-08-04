@@ -137,6 +137,7 @@ class SamplesListingView(ListingView):
             item["replace"]["sample_id"] = sample_link
             item["replace"]["sample_type"] = st_link
             item["replace"]["client"] = get_link_for(client)
+            item["replace"]["state_title"] = self.get_state_title(sample)
         else:
             # This inbound sample does not have a sample counterpart yet
             date_sampled = obj.getDateSampled()
@@ -159,3 +160,17 @@ class SamplesListingView(ListingView):
             item["replace"]["priority"] = priority
 
         return item
+
+    def get_state_title(self, obj):
+        """Translates the review state to the current set language
+
+        :param state: Review state title
+        :type state: basestring
+        :returns: Translated review state title
+        """
+        state = api.get_review_status(obj)
+        ts = api.get_tool("translation_service")
+        wf = api.get_tool("portal_workflow")
+        portal_type = api.get_portal_type(obj)
+        state_title = wf.getTitleForStateOnType(state, portal_type)
+        return ts.translate(_(state_title or state), context=self.request)
