@@ -163,7 +163,6 @@ class SamplesListingView(ListingView):
 
     def get_state_title(self, obj):
         """Translates the review state to the current set language
-
         :param state: Review state title
         :type state: basestring
         :returns: Translated review state title

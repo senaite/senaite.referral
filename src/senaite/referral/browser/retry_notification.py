@@ -2,7 +2,6 @@
 
 import six
 from collections import OrderedDict
-from plone.memoize import view
 from senaite.referral import messageFactory as _
 from senaite.referral.browser import BaseView
 from senaite.referral.interfaces import IInboundSampleShipment
@@ -41,7 +40,6 @@ class RetryNotificationView(BaseView):
     def get_objects(self):
         """Returns a list of objects coming from the "uids" request parameter
         """
-        # Create a mapping of source ARs for copy
         uids = self.request.form.get("uids", None)
         if isinstance(uids, six.string_types):
             uids = uids.split(",")
@@ -111,7 +109,6 @@ class RetryNotificationView(BaseView):
         uid = post.get("uid")
         return self.get_referring_laboratory(uid)
 
-    @view.memoize
     def get_referring_laboratory(self, obj_uid_brain):
         """Returns the referring laboratory the given UID is assigned to
         """
