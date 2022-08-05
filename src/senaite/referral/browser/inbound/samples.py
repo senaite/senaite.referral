@@ -3,10 +3,12 @@ import collections
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
 from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
+from senaite.referral.notifications import get_last_post
 from senaite.referral.utils import get_image_url
 
 from bika.lims import api
 from bika.lims import PRIORITIES
+from bika.lims.utils import get_image
 from bika.lims.utils import get_link_for
 
 
@@ -138,6 +140,13 @@ class SamplesListingView(ListingView):
             item["replace"]["sample_type"] = st_link
             item["replace"]["client"] = get_link_for(client)
             item["replace"]["state_title"] = self.get_state_title(sample)
+
+            # Add an icon if last POST notification for this Sample failed
+            if self.is_failed_notification(sample):
+                msg = _("Notification to remote lab failed")
+                img = get_image("exclamation.png", title=msg)
+                item["after"]["sample_id"] = img
+
         else:
             # This inbound sample does not have a sample counterpart yet
             date_sampled = obj.getDateSampled()
@@ -173,3 +182,13 @@ class SamplesListingView(ListingView):
         portal_type = api.get_portal_type(obj)
         state_title = wf.getTitleForStateOnType(state, portal_type)
         return ts.translate(_(state_title or state), context=self.request)
+
+    def is_failed_notification(self, obj):
+        """Returns whether the last notification POST for the given object
+        failed or not
+        """
+        post = get_last_post(obj)
+        if not post:
+            return False
+        success = post.get("success", False)
+        return not success
