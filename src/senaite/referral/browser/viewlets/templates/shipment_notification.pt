@@ -47,9 +47,9 @@
         </span>:
         <span tal:content="python: '{}/{}'.format(succeed, total)"/>
       </p>
-      <form id="retry_shipment_notification"
-            name="retry_shipment_notification"
-            action="retry_shipment_notification"
+      <form id="retry_notification"
+            name="retry_notification"
+            action="retry_notification"
             enctype="multipart/form-data"
             method="POST">
 
@@ -57,6 +57,8 @@
 
           <!-- Hidden Fields -->
           <input type="hidden" name="submitted" value="1"/>
+          <input type="hidden" name="uids" id="uids"
+                 tal:attributes="value python: ','.join(view.get_failed_uids())"/>
           <input tal:replace="structure context/@@authenticator/authenticator"/>
 
           <div class="form-group field">

@@ -31,7 +31,8 @@ class PostNotificationViewlet(ViewletBase):
 
             samples = self.context.getSamples()
             posts = filter(None, [get_last_post(sample) for sample in samples])
-            return not posts
+            if not posts and self.get_notification():
+                return True
 
         elif self.get_notification():
             return True

@@ -55,6 +55,12 @@ class ShipmentNotificationViewlet(ViewletBase):
         samples = self.get_samples_posts()
         return filter(lambda post: not post.get("success", False), samples)
 
+    def get_failed_uids(self):
+        """Returns a list of UIDs of Samples from this Shipment for which the
+        POST notification failed
+        """
+        return [post.get("uid") for post in self.get_failed_samples_posts()]
+
     def get_succeed_samples_posts(self):
         """Return a list of dicts with information about the POST notifications
         that failed for samples from this current shipment

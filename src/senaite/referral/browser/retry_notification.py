@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
+
+import six
+from collections import OrderedDict
+from plone.memoize import view
 from senaite.referral import messageFactory as _
 from senaite.referral.browser import BaseView
+from senaite.referral.interfaces import IInboundSampleShipment
 from senaite.referral.notifications import get_last_post
 from senaite.referral.remotelab import get_remote_connection
 
 from bika.lims import api
+from bika.lims.interfaces import IAnalysisRequest
 
 
 class RetryNotificationView(BaseView):
@@ -18,26 +24,100 @@ class RetryNotificationView(BaseView):
 
         if form_submitted and form_retry:
 
-            last_post = get_last_post(self.context)
-            if not last_post:
+            # Get the posts to retry
+            posts = self.get_posts()
+            if not posts:
                 message = _("No POST notification in history")
                 return self.redirect(message=message, level="error")
 
-            payload = last_post.get("payload")
-            lab_uid = payload.get("remote_lab")
-            laboratory = api.get_object(lab_uid, default=None)
-            if not laboratory:
-                message = _("No remote laboratory found for {}".format(lab_uid))
-                return self.redirect(message=message, level="error")
-
-            connection = get_remote_connection(laboratory)
-            if not connection:
-                message = _(
-                    "Cannot connect to remote laboratory. Please check the "
-                    "URL is valid and remote user credentials are not empty"
-                )
-                return self.redirect(message=message, level="error")
-
-            connection.notify(self.context, payload)
+            # Retry
+            for post in posts:
+                err_msg = self.repost(post)
+                if err_msg:
+                    return self.redirect(message=err_msg, level="error")
 
         return self.redirect()
+
+    def get_objects(self):
+        """Returns a list of objects coming from the "uids" request parameter
+        """
+        # Create a mapping of source ARs for copy
+        uids = self.request.form.get("uids", None)
+        if isinstance(uids, six.string_types):
+            uids = uids.split(",")
+            uids = filter(api.is_uid, uids)
+
+        if not uids:
+            return [self.context]
+
+        # Remove duplicates while keeping the order
+        uids = OrderedDict().fromkeys(uids).keys()
+        return [api.get_object_by_uid(uid) for uid in uids]
+
+    def get_posts(self):
+        """Returns the POST notifications to retry
+        """
+        posts = [self.get_post_info(obj) for obj in self.get_objects()]
+        return filter(None, posts)
+
+    def get_post_info(self, obj):
+        """Returns a dict with the information about the POST notification
+        for the given object
+        """
+        post = get_last_post(obj)
+        if not post:
+            return None
+
+        post.update({
+            "id": api.get_id(obj),
+            "uid": api.get_uid(obj),
+            "path": api.get_path(obj),
+            "obj": obj,
+        })
+        return post
+
+    def repost(self, post):
+        """Tries to repost a post. Returns a string message if error
+        """
+        obj_id = post.get("id")
+        payload = post.get("payload")
+        if not payload:
+            return _("No payload found for {}".format(obj_id))
+
+        laboratory = self.get_laboratory(post)
+        if not laboratory:
+            return _("No remote laboratory found for {}".format(obj_id))
+
+        connection = get_remote_connection(laboratory)
+        if not connection:
+            return _(
+                "Cannot connect to remote laboratory. Please check the "
+                "URL is valid and remote user credentials are not empty"
+            )
+
+        # Do the re-POST
+        obj = post.get("obj")
+        connection.notify(obj, payload)
+
+    def get_laboratory(self, post):
+        """Extracts the laboratory from the post or from the sample belongs to
+        """
+        lab_uid = post.get("remote_lab")
+        laboratory = api.get_object_by_uid(lab_uid, default=None)
+        if laboratory:
+            return laboratory
+
+        # Try with the object the POST belongs to
+        uid = post.get("uid")
+        return self.get_referring_laboratory(uid)
+
+    @view.memoize
+    def get_referring_laboratory(self, obj_uid_brain):
+        """Returns the referring laboratory the given UID is assigned to
+        """
+        obj = api.get_object(obj_uid_brain, default=None)
+        if IAnalysisRequest.providedBy(obj):
+            obj = obj.getInboundShipment()
+        if IInboundSampleShipment.providedBy(obj):
+            return obj.getReferringLaboratory()
+        return None
