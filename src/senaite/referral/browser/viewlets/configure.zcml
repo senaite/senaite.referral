@@ -33,6 +33,15 @@
       permission="senaite.core.permissions.ManageBika"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
+  <!-- Shipment POST notification viewlet -->
+  <browser:viewlet
+      for="senaite.referral.interfaces.IInboundSampleShipment"
+      name="senaite.referral.viewlet.shipment_notification"
+      class=".shipment_notification.ShipmentNotificationViewlet"
+      manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
   <!-- Shipment Manifest viewlet -->
   <browser:viewlet
       for="senaite.referral.interfaces.IOutboundSampleShipment"

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import copy
 import json
 from datetime import datetime
-
 from persistent.list import PersistentList
 from requests import Response
 from senaite.referral.utils import is_true

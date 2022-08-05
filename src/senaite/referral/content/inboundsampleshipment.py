@@ -271,4 +271,9 @@ class InboundSampleShipment(Container):
         """Returns the samples generated because of the partial or fully
         reception of inbound samples assigned to this inbound shipment
         """
-        return [api.get_object(samp) for samp in self.getRawSamples()]
+        uids = filter(None, self.getRawSamples())
+        if not uids:
+            return []
+        query = {"UID": uids}
+        samples = api.search(query, "uid_catalog")
+        return [api.get_object(sample) for sample in samples]
