@@ -13,6 +13,7 @@ from senaite.referral.utils import is_valid_url
 
 from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
+from bika.lims.interfaces import IVerified
 from bika.lims.utils import format_supsub
 from bika.lims.utils.analysis import format_uncertainty
 
@@ -144,15 +145,36 @@ class RemoteLab(object):
         provided with the sample passed-in
         """
 
+        def get_valid_analyses(sample):
+            analyses = []
+            valid = ["verified", "published"]
+            for analysis in sample.getAnalyses(full_objects=True):
+
+                # We only consider Verified analyses
+                if not IVerified.providedBy(analysis):
+                    continue
+
+                # Skip invalid and others
+                if api.get_review_status(analysis) not in valid:
+                    continue
+
+                # We only consider "final" analyses
+                if analysis.getRetest():
+                    continue
+
+                analyses.append(analysis)
+
+            # Sort them by modification date
+            analyses = sorted(analyses, key=api.get_modification_date)
+            return analyses
+
         def get_sample_info(sample):
             # Extract the shipment the sample belongs to
             shipment = sample.getInboundShipment()
 
             # We are only interested in analyses results. Referring laboratory
             # does not care about the information set at sample level
-            valid = ["verified", "published"]
-            analyses = sample.getAnalyses(full_objects=True)
-            analyses = filter(lambda a: api.get_review_status(a) in valid, analyses)
+            analyses = get_valid_analyses(sample)
             analyses = [get_analysis_info(analysis) for analysis in analyses]
             return {
                 "id": api.get_id(sample),
