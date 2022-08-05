@@ -64,6 +64,10 @@ class SamplesListingView(ListingView):
                 "title": _c("Sample Type"),
                 "sortable": True,
                 "toggle": True}),
+            ("state_title", {
+                "title": _("State"),
+                "sortable": True,
+                "index": "review_state"}),
         ))
 
         self.review_states = [{
