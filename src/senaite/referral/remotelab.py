@@ -163,7 +163,6 @@ class RemoteLab(object):
 
         def get_analysis_info(analysis):
             result_date = analysis.getResultCaptureDate()
-            verification_date = analysis.getDateVerified()
             return {
                 "keyword": analysis.getKeyword(),
                 "result": analysis.getResult(),
@@ -173,7 +172,6 @@ class RemoteLab(object):
                 "instrument": get_instrument(analysis) or "",
                 "method": get_method(analysis) or "",
                 "result_date": result_date.strftime("%Y-%m-%d"),
-                "verification_date": verification_date.strftime("%Y-%m-%d"),
                 "verifiers": get_verifiers_info(analysis),
                 "analysts": get_analysts_info(analysis),
             }
