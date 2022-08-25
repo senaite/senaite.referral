@@ -4,6 +4,7 @@ import six
 from collections import OrderedDict
 from senaite.referral import messageFactory as _
 from senaite.referral.browser import BaseView
+from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.interfaces import IInboundSampleShipment
 from senaite.referral.notifications import get_last_post
 from senaite.referral.remotelab import get_remote_connection
@@ -100,8 +101,15 @@ class RetryNotificationView(BaseView):
     def get_laboratory(self, post):
         """Extracts the laboratory from the post or from the sample belongs to
         """
+        # Tray with the value for 'remote_lab' from the base POST info
         lab_uid = post.get("remote_lab")
-        laboratory = api.get_object_by_uid(lab_uid, default=None)
+        laboratory = self.get_referring_laboratory(lab_uid)
+        if laboratory:
+            return laboratory
+
+        # Try with the value for 'remote_lab' from the POST payload
+        lab_uid = post.get("payload", {}).get("remote_lab")
+        laboratory = self.get_referring_laboratory(lab_uid)
         if laboratory:
             return laboratory
 
@@ -113,8 +121,14 @@ class RetryNotificationView(BaseView):
         """Returns the referring laboratory the given UID is assigned to
         """
         obj = api.get_object(obj_uid_brain, default=None)
-        if IAnalysisRequest.providedBy(obj):
-            obj = obj.getInboundShipment()
-        if IInboundSampleShipment.providedBy(obj):
+        if IExternalLaboratory.providedBy(obj):
+            return obj
+
+        elif IInboundSampleShipment.providedBy(obj):
             return obj.getReferringLaboratory()
+
+        elif IAnalysisRequest.providedBy(obj):
+            shipment = obj.getInboundShipment()
+            return self.get_referring_laboratory(shipment)
+
         return None
