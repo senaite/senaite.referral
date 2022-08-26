@@ -1,16 +1,8 @@
 <configure
   xmlns="http://namespaces.zope.org/zope"
-  xmlns:monkey="http://namespaces.plone.org/monkey"
   i18n_domain="senaite.referral">
 
   <!-- Package includes -->
   <include package=".content"/>
-
-  <!-- Do not display the drop down 'Add new...' -->
-  <monkey:patch
-    description="Do not display the drop down 'Add new...'"
-    class="plone.app.contentmenu.menu.FactoriesSubMenuItem"
-    original="available"
-    replacement=".contentmenu.available" />
 
 </configure>

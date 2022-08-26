@@ -15,6 +15,7 @@
   <!-- PERMISSIONS -->
   <!-- Plone generic permissions -->
   <permission>Access contents information</permission>
+  <permission>Add portal content</permission>
   <permission>Delete objects</permission>
   <permission>List folder contents</permission>
   <permission>Modify portal content</permission>
@@ -27,6 +28,7 @@
 
     <!-- Plone's permissions -->
     <permission-map name="Access contents information" acquired="True" />
+    <permission-map name="Add portal content" acquired="True" />
     <permission-map name="Delete objects" acquired="True" />
     <permission-map name="List folder contents" acquired="True" />
     <permission-map name="Modify portal content" acquired="True" />
@@ -39,7 +41,8 @@
 
     <!-- Plone's permissions -->
     <permission-map name="Access contents information" acquired="True" />
-    <permission-map name="Delete objects" acquired="True" />
+    <permission-map name="Add portal content" acquired="False" />
+    <permission-map name="Delete objects" acquired="False" />
     <permission-map name="List folder contents" acquired="True" />
     <permission-map name="Modify portal content" acquired="True" />
     <permission-map name="View" acquired="True" />
@@ -51,7 +54,8 @@
 
     <!-- Plone's permissions -->
     <permission-map name="Access contents information" acquired="True" />
-    <permission-map name="Delete objects" acquired="True" />
+    <permission-map name="Add portal content" acquired="False" />
+    <permission-map name="Delete objects" acquired="False" />
     <permission-map name="List folder contents" acquired="True" />
     <permission-map name="Modify portal content" acquired="False" />
     <permission-map name="View" acquired="True" />

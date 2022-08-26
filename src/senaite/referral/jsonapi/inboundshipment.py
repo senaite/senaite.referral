@@ -4,6 +4,7 @@ import json
 
 import six
 from Products.ATContentTypes.utils import DT2dt
+from Products.CMFCore.permissions import AddPortalContent
 from senaite.jsonapi.interfaces import IPushConsumer
 from senaite.jsonapi.request import is_json_deserializable
 from senaite.referral import utils
@@ -11,6 +12,7 @@ from senaite.referral.interfaces import IInboundSampleShipment
 from zope.interface import implementer
 
 from bika.lims import api
+from bika.lims.api.security import revoke_permission_for
 
 
 @implementer(IPushConsumer)
@@ -76,6 +78,10 @@ class InboundShipmentConsumer(object):
         shipment = api.create(lab, "InboundSampleShipment", **values)
         for record in sample_records:
             self.create_inbound_sample(shipment, record)
+
+        # Disallow the "Add portal content" permission so no more InboundSample
+        # objects can be added (and the "Add new..." menu item is not displayed)
+        revoke_permission_for(shipment, AddPortalContent, [])
 
         return True
 
