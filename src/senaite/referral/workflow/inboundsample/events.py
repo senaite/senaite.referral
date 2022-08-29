@@ -27,6 +27,21 @@ def after_receive_inbound_sample(inbound_sample):
         doActionFor(shipment, "receive_inbound_shipment")
 
 
+def after_reject_inbound_sample(inbound_sample):
+    """Event fired after a transition "reject_inbound_sample" for an
+    InboundSample object is triggered. If all inbound samples from the
+    inbound shipment have been rejected and no regular samples have been
+    created yet, the inbound shipment is automatically rejected as well
+    """
+    shipment = inbound_sample.getInboundShipment()
+    for sample in shipment.getInboundSamples():
+        if api.get_review_status(sample) != "rejected":
+            return
+
+    # All inbound samples have been rejected. Reject the shipment
+    doActionFor(shipment, "reject_inbound_shipment")
+
+
 def create_sample(inbound_sample):
     """Creates a counterpart sample for the inbound sample passed in
     """
