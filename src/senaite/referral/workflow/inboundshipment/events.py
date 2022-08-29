@@ -33,6 +33,11 @@ def after_reject_inbound_shipment(shipment):
     for inbound_sample in shipment.getInboundSamples():
         do_action_for(inbound_sample, "reject_inbound_sample")
 
-    # Reject all AnalysisRequest objects (received samples)
-    for sample in shipment.getSamples():
-        do_action_for(sample, "reject")
+    # Notify the remote laboratory
+    lab = shipment.getReferringLaboratory()
+    remote_lab = get_remote_connection(lab)
+    if not remote_lab:
+        return
+
+    # Mark the outbound shipment counterpart as rejected
+    remote_lab.do_action(shipment, "reject_outbound_shipment")
