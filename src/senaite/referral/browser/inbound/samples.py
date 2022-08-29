@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+
 import collections
 from senaite.core.listing import ListingView
+from senaite.core.listing.decorators import translate
 from senaite.referral import messageFactory as _
 from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.notifications import get_last_post
@@ -66,7 +68,6 @@ class SamplesListingView(ListingView):
                 "index": "review_state"
             }),
         ))
-
         self.review_states = [
             {
                 "id": "due",
@@ -96,6 +97,17 @@ class SamplesListingView(ListingView):
                 "columns": self.columns.keys(),
             },
         ]
+
+    @translate
+    def get_review_states(self):
+        """Returns the `review_states` list of the view
+        """
+        states = self.review_states
+        shipment_status = api.get_review_status(self.context)
+        if shipment_status != "due":
+            # Shipment is received or rejected, no need to display "due" filter
+            states = filter(lambda st: st["id"] != "due", states)
+        return states
 
     def update(self):
         """Update hook
