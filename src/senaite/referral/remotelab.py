@@ -13,7 +13,6 @@ from senaite.referral.utils import is_valid_url
 
 from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
-from bika.lims.interfaces import IVerified
 from bika.lims.utils import format_supsub
 from bika.lims.utils.analysis import format_uncertainty
 
@@ -162,27 +161,24 @@ class RemoteLab(object):
         """
 
         def get_valid_analyses(sample):
-            analyses = []
+            # Sort by id descending to prioritize newest results if retests
+            kwargs = {
+                "full_objects": True,
+                "sort_on": "id",
+                "sort_order": "ascending",
+            }
+
+            # Exclude old, but valid analyses with same keyword (e.g retests),
+            # cause we want to update the referring lab with the newest result
+            analyses = {}
             valid = ["verified", "published"]
-            for analysis in sample.getAnalyses(full_objects=True):
-
-                # We only consider Verified analyses
-                if not IVerified.providedBy(analysis):
-                    continue
-
-                # Skip invalid and others
+            for analysis in sample.getAnalyses(**kwargs):
                 if api.get_review_status(analysis) not in valid:
                     continue
+                keyword = analysis.getKeyword()
+                analyses[keyword] = analysis
 
-                # We only consider "final" analyses
-                if analysis.getRetest():
-                    continue
-
-                analyses.append(analysis)
-
-            # Sort them by modification date
-            analyses = sorted(analyses, key=api.get_modification_date)
-            return analyses
+            return analyses.values()
 
         def get_sample_info(sample):
             # Extract the shipment the sample belongs to
