@@ -102,6 +102,7 @@ class ReferralConsumer(BaseConsumer):
 
         # Iterate through items and process them
         for item in self.items:
+
             # Try to delegate to an existing function
             portal_type = self.get_value(item, "portal_type").lower()
             func_name = "do_{}_{}".format(portal_type, self.action.lower())
@@ -127,6 +128,14 @@ class ReferralConsumer(BaseConsumer):
         """
         # Get the object counterpart
         obj = self.get_object_for(item_or_object)
+
+        # Prevent callbacks to referring lab for these same items
+        request = api.get_request()
+        skip = request.get("skip_post_action_uids", [])
+        skip.append(api.get_uid(obj))
+        request.set("skip_post_action_uids", skip)
+
+        # Try with basic transition machinery
         if isTransitionAllowed(obj, action):
             doActionFor(obj, action)
             return

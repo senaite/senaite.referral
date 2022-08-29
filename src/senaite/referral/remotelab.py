@@ -66,6 +66,15 @@ def get_object_info(obj):
     return basic_info
 
 
+def skip_post_action_for(obj):
+    """Returns whether POST actions must be skipped for the given object to
+    prevent circular calls between referring and referer labs
+    """
+    uid = api.get_uid(obj)
+    uids = api.get_request().get("skip_post_action_uids", [])
+    return uid in uids
+
+
 class RemoteLab(object):
 
     _session = None
@@ -99,6 +108,13 @@ class RemoteLab(object):
         """
         if not isinstance(obj, (list, tuple, set)):
             obj = [obj]
+
+        # Skip objects that are being transitioned by the remote lab via PUSH
+        # in current request already. This is to prevent circular POSTs
+        obj = filter(lambda ob: not skip_post_action_for(ob), obj)
+        if not obj:
+            return
+
         items = [get_object_info(obj) for obj in obj]
         payload = {
             "consumer": "senaite.referral.consumer",
