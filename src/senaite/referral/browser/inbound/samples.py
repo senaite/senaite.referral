@@ -2,7 +2,6 @@
 
 import collections
 from senaite.core.listing import ListingView
-from senaite.core.listing.decorators import translate
 from senaite.referral import messageFactory as _
 from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.notifications import get_last_post
@@ -68,20 +67,21 @@ class SamplesListingView(ListingView):
                 "index": "review_state"
             }),
         ))
+
+        print_stickers = {
+            "id": "print_stickers",
+            "title": _("Print stickers"),
+            "url": "workflow_action?action=print_stickers"
+        }
+
         self.review_states = [
             {
-                "id": "due",
-                "title": _("Due"),
-                "contentFilter": {
-                    "review_state": "due",
-                },
-                "columns": self.columns.keys(),
-            }, {
                 "id": "received",
                 "title": _("Received"),
                 "contentFilter": {
                     "review_state": "received",
                 },
+                "custom_transitions": [print_stickers],
                 "columns": self.columns.keys(),
             }, {
                 "id": "rejected",
@@ -89,25 +89,32 @@ class SamplesListingView(ListingView):
                 "contentFilter": {
                     "review_state": "rejected",
                 },
+                "custom_transitions": [print_stickers],
                 "columns": self.columns.keys(),
             }, {
                 "id": "default",
                 "title": _("All"),
                 "contentFilter": {},
+                "custom_transitions": [print_stickers],
                 "columns": self.columns.keys(),
             },
         ]
 
-    @translate
-    def get_review_states(self):
-        """Returns the `review_states` list of the view
-        """
-        states = self.review_states
-        shipment_status = api.get_review_status(self.context)
-        if shipment_status != "due":
-            # Shipment is received or rejected, no need to display "due" filter
-            states = filter(lambda st: st["id"] != "due", states)
-        return states
+        if api.get_review_status(self.context) == "due":
+            # Insert a "due" filter
+            due = {
+                "id": "due",
+                "title": _("Due"),
+                "contentFilter": {
+                    "review_state": "due",
+                },
+                "columns": self.columns.keys(),
+            }
+            self.review_states.insert(0, due)
+
+            # Remove "Print stickers" custom transitions
+            for state in self.review_states:
+                state["custom_transitions"] = []
 
     def update(self):
         """Update hook
