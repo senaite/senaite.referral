@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import copy
-import json
 
+import json
 from senaite.jsonapi.interfaces import IPushConsumer
 from senaite.referral import utils
 from senaite.referral.interfaces import IInboundSampleShipment
@@ -10,7 +10,10 @@ from senaite.referral.interfaces import IOutboundSampleShipment
 from zope.interface import implementer
 
 from bika.lims import api
+from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
+from bika.lims.utils import changeWorkflowState
 from bika.lims.workflow import doActionFor
+from bika.lims.workflow import isTransitionAllowed
 
 _marker = object()
 
@@ -88,8 +91,34 @@ class ReferralConsumer(BaseConsumer):
         for item in self.items:
             # Get the object counterpart
             obj = self.get_object_for(lab, item)
-            doActionFor(obj, self.action)
+            # Do the action
+            self.do_action(obj, self.action)
+
         return True
+
+    def do_action(self, obj, action):
+        """Performs an action against the given object
+        """
+        if isTransitionAllowed(obj, action):
+            doActionFor(obj, action)
+            return
+
+        # Check whether the action was performed already
+        history = api.get_review_history(obj)
+        if history and history[0].get("action", None) == action:
+            return
+
+        # Do force the transition
+        workflows = api.get_workflows_for(obj)
+        wf_tool = api.get_tool("portal_workflow")
+        for wf_id in workflows:
+            workflow = wf_tool.getWorkflowById(wf_id)
+            if action not in workflow.transitions:
+                continue
+            transition = workflow.transitions[action]
+            status = transition.new_state_id
+            kwargs = {"action": action}
+            changeWorkflowState(obj, wf_id, status, **kwargs)
 
     def get_object_for(self, lab, item):
         """Returns the object from current instance that is related with the
@@ -113,5 +142,16 @@ class ReferralConsumer(BaseConsumer):
                 if IOutboundSampleShipment.providedBy(shipment):
                     if shipment.getShipmentID() == shipment_id:
                         return shipment
+
+        elif portal_type == "AnalysisRequest":
+            original_id = self.get_value(item, "ClientSampleID")
+            if not original_id:
+                return None
+
+            query = {"portal_type": "AnalysisRequest", "id": original_id}
+            brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
+            # TODO Check whether the inferred sample is the expected one
+            if len(brains) == 1:
+                return api.get_object(brains[0])
 
         return None
