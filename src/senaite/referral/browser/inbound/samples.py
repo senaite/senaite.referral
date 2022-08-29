@@ -100,7 +100,12 @@ class SamplesListingView(ListingView):
             },
         ]
 
-        if api.get_review_status(self.context) == "due":
+        context_status = api.get_review_status(self.context)
+        if context_status == "rejected":
+            # Shipment has been rejected, selection of samples not permitted
+            self.show_select_column = False
+
+        if context_status == "due":
             # Insert a "due" filter
             due = {
                 "id": "due",
