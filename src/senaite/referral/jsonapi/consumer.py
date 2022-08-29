@@ -3,6 +3,7 @@
 import copy
 
 import json
+from plone.memoize.instance import memoize
 from senaite.jsonapi.interfaces import IPushConsumer
 from senaite.referral import utils
 from senaite.referral.interfaces import IInboundSampleShipment
@@ -75,30 +76,57 @@ class ReferralConsumer(BaseConsumer):
         """
         return self.get_value(self.data, "lab_code")
 
+    @memoize
+    def get_laboratory(self):
+        """Returns the external laboratory object that represents the lab that
+        sends the current POST request
+        """
+        return utils.get_by_code("ExternalLaboratory", self.lab_code)
+
     def process(self):
         """Processes the data sent via POST in accordance with the value for
         'action' parameter of the POST request
         """
-        # Get the external laboratory object that represents the lab that
-        # sends this POST request
-        lab = utils.get_by_code("ExternalLaboratory", self.lab_code)
-        if not lab:
+        if not self.action:
+            raise ValueError("No action defined")
+
+        if not self.lab_code:
+            raise ValueError("No lab_code defined")
+
+        laboratory = self.get_laboratory()
+        if not laboratory:
             raise ValueError("Laboratory not found: {}".format(self.lab_code))
-        if not api.is_active(lab):
+
+        if not api.is_active(laboratory):
             raise ValueError("Laboratory is inactive: {}".format(self.lab_code))
 
         # Iterate through items and process them
         for item in self.items:
-            # Get the object counterpart
-            obj = self.get_object_for(lab, item)
-            # Do the action
-            self.do_action(obj, self.action)
+            # Try to delegate to an existing function
+            portal_type = self.get_value(item, "portal_type").lower()
+            func_name = "do_{}_{}".format(portal_type, self.action.lower())
+            func = getattr(self, func_name, None)
+            if func:
+                func(item)
+            else:
+                # Rely on default 'do_action'
+                self.do_action(item, self.action)
 
         return True
 
-    def do_action(self, obj, action):
+    def do_analysisrequest_reject(self, item):
+        """Rejects a referred sample
+        """
+        rejection_reasons = self.get_value(item, "RejectionReasons")
+        obj = self.get_object_for(item)
+        obj.setRejectionReasons(rejection_reasons)
+        self.do_action(obj, "reject")
+
+    def do_action(self, item_or_object, action):
         """Performs an action against the given object
         """
+        # Get the object counterpart
+        obj = self.get_object_for(item_or_object)
         if isTransitionAllowed(obj, action):
             doActionFor(obj, action)
             return
@@ -120,15 +148,19 @@ class ReferralConsumer(BaseConsumer):
             kwargs = {"action": action}
             changeWorkflowState(obj, wf_id, status, **kwargs)
 
-    def get_object_for(self, lab, item):
+    def get_object_for(self, item):
         """Returns the object from current instance that is related with the
         information provided in the item passed-in, if any
         """
+        if api.is_object(item):
+            return item
+
         portal_type = self.get_value(item, "portal_type")
         if portal_type == "OutboundSampleShipment":
             # The object in this instance should be an InboundShipment
             # TODO Improve this with shipments own catalog
             shipment_id = self.get_value(item, "shipment_id")
+            lab = self.get_laboratory()
             for shipment in lab.objectValues():
                 if IInboundSampleShipment.providedBy(shipment):
                     if shipment.getShipmentID() == shipment_id:
@@ -138,6 +170,7 @@ class ReferralConsumer(BaseConsumer):
             # The object in this instance should be an OutboundShipment
             # TODO Improve this with shipments own catalog
             shipment_id = self.get_value(item, "shipment_id")
+            lab = self.get_laboratory()
             for shipment in lab.objectValues():
                 if IOutboundSampleShipment.providedBy(shipment):
                     if shipment.getShipmentID() == shipment_id:
@@ -154,4 +187,4 @@ class ReferralConsumer(BaseConsumer):
             if len(brains) == 1:
                 return api.get_object(brains[0])
 
-        return None
+        raise ValueError("Counterpart object not found")
