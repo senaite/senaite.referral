@@ -13,6 +13,7 @@ from senaite.referral.utils import is_valid_url
 
 from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
+from bika.lims.interfaces import IInternalUse
 from bika.lims.utils import format_supsub
 from bika.lims.utils.analysis import format_uncertainty
 
@@ -173,8 +174,23 @@ class RemoteLab(object):
             analyses = {}
             valid = ["verified", "published"]
             for analysis in sample.getAnalyses(**kwargs):
+
+                # Skip analyses for internal use
+                if IInternalUse.providedBy(analysis):
+                    continue
+
+                # Skip hidden, only interested in final results
+                if analysis.getHidden():
+                    continue
+
+                # Skip analyses not in a suitable status
                 if api.get_review_status(analysis) not in valid:
                     continue
+
+                # Skip retested, only interested in final results
+                if analysis.getRetest():
+                    continue
+
                 keyword = analysis.getKeyword()
                 analyses[keyword] = analysis
 
