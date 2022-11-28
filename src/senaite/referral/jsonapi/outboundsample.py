@@ -39,6 +39,7 @@ class OutboundSampleConsumer(object):
         sample_id = sample_record.get("referring_id")
         sample = self.get_sample(sample_id)
 
+        # TODO Performance - convert to queue task
         # Create a keyword -> analysis mapping
         allowed = ["referred"]
         analyses = sample.getAnalyses(full_objects=True, review_state=allowed)

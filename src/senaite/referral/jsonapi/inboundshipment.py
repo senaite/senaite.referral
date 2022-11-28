@@ -57,7 +57,7 @@ class InboundShipmentConsumer(object):
         lab = self.get_external_laboratory(lab_code)
 
         # Check if a shipment with the given id and lab exists already
-        # TODO Improve this with shipments own catalog
+        # TODO Performance - shipments own catalog
         shipment_id = self.data.get("shipment_id")
         for shipment in lab.objectValues():
             if IInboundSampleShipment.providedBy(shipment):
@@ -66,6 +66,7 @@ class InboundShipmentConsumer(object):
                                      .format(shipment_id))
 
         # Create the Inbound Shipment and the Inbound Samples
+        # TODO Performance - convert to queue task
         comments = self.data.get("comments", "")
         values = {
             "shipment_id": str(shipment_id),
