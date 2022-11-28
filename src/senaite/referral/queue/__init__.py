@@ -33,5 +33,5 @@ def do_queue_action(context, action, objects=None, unique=True, chunk_size=1):
         return None
     if not objects:
         objects = [context]
-    kwargs = {"unique": unique, "chunk_size": chunk_size}
+    kwargs = {"unique": unique, "chunk_size": chunk_size, "delay": 120}
     return add_action_task(objects, action, context, **kwargs)
