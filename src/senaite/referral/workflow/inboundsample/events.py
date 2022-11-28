@@ -11,7 +11,7 @@ def after_receive_inbound_sample(inbound_sample):
     InboundSample object is triggered. System creates the counterpart sample
     in current instance
     """
-    sample = inbound_sample.getSample()
+    sample = inbound_sample.getRawSample()
     if not sample:
         # This inbound sample does not have a Sample assigned yet
         sample = create_sample(inbound_sample)
@@ -19,7 +19,7 @@ def after_receive_inbound_sample(inbound_sample):
         # Auto-receive the sample object
         doActionFor(sample, "receive")
 
-    # If all inbound samples have been transitioned, try with the whole shipment
+    # try with the whole shipment
     shipment = inbound_sample.getInboundShipment()
     received = shipment.getInboundSamples()
     received = map(lambda i: api.get_review_status(i) == "received", received)
@@ -74,7 +74,7 @@ def create_sample(inbound_sample):
         "InboundShipment": api.get_uid(shipment),
     }
 
-    #  Create the sample and assign the shipment
+    # Create the sample and assign the shipment
     request = api.get_request()
     sample = create_analysisrequest(client, request, values, services_uids)
 
@@ -106,8 +106,8 @@ def get_sample_types_mapping():
 
 def get_services_mapping():
     """Returns a dict with service ids, titles and keywords as keys and values
-    as service UIDs to facilitate the retrieval of services by title, keyword or
-    by id
+    as service UIDs to facilitate the retrieval of services by title, keyword
+    or by id
     """
     services = dict()
     query = {"portal_type": "AnalysisService", "is_active": True}
