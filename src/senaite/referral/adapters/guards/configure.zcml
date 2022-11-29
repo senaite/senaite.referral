@@ -23,6 +23,13 @@
       factory=".inboundshipment.InboundShipmentGuardAdapter"
       name="senaite.referral.adapter.guard.inbound_shipment" />
 
+  <!-- Guard handler for InboundSample content type -->
+  <adapter
+      for="senaite.referral.interfaces.IInboundSample"
+      provides="bika.lims.interfaces.IGuardAdapter"
+      factory=".inboundsample.InboundSampleGuardAdapter"
+      name="senaite.referral.adapter.guard.inbound_sample" />
+
   <!-- Guard handler for OutboundSampleShipment content type -->
   <adapter
       for="senaite.referral.interfaces.IOutboundSampleShipment"

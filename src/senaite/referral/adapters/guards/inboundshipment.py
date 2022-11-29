@@ -22,7 +22,8 @@ class InboundShipmentGuardAdapter(BaseGuardAdapter):
         action_id = "receive_inbound_sample"
         for inbound_sample in samples:
             if api.get_review_status(inbound_sample) == "received":
-                continue
+                if inbound_sample.getRawSample():
+                    continue
             if not is_transition_allowed(inbound_sample, action_id):
                 return False
         return True
