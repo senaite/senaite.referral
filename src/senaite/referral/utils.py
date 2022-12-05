@@ -5,7 +5,6 @@ import copy
 import json
 from datetime import datetime
 
-from senaite.referral import logger
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
 from six import string_types
@@ -79,10 +78,10 @@ def get_by_code(portal_type, code, catalog="portal_catalog"):
             "code": code,
         }
     }
-    return search(query, catalog, first_only=True)
+    return search_with_filters(query, catalog, first_only=True)
 
 
-def search(query, catalog, first_only=False):
+def search_with_filters(query, catalog, first_only=False):
     """Returns the objects for the code passed-in, if any
     """
     qry = copy.deepcopy(query)
@@ -108,50 +107,6 @@ def search(query, catalog, first_only=False):
         return None
 
     return matches
-
-
-def get_object_by_title(portal_type, title, catalog="portal_catalog",
-                        default=_marker):
-    """Returns an object for the portal type and title passed-in, if any
-    """
-    if not all([portal_type, title]):
-        if default is _marker:
-            raise ValueError("portal_type and/or title not set")
-        return default
-
-    query = {
-        "portal_type": portal_type,
-        "title": title,
-    }
-    raise_error = default is _marker
-    obj = get_object(query, catalog=catalog, raise_error=raise_error)
-    if not obj:
-        if raise_error:
-            msg = "No {} found with title '{}'".format(portal_type, title)
-            raise ValueError(msg)
-        return default
-    return obj
-
-
-def get_object(query, catalog="portal_catalog", raise_error=True):
-    """Returns the object that matches with the query passed-in, if any. Returns
-    None otherwise. If more than one object is found for the query and catalog
-    passed-in, system raises an a ValueError unless 'raise_error' is False. In
-    such case, system returns None
-    :param query: dict containing the search criteria
-    :param catalog: the catalog to search objects against
-    :param raise_error: whether a ValueError is raised if not unique
-    """
-    objects = search(query, catalog=catalog)
-    if not objects:
-        return None
-    if len(objects) > 1:
-        msg = "{} objects found for {}".format(len(objects), repr(query))
-        logger.warn(msg)
-        if raise_error:
-            raise ValueError(msg)
-        return None
-    return objects[0]
 
 
 def is_valid_url(value):
