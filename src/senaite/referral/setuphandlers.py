@@ -20,7 +20,11 @@
 
 from Products.DCWorkflow.Guard import Guard
 from senaite.referral import logger
-from senaite.referral.catalog.inbound_sample_catalog import InboundSampleCatalog
+from senaite.referral.catalog import SHIPMENT_CATALOG
+from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
+from senaite.referral.catalog.inbound_sample_catalog import \
+    InboundSampleCatalog
+from senaite.referral.catalog.shipment_catalog import ShipmentCatalog
 from senaite.referral.config import PRODUCT_NAME
 from senaite.referral.config import PROFILE_ID
 from senaite.referral.config import UNINSTALL_ID
@@ -35,6 +39,7 @@ from bika.lims.workflow import doActionFor
 
 CATALOGS = (
     InboundSampleCatalog,
+    ShipmentCatalog,
 )
 
 # Tuples of (folder_id, folder_name, type)
@@ -135,10 +140,12 @@ def setup_handler(context):
     # Setup catalogs
     setup_catalogs(portal)
 
-    #TODO TO REMOVE AFTER TESTING
+    # TODO TO REMOVE AFTER TESTING
     fix_referred_not_autoverified(portal)
     fix_status_referred_analyses(portal)
     fix_reinstate_samples_from_cancelled_shipments(portal)
+    recatalog_inbound_samples(portal)
+    setup_catalog_shipments(portal)
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
 
@@ -283,7 +290,8 @@ def update_workflow_state(workflow, status_id, settings):
 
     # Set basic info (title, description, etc.)
     new_status.title = settings.get("title", new_status.title)
-    new_status.description = settings.get("description", new_status.description)
+    description = settings.get("description", None)
+    new_status.description = description or new_status.description
 
     # Set transitions
     trans = settings.get("transitions", ())
@@ -556,9 +564,37 @@ def fix_reinstate_samples_from_cancelled_shipments(portal):
         "portal_type": "OutboundSampleShipment",
         "review_state": "cancelled"
     }
-    for shipment in api.search(query, "portal_catalog"):
+    for shipment in api.search(query, SHIPMENT_CATALOG):
         logger.info("Reinstate samples from {}".format(api.get_path(shipment)))
         shipment = api.get_object(shipment)
         after_cancel_outbound_shipment(shipment)
 
     logger.info("Reinstate samples from cancelled shipments [DONE]")
+
+
+def setup_catalog_shipments(portal):
+    logger.info("Setup catalog for shipments ...")
+    sc = api.get_tool(SHIPMENT_CATALOG)
+    pc = api.get_tool("portal_catalog")
+    portal_types = ["OutboundSampleShipment", "InboundSampleShipment"]
+    for brain in pc(portal_type=portal_types):
+        shipment = api.get_object(brain)
+        path = api.get_path(shipment)
+
+        # Un-catalog from portal_catalog
+        pc.uncatalog_object(path)
+
+        # Catalog in shipment catalog
+        sc.catalog_object(shipment, path)
+
+    logger.info("Setup catalog for shipments [DONE]")
+
+
+def recatalog_inbound_samples(portal):
+    logger.info("Re-catalog inbound samples ...")
+    sc = api.get_tool(INBOUND_SAMPLE_CATALOG)
+    for brain in sc(portal_type="InboundSample"):
+        inbound_sample = api.get_object(brain)
+        inbound_sample.reindexObject()
+
+    logger.info("Setup catalog for shipments [DONE]")

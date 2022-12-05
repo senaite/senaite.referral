@@ -84,14 +84,14 @@
                        "sort_order": "ascending"
                      }'
                      search_query='{}'
-                     catalog_name="portal_catalog"
+                     catalog_name="senaite_catalog_shipment"
                      combogrid_options='{
                       "colModel": [
                         {"columnName": "getId", "align": "left", "label": "Id", "width": "15"},
                         {"columnName": "UID", "hidden": true}
                       ],
                       "search_fields": ["listing_searchable_text"],
-                      "catalog_name": "portal_catalog",
+                      "catalog_name": "senaite_catalog_shipment",
                       "url": "referencewidget_search",
                       "showOn": true,
                       "searchIcon": true,

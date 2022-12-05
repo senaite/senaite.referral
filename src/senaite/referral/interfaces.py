@@ -91,3 +91,8 @@ class ISenaiteReferralCatalog(ISenaiteReferralCatalogObject):
 class IInboundSampleCatalog(ISenaiteReferralCatalogObject):
     """Marker interface for Inbound Sample Catalog
     """
+
+
+class IShipmentCatalog(ISenaiteReferralCatalogObject):
+    """Marker interface for Shipment Catalog
+    """

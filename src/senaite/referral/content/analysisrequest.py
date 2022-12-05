@@ -5,6 +5,7 @@ from archetypes.schemaextender.interfaces import ISchemaExtender
 from Products.CMFCore.permissions import View
 from senaite.referral import ISenaiteReferralLayer
 from senaite.referral import messageFactory as _
+from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.fields import ExtUIDReferenceField
 from zope.component import adapter
 from zope.interface import implementer
@@ -40,7 +41,7 @@ class AnalysisRequestSchemaExtender(object):
                 showOn=True,
                 render_own_label=True,
                 visible={"add": "edit", "secondary": "disabled"},
-                catalog_name="portal_catalog",
+                catalog_name=SHIPMENT_CATALOG,
                 base_query=dict(
                     is_active=True,
                     sort_on="sortable_title",

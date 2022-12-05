@@ -4,6 +4,7 @@ import collections
 from plone.memoize import view
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
+from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.utils import get_image_url
 
 from bika.lims import api
@@ -26,7 +27,7 @@ class InboundSampleShipmentFolderView(ListingView):
         # We do not want the user to transition inbound shipments directly!
         self.show_select_column = False
 
-        self.catalog = "portal_catalog"
+        self.catalog = SHIPMENT_CATALOG
 
         self.contentFilter = {
             "portal_type": "InboundSampleShipment",

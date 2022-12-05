@@ -1,0 +1,27 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="senaite.referral">
+
+  <!-- InboundSample Indexer -->
+  <adapter name="date_sampled" factory=".inboundsample.date_sampled"/>
+  <adapter name="laboratory_code" factory=".inboundsample.laboratory_code"/>
+  <adapter name="laboratory_title" factory=".inboundsample.laboratory_title"/>
+  <adapter name="laboratory_uid" factory=".inboundsample.laboratory_uid"/>
+  <adapter name="referring_id" factory=".inboundsample.referring_id"/>
+  <adapter name="sample_id" factory=".inboundsample.sample_id"/>
+  <adapter name="sample_uid" factory=".inboundsample.sample_uid"/>
+  <adapter name="shipment_id" factory=".inboundsample.shipment_id"/>
+  <adapter name="shipment_uid" factory=".inboundsample.shipment_uid"/>
+  <adapter name="inbound_sample_searchable_text" factory=".inboundsample.inbound_sample_searchable_text"/>
+
+  <!-- InboundSampleShipment Indexer -->
+  <adapter name="laboratory_uid" factory=".inboundshipment.laboratory_uid"/>
+  <adapter name="shipment_id" factory=".inboundshipment.shipment_id"/>
+  <adapter name="shipment_searchable_text" factory=".inboundshipment.shipment_searchable_text"/>
+
+  <!-- OutboundSampleShipment Indexer -->
+  <adapter name="laboratory_uid" factory=".outboundshipment.laboratory_uid"/>
+  <adapter name="shipment_id" factory=".outboundshipment.shipment_id"/>
+  <adapter name="shipment_searchable_text" factory=".outboundshipment.shipment_searchable_text"/>
+
+</configure>
