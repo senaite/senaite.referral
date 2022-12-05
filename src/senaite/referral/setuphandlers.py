@@ -563,7 +563,7 @@ def fix_reinstate_samples_from_cancelled_shipments(portal):
         "portal_type": "OutboundSampleShipment",
         "review_state": "cancelled"
     }
-    for shipment in api.search(query, "portal_catalog"):
+    for shipment in api.search(query, SHIPMENT_CATALOG):
         logger.info("Reinstate samples from {}".format(api.get_path(shipment)))
         shipment = api.get_object(shipment)
         after_cancel_outbound_shipment(shipment)

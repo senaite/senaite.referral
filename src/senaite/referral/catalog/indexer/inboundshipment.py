@@ -21,3 +21,20 @@ def shipment_id(instance):
     the inbound sample shipment
     """
     return instance.getShipmentID()
+
+
+@indexer(IInboundSampleShipment, IShipmentCatalog)
+def shipment_searchable_text(instance):
+    """Index for searchable text queries
+    """
+    laboratory = instance.getReferringLaboratory()
+    searchable_text_tokens = [
+        laboratory.getCode(),
+        api.get_title(laboratory),
+        # id of the inbound shipment
+        api.get_id(instance),
+        # original ID provided by the referring laboratory
+        instance.getShipmentID(),
+    ]
+    searchable_text_tokens = filter(None, searchable_text_tokens)
+    return u" ".join(searchable_text_tokens)

@@ -20,3 +20,17 @@ def shipment_id(instance):
     """Returns the unique identifier of this Outbound Shipment
     """
     return instance.getShipmentID()
+
+
+@indexer(IOutboundSampleShipment, IShipmentCatalog)
+def shipment_searchable_text(instance):
+    """Index for searchable text queries
+    """
+    laboratory = instance.getReferenceLaboratory()
+    searchable_text_tokens = [
+        laboratory.getCode(),
+        api.get_title(laboratory),
+        api.get_id(instance),
+    ]
+    searchable_text_tokens = filter(None, searchable_text_tokens)
+    return u" ".join(searchable_text_tokens)

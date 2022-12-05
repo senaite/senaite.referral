@@ -17,9 +17,11 @@
   <!-- InboundSampleShipment Indexer -->
   <adapter name="laboratory_uid" factory=".inboundshipment.laboratory_uid"/>
   <adapter name="shipment_id" factory=".inboundshipment.shipment_id"/>
+  <adapter name="shipment_searchable_text" factory=".inboundshipment.shipment_searchable_text"/>
 
   <!-- OutboundSampleShipment Indexer -->
   <adapter name="laboratory_uid" factory=".outboundshipment.laboratory_uid"/>
   <adapter name="shipment_id" factory=".outboundshipment.shipment_id"/>
+  <adapter name="shipment_searchable_text" factory=".outboundshipment.shipment_searchable_text"/>
 
 </configure>

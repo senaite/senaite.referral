@@ -15,6 +15,8 @@ INDEXES = BASE_INDEXES + [
     # id, indexed attribute, type
     ("laboratory_uid", "", "FieldIndex"),
     ("shipment_id", "", "FieldIndex"),
+    ("shipment_searchable_text", "", "ZCTextIndex"),
+    ("sortable_title", "", "FieldIndex"),
 ]
 
 COLUMNS = BASE_COLUMNS + [
