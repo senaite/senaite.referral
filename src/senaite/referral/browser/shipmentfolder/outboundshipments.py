@@ -3,6 +3,7 @@
 import collections
 from senaite.core.listing import ListingView
 from senaite.referral import messageFactory as _
+from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.notifications import get_last_post
 from senaite.referral.notifications import is_error
 from senaite.referral.utils import get_image_url
@@ -27,7 +28,7 @@ class OutboundSampleShipmentFolderView(ListingView):
         self.show_select_row = False
         self.show_select_column = True
 
-        self.catalog = "portal_catalog"
+        self.catalog = SHIPMENT_CATALOG
 
         self.contentFilter = {
             "portal_type": "OutboundSampleShipment",
