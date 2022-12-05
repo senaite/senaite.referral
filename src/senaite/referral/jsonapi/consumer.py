@@ -6,8 +6,7 @@ import json
 from plone.memoize.instance import memoize
 from senaite.jsonapi.interfaces import IPushConsumer
 from senaite.referral import utils
-from senaite.referral.interfaces import IInboundSampleShipment
-from senaite.referral.interfaces import IOutboundSampleShipment
+from senaite.referral.catalog import SHIPMENT_CATALOG
 from zope.interface import implementer
 
 from bika.lims import api
@@ -98,7 +97,8 @@ class ReferralConsumer(BaseConsumer):
             raise ValueError("Laboratory not found: {}".format(self.lab_code))
 
         if not api.is_active(laboratory):
-            raise ValueError("Laboratory is inactive: {}".format(self.lab_code))
+            raise ValueError("Laboratory is not active: {}".format(
+                self.lab_code))
 
         # Iterate through items and process them
         for item in self.items:
@@ -118,6 +118,7 @@ class ReferralConsumer(BaseConsumer):
     def do_analysisrequest_reject(self, item):
         """Rejects a referred sample
         """
+        # TODO Performance - convert to queue task
         rejection_reasons = self.get_value(item, "RejectionReasons")
         obj = self.get_object_for(item)
         obj.setRejectionReasons(rejection_reasons)
@@ -126,6 +127,7 @@ class ReferralConsumer(BaseConsumer):
     def do_action(self, item_or_object, action):
         """Performs an action against the given object
         """
+        # TODO Performance - convert to queue task
         # Get the object counterpart
         obj = self.get_object_for(item_or_object)
 
@@ -157,6 +159,16 @@ class ReferralConsumer(BaseConsumer):
             kwargs = {"action": action}
             changeWorkflowState(obj, wf_id, status, **kwargs)
 
+    def get_counterpart_type(self, portal_type):
+        """Returns the counterpart type for the portal type passed in
+        """
+        mappings = (
+            ("OutboundSampleShipment", "InboundSampleShipment"),
+            ("InboundSampleShipment", "OutboundSampleShipment"),
+            ("AnalysisRequest", "AnalysisRequest"),
+        )
+        return dict(mappings).get(portal_type, default=None)
+
     def get_object_for(self, item):
         """Returns the object from current instance that is related with the
         information provided in the item passed-in, if any
@@ -164,36 +176,40 @@ class ReferralConsumer(BaseConsumer):
         if api.is_object(item):
             return item
 
-        portal_type = self.get_value(item, "portal_type")
-        if portal_type == "OutboundSampleShipment":
-            # The object in this instance should be an InboundShipment
-            # TODO Improve this with shipments own catalog
-            shipment_id = self.get_value(item, "shipment_id")
-            lab = self.get_laboratory()
-            for shipment in lab.objectValues():
-                if IInboundSampleShipment.providedBy(shipment):
-                    if shipment.getShipmentID() == shipment_id:
-                        return shipment
+        # get the counterpart type for this item type at current instance
+        item_type = self.get_value(item, "portal_type")
+        portal_type = self.get_counterpart_type(item_type)
 
-        elif portal_type == "InboundSampleShipment":
-            # The object in this instance should be an OutboundShipment
-            # TODO Improve this with shipments own catalog
+        # do the search
+        if portal_type in ["OutboundSampleShipment", "InboundSampleShipment"]:
             shipment_id = self.get_value(item, "shipment_id")
-            lab = self.get_laboratory()
-            for shipment in lab.objectValues():
-                if IOutboundSampleShipment.providedBy(shipment):
-                    if shipment.getShipmentID() == shipment_id:
-                        return shipment
+            if not shipment_id:
+                raise ValueError("No shipment id")
+
+            laboratory = self.get_laboratory()
+            query = {
+                "portal_type": portal_type,
+                "shipment_id": shipment_id,
+                "laboratory_uid": api.get_uid(laboratory),
+            }
+            brains = api.search(query, SHIPMENT_CATALOG)
+            if len(brains) != 0:
+                raise ValueError("No {} found".format(portal_type))
+            return utils.get_shipment(laboratory, shipment_id, portal_type)
 
         elif portal_type == "AnalysisRequest":
             original_id = self.get_value(item, "ClientSampleID")
             if not original_id:
-                return None
+                raise ValueError("No ClientSampleID")
 
-            query = {"portal_type": "AnalysisRequest", "id": original_id}
+            query = {
+                "portal_type": portal_type,
+                "id": original_id
+            }
             brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
             # TODO Check whether the inferred sample is the expected one
-            if len(brains) == 1:
-                return api.get_object(brains[0])
+            if len(brains) != 1:
+                raise ValueError("No {} found".format(portal_type))
+            return api.get_object(brains[0])
 
-        raise ValueError("Counterpart object not found")
+        raise ValueError("Type is not supported: {}".format(item_type))

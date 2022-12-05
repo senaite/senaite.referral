@@ -7,6 +7,7 @@ from plone.supermodel import model
 from plone.namedfile.field import NamedBlobFile
 from Products.CMFCore import permissions
 from senaite.referral import messageFactory as _
+from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.content import mutator
 from senaite.referral.content import accessor
 from senaite.referral.content import get_string_value
@@ -83,7 +84,7 @@ class OutboundSampleShipment(Container):
     """Single physical package containing one or more samples to be sent to an
     external reference laboratory
     """
-    _catalogs = ["portal_catalog", ]
+    _catalogs = [SHIPMENT_CATALOG, ]
     exclude_from_nav = True
     security = ClassSecurityInfo()
 

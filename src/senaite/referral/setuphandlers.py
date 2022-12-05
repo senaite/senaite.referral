@@ -21,6 +21,7 @@
 from Products.DCWorkflow.Guard import Guard
 from senaite.referral import logger
 from senaite.referral.catalog.inbound_sample_catalog import InboundSampleCatalog
+from senaite.referral.catalog.shipment_catalog import ShipmentCatalog
 from senaite.referral.config import PRODUCT_NAME
 from senaite.referral.config import PROFILE_ID
 from senaite.referral.config import UNINSTALL_ID
@@ -35,6 +36,7 @@ from bika.lims.workflow import doActionFor
 
 CATALOGS = (
     InboundSampleCatalog,
+    ShipmentCatalog,
 )
 
 # Tuples of (folder_id, folder_name, type)
