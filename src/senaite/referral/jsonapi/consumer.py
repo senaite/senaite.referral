@@ -179,7 +179,7 @@ class ReferralConsumer(BaseConsumer):
         # get the counterpart type for this item type at current instance
         item_type = self.get_value(item, "portal_type")
         portal_type = self.get_counterpart_type(item_type)
-        import pdb;pdb.set_trace()
+
         # do the search
         if portal_type in ["OutboundSampleShipment", "InboundSampleShipment"]:
             return self.get_shipment_for(item)
