@@ -140,7 +140,7 @@ def setup_handler(context):
     # Setup catalogs
     setup_catalogs(portal)
 
-    #TODO TO REMOVE AFTER TESTING
+    # TODO TO REMOVE AFTER TESTING
     fix_referred_not_autoverified(portal)
     fix_status_referred_analyses(portal)
     fix_reinstate_samples_from_cancelled_shipments(portal)
@@ -290,7 +290,8 @@ def update_workflow_state(workflow, status_id, settings):
 
     # Set basic info (title, description, etc.)
     new_status.title = settings.get("title", new_status.title)
-    new_status.description = settings.get("description", new_status.description)
+    description = settings.get("description", None)
+    new_status.description = description or new_status.description
 
     # Set transitions
     trans = settings.get("transitions", ())
