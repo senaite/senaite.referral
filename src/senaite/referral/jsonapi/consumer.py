@@ -167,7 +167,7 @@ class ReferralConsumer(BaseConsumer):
             ("InboundSampleShipment", "OutboundSampleShipment"),
             ("AnalysisRequest", "AnalysisRequest"),
         )
-        return dict(mappings).get(portal_type, default=None)
+        return dict(mappings).get(portal_type, None)
 
     def get_object_for(self, item):
         """Returns the object from current instance that is related with the
@@ -179,37 +179,56 @@ class ReferralConsumer(BaseConsumer):
         # get the counterpart type for this item type at current instance
         item_type = self.get_value(item, "portal_type")
         portal_type = self.get_counterpart_type(item_type)
-
+        import pdb;pdb.set_trace()
         # do the search
         if portal_type in ["OutboundSampleShipment", "InboundSampleShipment"]:
-            shipment_id = self.get_value(item, "shipment_id")
-            if not shipment_id:
-                raise ValueError("No shipment id")
-
-            laboratory = self.get_laboratory()
-            query = {
-                "portal_type": portal_type,
-                "shipment_id": shipment_id,
-                "laboratory_uid": api.get_uid(laboratory),
-            }
-            brains = api.search(query, SHIPMENT_CATALOG)
-            if len(brains) != 0:
-                raise ValueError("No {} found".format(portal_type))
-            return utils.get_shipment(laboratory, shipment_id, portal_type)
+            return self.get_shipment_for(item)
 
         elif portal_type == "AnalysisRequest":
-            original_id = self.get_value(item, "ClientSampleID")
-            if not original_id:
-                raise ValueError("No ClientSampleID")
-
-            query = {
-                "portal_type": portal_type,
-                "id": original_id
-            }
-            brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
-            # TODO Check whether the inferred sample is the expected one
-            if len(brains) != 1:
-                raise ValueError("No {} found".format(portal_type))
-            return api.get_object(brains[0])
+            return self.get_sample_for(item)
 
         raise ValueError("Type is not supported: {}".format(item_type))
+
+    def get_shipment_for(self, item):
+        """Returns the InboundSampleShipment or OutboundSampleShipment object
+        from current instance that is related with the information provided in
+        the item passed-in, if any
+        """
+        shipment_id = self.get_value(item, "shipment_id")
+        if not shipment_id:
+            raise ValueError("No shipment id")
+
+        # get the counterpart type for this item type at current instance
+        item_type = self.get_value(item, "portal_type")
+        portal_type = self.get_counterpart_type(item_type)
+
+        laboratory = self.get_laboratory()
+        query = {
+            "portal_type": portal_type,
+            "shipment_id": shipment_id,
+            "laboratory_uid": api.get_uid(laboratory),
+        }
+        brains = api.search(query, SHIPMENT_CATALOG)
+        if len(brains) != 1:
+            raise ValueError("No Shipment found for {}".format(shipment_id))
+
+        return api.get_object(brains[0])
+
+    def get_sample_for(self, item):
+        """Returns the AnalysisRequest object from current instance that is
+        related with the information provided in the item passed-in, if any
+        """
+        original_id = self.get_value(item, "ClientSampleID")
+        if not original_id:
+            raise ValueError("No ClientSampleID")
+
+        query = {
+            "portal_type": "AnalysisRequest",
+            "id": original_id
+        }
+        brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
+        # TODO Check whether the inferred sample is the expected one
+        if len(brains) != 1:
+            raise ValueError("No Sample found for {}".format(original_id))
+
+        return api.get_object(brains[0])
