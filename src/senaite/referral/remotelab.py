@@ -95,13 +95,6 @@ class RemoteLab(object):
             self._session = RemoteSession(self.laboratory_url, auth)
         return self._session
 
-    def get_payload_base_info(self):
-        return {
-            "consumer": "senaite.referral.consumer",
-            "remote_lab": api.get_uid(self.laboratory),
-            "lab_code": get_lab_code(),
-        }
-
     def do_action(self, obj, action, timeout=5):
         """Sends a POST request to the remote laboratory for the object and
         action passed-in
@@ -285,7 +278,6 @@ class RemoteLab(object):
 
         payload = {
             "consumer": "senaite.referral.outbound_sample",
-            "lab_code": get_lab_code(),
             "sample": get_sample_info(sample),
         }
         self.notify(sample, payload, timeout=timeout)
@@ -295,8 +287,14 @@ class RemoteLab(object):
         object passed-in
         """
         # Be sure we have the basics in place in the payload
-        data = self.get_payload_base_info()
+        data = {"consumer": "senaite.referral.consumer"}
         data.update(payload)
+
+        # Override with reserved parameters
+        data.update({
+            "remote_lab": api.get_uid(self.laboratory),
+            "lab_code": get_lab_code()
+        })
 
         # Do the POST request and store the response for later use if required
         try:
