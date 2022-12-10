@@ -5,26 +5,41 @@ from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils.analysisrequest import create_analysisrequest
 from bika.lims.workflow import doActionFor
 
+try:
+    from senaite.queue.api import is_queue_ready
+    from senaite.queue.api import add_task
+except ImportError:
+    # Queue is not installed
+    is_queue_ready = None
+    add_task = None
+
 
 def after_receive_inbound_sample(inbound_sample):
     """Event fired after a transition "receive_inbound_sample" for an
     InboundSample object is triggered. System creates the counterpart sample
-    in current instance
+    in current instance if queue is not available. Otherwise, adds a queued
+    task for the creation of the counterpart sample. If all the samples of
+    the inbound sample shipment the current sample belongs to have been
+    received, the system tries to receive the whole shipment as well
     """
-    sample = inbound_sample.getRawSample()
-    if not sample:
-        # This inbound sample does not have a Sample assigned yet
-        sample = create_sample(inbound_sample)
+    if inbound_sample.getRawSample():
+        # There is a counterpart sample already
+        return
 
-        # Auto-receive the sample object
-        doActionFor(sample, "receive")
+    # Delegate the sample creation to the queue if possible
+    queue_task = queue_create_sample(inbound_sample)
+    if queue_task:
+        return
 
-    # try with the whole shipment
+    # Create the sample immediately
+    sample = create_sample(inbound_sample)
+
+    # Auto-receive the sample object
+    doActionFor(sample, "receive")
+
+    # Try with the whole shipment
     shipment = inbound_sample.getInboundShipment()
-    received = shipment.getInboundSamples()
-    received = map(lambda i: api.get_review_status(i) == "received", received)
-    if all(received):
-        doActionFor(shipment, "receive_inbound_shipment")
+    doActionFor(shipment, "receive_inbound_shipment")
 
 
 def after_reject_inbound_sample(inbound_sample):
@@ -122,3 +137,62 @@ def get_services_mapping():
         services[keyword] = uid
         services[uid] = uid
     return services
+
+
+def get_new_sample_info(inbound_sample):
+    """Returns a dict with the raw data for the creation of a new Sample
+    """
+    # Get the shipment that contains this inbound sample
+    shipment = inbound_sample.getInboundShipment()
+
+    # Get the default client for this shipment
+    client = shipment.getReferringClient()
+    client = api.get_object(client)
+
+    # Get baseline objects mappings
+    services = get_services_mapping()
+    sample_types = get_sample_types_mapping()
+
+    # Build the dict with the data
+    sample_type = inbound_sample.getSampleType()
+    sample_type_uid = sample_types.get(sample_type)
+    keywords = inbound_sample.getAnalyses() or []
+    services_uids = map(lambda key: services.get(key), keywords)
+    services_uids = filter(api.is_uid, services_uids)
+
+    date_sampled = inbound_sample.getDateSampled()
+    if date_sampled:
+        date_sampled = date_sampled.strftime("%Y-%m-%d")
+
+    values = {
+        "Client": api.get_uid(client),
+        "Contact": None,
+        "ClientSampleID": inbound_sample.getReferringID(),
+        "DateSampled": date_sampled,
+        "SampleType": sample_type_uid,
+        "Priority": inbound_sample.getPriority(),
+        "InboundShipment": api.get_uid(shipment),
+        "analyses": services_uids,
+    }
+    return values
+
+
+def queue_create_sample(inbound_sample):
+    """Returns the queued task for sample creation if queue is active. Returns
+    None otherwise
+    """
+    if not callable(is_queue_ready):
+        return None
+    if not callable(add_task):
+        return None
+    if not is_queue_ready():
+        return None
+
+    data = {
+        "data": get_new_sample_info(inbound_sample),
+        "unique": True,
+        "delay": 30,
+        "retries": 5,
+        "ghost": True,
+    }
+    return add_task("task_create_sample_from_inbound", inbound_sample, **data)
