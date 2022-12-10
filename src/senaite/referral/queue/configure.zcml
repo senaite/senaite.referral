@@ -7,4 +7,11 @@
   <include package=".listing"/>
   <include package=".viewlets"/>
 
+  <!-- Adapter for the creation of samples from inbound shipments -->
+  <adapter
+      name="task_create_sample_from_inbound"
+      factory=".tasks.CreateSampleFromInboundSampleAdapter"
+      provides="senaite.queue.interfaces.IQueuedTaskAdapter"
+      for="senaite.referral.interfaces.IInboundSample" />
+
 </configure>
