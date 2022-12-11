@@ -21,7 +21,6 @@
 from Products.DCWorkflow.Guard import Guard
 from senaite.referral import logger
 from senaite.referral.catalog import SHIPMENT_CATALOG
-from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.catalog.inbound_sample_catalog import \
     InboundSampleCatalog
 from senaite.referral.catalog.shipment_catalog import ShipmentCatalog
@@ -144,8 +143,6 @@ def setup_handler(context):
     fix_referred_not_autoverified(portal)
     fix_status_referred_analyses(portal)
     fix_reinstate_samples_from_cancelled_shipments(portal)
-    recatalog_inbound_samples(portal)
-    setup_catalog_shipments(portal)
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
 
@@ -570,31 +567,3 @@ def fix_reinstate_samples_from_cancelled_shipments(portal):
         after_cancel_outbound_shipment(shipment)
 
     logger.info("Reinstate samples from cancelled shipments [DONE]")
-
-
-def setup_catalog_shipments(portal):
-    logger.info("Setup catalog for shipments ...")
-    sc = api.get_tool(SHIPMENT_CATALOG)
-    pc = api.get_tool("portal_catalog")
-    portal_types = ["OutboundSampleShipment", "InboundSampleShipment"]
-    for brain in pc(portal_type=portal_types):
-        shipment = api.get_object(brain)
-        path = api.get_path(shipment)
-
-        # Un-catalog from portal_catalog
-        pc.uncatalog_object(path)
-
-        # Catalog in shipment catalog
-        sc.catalog_object(shipment, path)
-
-    logger.info("Setup catalog for shipments [DONE]")
-
-
-def recatalog_inbound_samples(portal):
-    logger.info("Re-catalog inbound samples ...")
-    sc = api.get_tool(INBOUND_SAMPLE_CATALOG)
-    for brain in sc(portal_type="InboundSample"):
-        inbound_sample = api.get_object(brain)
-        inbound_sample.reindexObject()
-
-    logger.info("Setup catalog for shipments [DONE]")

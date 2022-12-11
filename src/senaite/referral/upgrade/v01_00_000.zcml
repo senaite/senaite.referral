@@ -1,0 +1,16 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    i18n_domain="senaite.referral">
+
+  <!-- New catalog for shipment objects
+  https://github.com/senaite/senaite.referral/pull/2 -->
+  <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 1.0.0: New catalog for shipment objects"
+      description="New catalog for shipment objects"
+      source="1.0.0"
+      destination="1001"
+      handler="senaite.referral.upgrade.v01_00_000.setup_new_catalog_shipments"
+      profile="senaite.referral:default"/>
+
+</configure>
