@@ -84,7 +84,7 @@ class InboundShipmentConsumer(object):
 
         return True
 
-    def get_inbound_shipment(self, shipment_id, laboratory, full_object=None):
+    def get_inbound_shipment(self, shipment_id, laboratory, full_object=False):
         """Returns the InboundSampleShipment for the shipment id and laboratory
         passed-in, if any. Returns None otherwise
         """
