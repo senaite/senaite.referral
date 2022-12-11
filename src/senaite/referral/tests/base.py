@@ -18,7 +18,6 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
-
 import unittest2 as unittest
 from bika.lims.testing import BASE_TESTING
 from plone.app.testing import applyProfile

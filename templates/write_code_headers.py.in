@@ -11,7 +11,7 @@ from datetime import datetime
 SRC_DIR = '${buildout:directory}/src/senaite'
 
 YEAR_FROM = "2021"
-PRODUCT  = "SAMPLE.REFERRAL"
+PRODUCT = "SENAITE.REFERRAL"
 TEMPLATE = """# -*- coding: utf-8 -*-
 #
 # This file is part of {product}.
