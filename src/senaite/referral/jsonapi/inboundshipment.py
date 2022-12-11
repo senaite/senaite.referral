@@ -27,6 +27,7 @@ from senaite.jsonapi.interfaces import IPushConsumer
 from senaite.jsonapi.request import is_json_deserializable
 from senaite.referral import utils
 from senaite.referral.catalog import SHIPMENT_CATALOG
+from zope.annotation.interfaces import IAnnotations
 from zope.interface import implementer
 
 from bika.lims import api
@@ -183,4 +184,10 @@ class InboundShipmentConsumer(object):
             "priority": record.get("priority", ""),
             "analyses": record.get("analyses"),
         }
-        return api.create(shipment, "InboundSample", **values)
+        inbound_sample = api.create(shipment, "InboundSample", **values)
+
+        # Store original data in annotations
+        annotation = IAnnotations(inbound_sample)
+        annotation["__original__"] = json.dumps(record)
+
+        return inbound_sample
