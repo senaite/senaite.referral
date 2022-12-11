@@ -88,6 +88,8 @@ class InboundShipmentConsumer(object):
         """Returns the InboundSampleShipment for the shipment id and laboratory
         passed-in, if any. Returns None otherwise
         """
+        if not shipment_id:
+            return None
         query = {
             "portal_type": "InboundSampleShipment",
             "shipment_id": shipment_id,
