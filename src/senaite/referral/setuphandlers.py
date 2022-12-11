@@ -20,21 +20,14 @@
 
 from Products.DCWorkflow.Guard import Guard
 from senaite.referral import logger
-from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.catalog.inbound_sample_catalog import \
     InboundSampleCatalog
 from senaite.referral.catalog.shipment_catalog import ShipmentCatalog
 from senaite.referral.config import PRODUCT_NAME
 from senaite.referral.config import PROFILE_ID
 from senaite.referral.config import UNINSTALL_ID
-from senaite.referral.workflow.outboundshipment.events import \
-    after_cancel_outbound_shipment
-from zope.interface.declarations import alsoProvides
 
 from bika.lims import api
-from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
-from bika.lims.interfaces import ISubmitted
-from bika.lims.workflow import doActionFor
 
 CATALOGS = (
     InboundSampleCatalog,
@@ -138,11 +131,6 @@ def setup_handler(context):
 
     # Setup catalogs
     setup_catalogs(portal)
-
-    # TODO TO REMOVE AFTER TESTING
-    fix_referred_not_autoverified(portal)
-    fix_status_referred_analyses(portal)
-    fix_reinstate_samples_from_cancelled_shipments(portal)
 
     logger.info("{} setup handler [DONE]".format(PRODUCT_NAME.upper()))
 
@@ -494,76 +482,3 @@ def setup_catalogs(portal):
         reindex_catalog_index(catalog, idx_id)
 
     logger.info("Setup referral catalogs [DONE]")
-
-
-# TODO Remove functions below after testing
-
-def fix_referred_not_autoverified(portal):
-    logger.info("Fixing referred analyses not auto-verified ...")
-    wf_tool = api.get_tool("portal_workflow")
-    wf_id = "bika_ar_workflow"
-    workflow = wf_tool.getWorkflowById(wf_id)
-    query = {"portal_type": "AnalysisRequest", "review_state": "shipped"}
-    samples = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
-    for sample in samples:
-        sample = api.get_object(sample)
-
-        # We've added the new transition "verify" in "shipped" status
-        workflow.updateRoleMappingsFor(sample)
-
-        analyses = sample.getAnalyses(full_objects=True,
-                                      review_state="to_be_verified")
-        if not analyses:
-            continue
-
-        logger.info("Auto-verifying: {}".format(api.get_path(sample)))
-
-        for analysis in analyses:
-            if not ISubmitted.providedBy(analysis):
-                alsoProvides(analysis, ISubmitted)
-
-            # Auto-verify the analysis
-            analysis.setSelfVerification(1)
-            analysis.setNumberOfRequiredVerifications(1)
-            doActionFor(analysis, "verify")
-
-            # Reindex the analysis
-            analysis.reindexObject()
-
-        # Reindex the sample
-        sample.reindexObject()
-
-
-def fix_status_referred_analyses(portal):
-    logger.info("Fixing status of referred analyses ...")
-    query = {"portal_type": "AnalysisRequest", "review_state": "shipped"}
-    samples = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
-    for sample in samples:
-        sample = api.get_object(sample)
-
-        analyses = sample.getAnalyses(full_objects=True,
-                                      review_state="unassigned")
-        if not analyses:
-            continue
-
-        logger.info("Fixing referred status: {}".format(api.get_path(sample)))
-
-        for analysis in analyses:
-            # Transition the analysis from unassigned --> referred
-            doActionFor(analysis, "refer")
-
-    logger.info("Fixing status of referred analyses [DONE]")
-
-
-def fix_reinstate_samples_from_cancelled_shipments(portal):
-    logger.info("Reinstate samples from cancelled shipments ...")
-    query = {
-        "portal_type": "OutboundSampleShipment",
-        "review_state": "cancelled"
-    }
-    for shipment in api.search(query, SHIPMENT_CATALOG):
-        logger.info("Reinstate samples from {}".format(api.get_path(shipment)))
-        shipment = api.get_object(shipment)
-        after_cancel_outbound_shipment(shipment)
-
-    logger.info("Reinstate samples from cancelled shipments [DONE]")
