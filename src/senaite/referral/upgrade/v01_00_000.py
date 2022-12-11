@@ -8,6 +8,7 @@ from senaite.referral.setuphandlers import setup_catalogs
 
 from bika.lims import api
 from bika.lims.upgrade import upgradestep
+from bika.lims.upgrade.utils import commit_transaction
 from bika.lims.upgrade.utils import UpgradeUtils
 
 version = "1.0.0"  # Remember version number in metadata.xml and setup.py
@@ -51,7 +52,15 @@ def recatalog_shipments(portal):
     sc = api.get_tool(SHIPMENT_CATALOG)
     pc = api.get_tool("portal_catalog")
     portal_types = ["OutboundSampleShipment", "InboundSampleShipment"]
-    for brain in pc(portal_type=portal_types):
+    brains = pc(portal_type=portal_types)
+    total = len(brains)
+    for num, brain in enumerate(brains):
+        if num > 0 and num % 100:
+            logger.info("Re-catalog shipments {}/{}".format(num, total))
+
+        if num > 0 and num % 10000 == 0:
+            commit_transaction()
+
         shipment = api.get_object(brain)
         path = api.get_path(shipment)
 
@@ -67,7 +76,15 @@ def recatalog_shipments(portal):
 def recatalog_inbound_samples(portal):
     logger.info("Re-catalog inbound samples ...")
     sc = api.get_tool(INBOUND_SAMPLE_CATALOG)
-    for brain in sc(portal_type="InboundSample"):
+    brains = sc(portal_type="InboundSample")
+    total = len(brains)
+    for num, brain in enumerate(brains):
+        if num > 0 and num % 100:
+            logger.info("Re-catalog inbound samples {}/{}".format(num, total))
+
+        if num > 0 and num % 10000 == 0:
+            commit_transaction()
+
         inbound_sample = api.get_object(brain)
         inbound_sample.reindexObject()
 
