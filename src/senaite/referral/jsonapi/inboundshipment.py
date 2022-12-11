@@ -8,7 +8,7 @@ from Products.CMFCore.permissions import AddPortalContent
 from senaite.jsonapi.interfaces import IPushConsumer
 from senaite.jsonapi.request import is_json_deserializable
 from senaite.referral import utils
-from senaite.referral.interfaces import IInboundSampleShipment
+from senaite.referral.catalog import SHIPMENT_CATALOG
 from zope.interface import implementer
 
 from bika.lims import api
@@ -57,13 +57,11 @@ class InboundShipmentConsumer(object):
         lab = self.get_external_laboratory(lab_code)
 
         # Check if a shipment with the given id and lab exists already
-        # TODO Performance - shipments own catalog
         shipment_id = self.data.get("shipment_id")
-        for shipment in lab.objectValues():
-            if IInboundSampleShipment.providedBy(shipment):
-                if shipment.getShipmentID() == shipment_id:
-                    raise ValueError("Inbound shipment already exists: {}"
-                                     .format(shipment_id))
+        shipment = self.get_inbound_shipment(shipment_id, lab)
+        if shipment:
+            raise ValueError("Inbound shipment already exists: {}"
+                             .format(shipment_id))
 
         # Create the Inbound Shipment and the Inbound Samples
         # TODO Performance - convert to queue task
@@ -85,6 +83,24 @@ class InboundShipmentConsumer(object):
         revoke_permission_for(shipment, AddPortalContent, [])
 
         return True
+
+    def get_inbound_shipment(self, shipment_id, laboratory, full_object=False):
+        """Returns the InboundSampleShipment for the shipment id and laboratory
+        passed-in, if any. Returns None otherwise
+        """
+        if not shipment_id:
+            return None
+        query = {
+            "portal_type": "InboundSampleShipment",
+            "shipment_id": shipment_id,
+            "laboratory_uid": api.get_uid(laboratory)
+        }
+        brains = api.search(query, SHIPMENT_CATALOG)
+        if not brains:
+            return None
+        if full_object:
+            return api.get_object(brains[0])
+        return brains[0]
 
     def sanitize(self, dict_obj):
         """Sanitize the dict obj to ensure that all strings are stripped
