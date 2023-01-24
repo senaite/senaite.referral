@@ -29,8 +29,7 @@ from bika.lims import api
 def laboratory_uid(instance):
     """Returns the UID of the lab referring the inbound sample shipment
     """
-    referring_laboratory = instance.getReferringLaboratory()
-    return api.get_uid(referring_laboratory)
+    return instance.getRawReferringLaboratory()
 
 
 @indexer(IInboundSampleShipment, IShipmentCatalog)
