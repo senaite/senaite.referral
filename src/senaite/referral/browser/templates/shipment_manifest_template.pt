@@ -180,7 +180,7 @@
             <th i18n:translate="">Date Sampled</th>
             <th i18n:translate="">Sample Type</th>
           </tr>
-          <tr tal:repeat="sample python:view.shipment.getSamples()">
+          <tr tal:repeat="sample python:view.get_samples()">
             <td class="align-middle text-left" tal:content="python:sample.getId()"/>
             <td class="align-middle text-left" tal:content="python:view.long_date(sample.getDateSampled())"/>
             <td class="align-middle text-left" tal:content="python:sample.getSampleType().Title()"/>

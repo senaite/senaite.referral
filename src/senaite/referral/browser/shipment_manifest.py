@@ -118,6 +118,12 @@ class ShipmentManifestTemplate(BaseView):
     def shipment(self):
         return self.context
 
+    def get_samples(self):
+        """Returns the samples of the shipment, sorted by id ascending
+        """
+        samples = self.shipment.getSamples()
+        return sorted(samples, key=lambda sample: sample.getId())
+
     def to_localized_time(self, date, **kw):
         """Converts the given date to a localized time string
         """
