@@ -171,17 +171,29 @@
         <h2 i18n:translate="">Samples</h2>
         <table class="w-100 mb-0 noborder">
           <colgroup>
-            <col style="width:30%"/>
-            <col style="width:30%"/>
+            <col style="width:15%"/>
+            <col style="width:15%"/>
+            <col style="width:20%"/>
+            <col style="width:20%"/>
             <col style="width:30%"/>
           </colgroup>
           <tr>
-            <th i18n:translate="">Sample ID</th>
-            <th i18n:translate="">Date Sampled</th>
-            <th i18n:translate="">Sample Type</th>
+            <th i18n:translate="shipment_manifest_column_sample_id">
+              Sample ID
+            </th>
+            <th i18n:translate="shipment_manifest_column_client_sample_id">
+              Client SID
+            </th>
+            <th i18n:translate="shipment_manifest_column_date_sampled">
+              Date Sampled
+            </th>
+            <th i18n:translate="shipment_manifest_column_sample_type">
+              Sample Type
+            </th>
           </tr>
           <tr tal:repeat="sample python:view.get_samples()">
             <td class="align-middle text-left" tal:content="python:sample.getId()"/>
+            <td class="align-middle text-left" tal:content="python:sample.getClientSampleID()"/>
             <td class="align-middle text-left" tal:content="python:view.long_date(sample.getDateSampled())"/>
             <td class="align-middle text-left" tal:content="python:sample.getSampleType().Title()"/>
           </tr>
