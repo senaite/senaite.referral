@@ -5,7 +5,7 @@
       lang="en"
       metal:use-macro="here/main_template/macros/master"
       i18n:domain="plone">
-<body>
+<body tal:define="portal_url nocall:context/portal_url;">
 
 <metal:description fill-slot="content-description"/>
 
@@ -30,7 +30,7 @@
       <div class="col-sm-12">
         <h3>
           <img i18n:attributes="title" title="Samples"
-               tal:attributes="src string:${view/portal_url}/++resource++bika.lims.images/sample.png"/>
+               tal:attributes="src string:${portal_url}/++resource++bika.lims.images/sample.png"/>
           <span i18n:translate="">Samples</span>
         </h3>
         <span tal:replace="structure python:view.render_samples_table()"/>
