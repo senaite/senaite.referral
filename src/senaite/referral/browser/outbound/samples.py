@@ -57,7 +57,8 @@ class SamplesListingView(ListingView):
                 "title": _c("Sample ID"),
                 "attr": "getId",
                 "replace_url": "getURL",
-                "index": "getId"}),
+                "index": "getId",
+                "sortable": True}),
             ("getDateSampled", {
                 "title": _c("Date Sampled"),
                 "toggle": True}),
@@ -139,6 +140,7 @@ class SamplesListingView(ListingView):
             priority = priority_div.format(priority, priority_text)
             item["replace"]["priority"] = priority
 
+        item["getId"] = api.get_id(sample)
         item["getDateReceived"] = self.ulocalized_time(received, long_format=1)
         item["getDateSampled"] = self.ulocalized_time(sampled, long_format=1)
         return item
