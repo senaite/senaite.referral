@@ -61,7 +61,7 @@ class SamplesListingView(ListingView):
             }),
             ("sample_id", {
                 "title": _("Sample ID"),
-                "sortable": False,
+                "sortable": True,
             }),
             ("client", {
                 "title": _("Client"),
@@ -161,7 +161,7 @@ class SamplesListingView(ListingView):
             analyses = list(collections.OrderedDict.fromkeys(analyses))
             item.update({
                 "uid": api.get_uid(sample),
-                "sample_id": api.get_id(sample),
+                "sample_id": obj.getReferringID(),
                 "client": api.get_title(client),
                 "priority": sample.getPriority(),
                 "sample_type": api.get_id(sample_type),

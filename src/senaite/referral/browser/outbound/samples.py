@@ -57,7 +57,8 @@ class SamplesListingView(ListingView):
                 "title": _c("Sample ID"),
                 "attr": "getId",
                 "replace_url": "getURL",
-                "index": "getId"}),
+                "index": "getId",
+                "sortable": True}),
             ("getDateSampled", {
                 "title": _c("Date Sampled"),
                 "toggle": True}),
