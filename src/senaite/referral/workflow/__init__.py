@@ -26,6 +26,14 @@ from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.utils import changeWorkflowState
 from bika.lims.workflow import doActionFor
 
+try:
+    from senaite.referral.queue import is_queue_ready
+    from senaite.queue.api import add_action_task
+except ImportError:
+    # Queue is not installed
+    do_queue_action = None
+    is_queue_ready = None
+
 
 def TransitionEventHandler(before_after, obj, mod, event): # noqa lowercase
     if not event.transition:
@@ -128,3 +136,22 @@ def restore_referred_sample(sample):
 
     # Reindex the sample
     sample.reindexObject()
+
+
+def do_queue_or_action_for(object_or_objects, action, **kwargs):
+    """Adds a queue action task for the object or objects and action if the
+    queue is available. Otherwise, does the action as usual
+    """
+    if not isinstance(object_or_objects, (list, tuple)):
+        object_or_objects = [object_or_objects]
+
+    if callable(is_queue_ready) and is_queue_ready():
+        # queue is installed and ready
+        kwargs["delay"] = kwargs.get("delay", 120)
+        context = kwargs.pop("context", object_or_objects[0])
+        add_action_task(object_or_objects, action, context=context, **kwargs)
+        return
+
+    # perform the workflow action
+    for obj in object_or_objects:
+        doActionFor(obj, action)

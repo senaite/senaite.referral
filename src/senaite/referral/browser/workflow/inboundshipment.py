@@ -27,7 +27,6 @@ from senaite.referral.queue import do_queue_action
 from bika.lims import api
 from bika.lims import senaiteMessageFactory as _s
 from bika.lims.browser.workflow import WorkflowActionGenericAdapter
-from bika.lims.workflow import isTransitionAllowed as is_transition_allowed
 
 
 class WorkflowActionReceiveAdapter(WorkflowActionGenericAdapter):
