@@ -3,6 +3,15 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
     i18n_domain="senaite.referral">
 
+  <!-- Fix inbound samples received without sample -->
+  <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 1.0.0: Fix inbound samples received without sample"
+      description="Fix inbound samples received without sample"
+      source="1002"
+      destination="1003"
+      handler="senaite.referral.upgrade.v01_00_000.fix_inbound_samples_received"
+      profile="senaite.referral:default"/>
+
   <!-- Decouple reception of shipment from reception of inbound samples -->
   <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 1.0.0: Decouple reception of shipment from reception of inbound samples"
