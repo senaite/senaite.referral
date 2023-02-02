@@ -3,6 +3,15 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
     i18n_domain="senaite.referral">
 
+  <!-- Decouple reception of shipment from reception of inbound samples -->
+  <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 1.0.0: Decouple reception of shipment from reception of inbound samples"
+      description="Decouple reception of shipment from reception of inbound samples"
+      source="1001"
+      destination="1002"
+      handler="senaite.referral.upgrade.v01_00_000.decouple_receive_shipment"
+      profile="senaite.referral:default"/>
+
   <!-- New catalog for shipment objects
   https://github.com/senaite/senaite.referral/pull/2 -->
   <genericsetup:upgradeStep

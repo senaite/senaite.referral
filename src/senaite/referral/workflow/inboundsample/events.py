@@ -55,12 +55,9 @@ def after_receive_inbound_sample(inbound_sample):
     # Auto-receive the sample object
     doActionFor(sample, "receive")
 
-    # Try with the whole shipment if counterpart samples exist for all
+    # Try with the whole shipment
     shipment = inbound_sample.getInboundShipment()
-    samples = shipment.getInboundSamples()
-    received = [api.is_uid(sample.getRawSample()) for sample in samples]
-    if all(received):
-        doActionFor(shipment, "receive_inbound_shipment")
+    doActionFor(shipment, "receive_inbound_shipment")
 
 
 def after_reject_inbound_sample(inbound_sample):

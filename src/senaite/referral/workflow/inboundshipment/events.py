@@ -22,16 +22,26 @@ from bika.lims.workflow import doActionFor as do_action_for
 from senaite.referral.remotelab import get_remote_connection
 
 
-def after_receive_inbound_shipment(shipment):
-    """ Event fired after transition "receive_inbound_shipment" for an Inbound
+def after_receive_inbound_samples(shipment):
+    """Event fired after transition "receive_inbound_samples" for an Inbound
     Sample Shipment is triggered. System receives all the inbound samples that
-    have not been received yet
+    have not been received yet and tries to receive the inbound shipment
+    afterwards
     """
     for inbound_sample in shipment.getInboundSamples():
         # Try to receive the inbound sample. Won't be transitioned unless the
         # transition is allowed for its current status
         do_action_for(inbound_sample, "receive_inbound_sample")
 
+    # Try to receive the inbound shipment itself
+    do_action_for(shipment, "receive_inbound_shipment")
+
+
+def after_receive_inbound_shipment(shipment):
+    """Event fired after transition "receive_inbound_shipment" for an Inbound
+    Sample Shipment is triggered. System notifies the referring laboratory that
+    the shipment has been delivered
+    """
     # Notify the remote laboratory
     lab = shipment.getReferringLaboratory()
     remote_lab = get_remote_connection(lab)

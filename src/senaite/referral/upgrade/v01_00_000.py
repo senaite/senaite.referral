@@ -18,6 +18,8 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+import transaction
+
 from senaite.referral import logger
 from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.catalog import SHIPMENT_CATALOG
@@ -107,3 +109,35 @@ def recatalog_inbound_samples(portal):
         inbound_sample.reindexObject()
 
     logger.info("Re-catalog inbound samples [DONE]")
+
+
+def decouple_receive_shipment(tool):
+    logger.info("Decouple receive transitions of shipments ...")
+    portal = tool.aq_inner.aq_parent
+    setup = portal.portal_setup
+    setup.runImportStepFromProfile(profile, "workflow")
+
+    wf_id = "senaite_inbound_shipment_workflow"
+    wf_tool = api.get_tool("portal_workflow")
+    workflow = wf_tool.getWorkflowById(wf_id)
+
+    query = {"portal_type": "InboundSampleShipment", "review_state": "due"}
+    brains = api.search(query, SHIPMENT_CATALOG)
+    total = len(brains)
+    for num, brain in enumerate(brains):
+        if num and num % 100 == 0:
+            logger.info("Processed objects: {}/{}".format(num, total))
+
+        if num and num % 1000 == 0:
+            # reduce memory size of the transaction
+            transaction.savepoint()
+
+        shipment = api.get_object(brain)
+        if not shipment:
+            path = brain.getPath()
+            logger.warn("Stale catalog entry: {}".format(path))
+            continue
+
+        workflow.updateRoleMappingsFor(shipment)
+
+    logger.info("Decouple receive transitions of shipments [DONE]")

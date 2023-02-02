@@ -27,11 +27,11 @@ from bika.lims.interfaces import IGuardAdapter
 @implementer(IGuardAdapter)
 class InboundSampleGuardAdapter(BaseGuardAdapter):
 
-    def guard_receive__inbound_sample(self):
+    def guard_receive_inbound_sample(self):
         """Returns true if the inbound sample can be received, either because
         is in a suitable status (due) or because it is received, but without
         a sample counterpart
         """
-        if self.getRawSample():
+        if self.context.getRawSample():
             return False
         return True
