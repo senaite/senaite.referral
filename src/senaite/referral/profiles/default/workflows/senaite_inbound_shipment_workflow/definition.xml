@@ -23,6 +23,7 @@
 
   <!-- State: due -->
   <state state_id="due" title="Due" i18n:attributes="title">
+    <exit-transition transition_id="receive_inbound_samples" />
     <exit-transition transition_id="receive_inbound_shipment" />
     <exit-transition transition_id="reject_inbound_shipment" />
 
@@ -61,7 +62,26 @@
     <permission-map name="View" acquired="True" />
   </state>
 
-  <!-- Transition: receive_inbound_shipment -->
+  <!-- Transition: receive_inbound_samples
+  This transition is only used as a shortcut for the reception of all
+  inbound samples the shipment contains. Since the samples might be received
+  by a queue task, we do not want the shipment to transition to received
+  unless all inbound samples have been received already. This transition is
+  only visible when there is at least one inbound sample that has not been
+  received yet
+  -->
+  <transition transition_id="receive_inbound_samples" title="Receive" new_state="due" trigger="USER" before_script="" after_script="" i18n:attributes="title">
+    <action url="" category="workflow" icon="">Receive</action>
+    <guard>
+      <guard-expression>python:here.guard_handler("receive_inbound_samples")</guard-expression>
+    </guard>
+  </transition>
+
+  <!-- Transition: receive_inbound_shipment
+  This transition transitions the whole shipment to received status, but
+  has nothing to do with the inbound samples the shipment contains. This
+  transition is only visible when all inbound samples have been received.
+  -->
   <transition transition_id="receive_inbound_shipment" title="Receive" new_state="received" trigger="USER" before_script="" after_script="" i18n:attributes="title">
     <action url="" category="workflow" icon="">Receive</action>
     <guard>

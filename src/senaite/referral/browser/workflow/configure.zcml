@@ -26,17 +26,4 @@
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
     permission="zope.Public" />
 
-  <!-- Inbound Shipment: "receive"
-  Creates the sample objects counterparts for each inbound sample from the
-  inbound shipment and redirects the user to the barcode preview if the setting
-  "Show barcode labels preview on shipment reception" is enabled in referral's
-  control panel -->
-  <adapter
-    name="workflow_action_receive_inbound_shipment"
-    for="*
-         senaite.referral.interfaces.ISenaiteReferralLayer"
-    factory=".inboundshipment.WorkflowActionReceiveAdapter"
-    provides="bika.lims.interfaces.IWorkflowActionAdapter"
-    permission="zope.Public" />
-
 </configure>

@@ -18,6 +18,8 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+import transaction
+
 from senaite.referral import logger
 from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.catalog import SHIPMENT_CATALOG
@@ -25,6 +27,7 @@ from senaite.referral.config import PRODUCT_NAME as product
 from senaite.referral.setuphandlers import setup_catalogs
 
 from bika.lims import api
+from bika.lims.utils import changeWorkflowState
 from bika.lims.upgrade import upgradestep
 from bika.lims.upgrade.utils import commit_transaction
 from bika.lims.upgrade.utils import UpgradeUtils
@@ -107,3 +110,79 @@ def recatalog_inbound_samples(portal):
         inbound_sample.reindexObject()
 
     logger.info("Re-catalog inbound samples [DONE]")
+
+
+def decouple_receive_shipment(tool):
+    logger.info("Decouple receive transitions of shipments ...")
+    portal = tool.aq_inner.aq_parent
+    setup = portal.portal_setup
+    setup.runImportStepFromProfile(profile, "workflow")
+
+    wf_id = "senaite_inbound_shipment_workflow"
+    wf_tool = api.get_tool("portal_workflow")
+    workflow = wf_tool.getWorkflowById(wf_id)
+
+    query = {"portal_type": "InboundSampleShipment", "review_state": "due"}
+    brains = api.search(query, SHIPMENT_CATALOG)
+    total = len(brains)
+    for num, brain in enumerate(brains):
+        if num and num % 100 == 0:
+            logger.info("Processed objects: {}/{}".format(num, total))
+
+        if num and num % 1000 == 0:
+            # reduce memory size of the transaction
+            transaction.savepoint()
+
+        shipment = api.get_object(brain, default=None)
+        if not shipment:
+            path = brain.getPath()
+            logger.warn("Stale catalog entry: {}".format(path))
+            continue
+
+        # Update role mappings
+        workflow.updateRoleMappingsFor(shipment)
+
+        # Flush the object from memory
+        shipment._p_deactivate()
+
+    logger.info("Decouple receive transitions of shipments [DONE]")
+
+
+def fix_inbound_samples_received(tool):
+    logger.info("Fix inbound samples received but without sample ...")
+    query = {"portal_type": "InboundSample", "review_state": "received"}
+    brains = api.search(query, INBOUND_SAMPLE_CATALOG)
+    total = len(brains)
+    for num, brain in enumerate(brains):
+        if num and num % 100 == 0:
+            logger.info("Processed objects: {}/{}".format(num, total))
+
+        if num and num % 1000 == 0:
+            # reduce memory size of the transaction
+            transaction.savepoint()
+
+        inbound_sample = api.get_object(brain, default=None)
+        if not inbound_sample:
+            path = brain.getPath()
+            logger.warn("Stale catalog entry: {}".format(path))
+            continue
+
+        if inbound_sample.getRawSample():
+            inbound_sample._p_deactivate()
+            continue
+
+        # rollback inbound sample status to due
+        wf_id = "senaite_inbound_sample_workflow"
+        changeWorkflowState(inbound_sample, wf_id, "due", action="fix_1003")
+
+        # and do the same with the shipment
+        shipment = inbound_sample.getInboundShipment()
+        if api.get_review_status(shipment) == "received":
+            wf_id = "senaite_inbound_shipment_workflow"
+            changeWorkflowState(shipment, wf_id, "due", action="fix_1003")
+
+        # Flush the objects from memory
+        inbound_sample._p_deactivate()
+        shipment._p_deactivate()
+
+    logger.info("Fix inbound samples received but without sample [DONE]")
