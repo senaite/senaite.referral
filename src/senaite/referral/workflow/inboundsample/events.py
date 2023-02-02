@@ -23,14 +23,6 @@ from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils.analysisrequest import create_analysisrequest
 from bika.lims.workflow import doActionFor
 
-try:
-    from senaite.queue.api import is_queue_ready
-    from senaite.queue.api import add_task
-except ImportError:
-    # Queue is not installed
-    is_queue_ready = None
-    add_task = None
-
 
 def after_receive_inbound_sample(inbound_sample):
     """Event fired after a transition "receive_inbound_sample" for an

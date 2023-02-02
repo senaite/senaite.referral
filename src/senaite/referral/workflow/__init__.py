@@ -27,7 +27,7 @@ from bika.lims.utils import changeWorkflowState
 from bika.lims.workflow import doActionFor
 
 try:
-    from senaite.referral.queue import is_queue_ready
+    from senaite.queue.api import is_queue_ready
     from senaite.queue.api import add_action_task
 except ImportError:
     # Queue is not installed
@@ -144,9 +144,13 @@ def do_queue_or_action_for(objects, action, **kwargs):
     if not isinstance(objects, (list, tuple)):
         objects = [objects]
 
+    objects = filter(None, objects)
+    if not objects:
+        return
+
     if callable(is_queue_ready) and is_queue_ready():
         # queue is installed and ready
-        kwargs["delay"] = kwargs.get("delay", 120)
+        kwargs["delay"] = kwargs.get("delay", 10)
         context = kwargs.pop("context", objects[0])
         context = api.get_object(context)
         return add_action_task(objects, action, context=context, **kwargs)
