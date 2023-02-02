@@ -31,7 +31,6 @@ try:
     from senaite.queue.api import add_action_task
 except ImportError:
     # Queue is not installed
-    do_queue_action = None
     is_queue_ready = None
 
 
@@ -149,6 +148,7 @@ def do_queue_or_action_for(objects, action, **kwargs):
         # queue is installed and ready
         kwargs["delay"] = kwargs.get("delay", 120)
         context = kwargs.pop("context", objects[0])
+        context = api.get_object(context)
         return add_action_task(objects, action, context=context, **kwargs)
 
     # perform the workflow action

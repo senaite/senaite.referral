@@ -34,7 +34,7 @@ class WorkflowActionReceiveAdapter(WorkflowActionGenericAdapter):
     """
 
     def __call__(self, action, objects):
-        task = do_queue_or_action_for(self.context, action, objects)
+        task = do_queue_or_action_for(objects, action, context=self.context)
         if task:
             task_uid = task.task_short_uid
             msg = _("A task for the reception of inbound samples has been "
