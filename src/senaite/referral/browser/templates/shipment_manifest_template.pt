@@ -83,7 +83,7 @@
               <td class="align-middle text-left">
                 <h2 i18n:translate="">Shipper</h2>
                 <address class="address">
-                  <div class="lab-title font-weight-bold" tal:content="laboratory/title|nothing"></div>
+                  <div class="lab-title font-weight-bold" tal:content="laboratory/Name|nothing"></div>
                   <div class="lab-supervisor"
                        tal:condition="laboratory/Supervisor"
                        tal:content="laboratory/Supervisor/Fullname|nothing"></div>
