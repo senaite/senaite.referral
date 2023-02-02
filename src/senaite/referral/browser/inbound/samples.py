@@ -86,13 +86,18 @@ class SamplesListingView(ListingView):
             }),
         ))
 
+        self.review_states = self.default_review_states
+
+    @property
+    def default_review_states(self):
+        """Returns the default review states filter
+        """
         print_stickers = {
             "id": "print_stickers",
             "title": _("Print stickers"),
             "url": "workflow_action?action=print_stickers"
         }
-
-        self.review_states = [
+        review_states = [
             {
                 "id": "received",
                 "title": _("Received"),
@@ -107,26 +112,46 @@ class SamplesListingView(ListingView):
                 "contentFilter": {
                     "review_state": "rejected",
                 },
-                "custom_transitions": [print_stickers],
+                "custom_transitions": [],
                 "columns": self.columns.keys(),
             }, {
-                "id": "default",
+                "id": "all",
                 "title": _("All"),
                 "contentFilter": {},
-                "custom_transitions": [print_stickers],
+                "custom_transitions": [],
                 "columns": self.columns.keys(),
             },
         ]
+        return review_states
 
+    def update(self):
+        """Update hook
+        """
+        super(SamplesListingView, self).update()
+
+        # Update states filter in accordance of shipment's current status
+        self.update_review_states()
+
+    def update_review_states(self):
+        """Updates the states filter to match with shipment's current status
+        """
+        self.review_states = self.default_review_states
         context_status = api.get_review_status(self.context)
-        if context_status == "rejected":
-            # Shipment has been rejected, selection of samples not permitted
+        if context_status == "received":
+            # Default filter is received
+            self.review_states[0]["id"] = "default"
+
+        elif context_status == "rejected":
+            # Default filter is rejected
+            self.review_states[1]["id"] = "default"
+
+            # selection of samples is not permitted
             self.show_select_column = False
 
-        if context_status == "due":
-            # Insert a "due" filter
+        elif context_status == "due":
+            # Insert a default "due" filter
             due = {
-                "id": "due",
+                "id": "default",
                 "title": _("Due"),
                 "contentFilter": {
                     "review_state": "due",
@@ -134,15 +159,9 @@ class SamplesListingView(ListingView):
                 "columns": self.columns.keys(),
             }
             self.review_states.insert(0, due)
-
-            # Remove "Print stickers" custom transitions
-            for state in self.review_states:
-                state["custom_transitions"] = []
-
-    def update(self):
-        """Update hook
-        """
-        super(SamplesListingView, self).update()
+        else:
+            # Default filter is "all"
+            self.review_states[-1]["id"] = "default"
 
     def before_render(self):
         """Before template render hook
