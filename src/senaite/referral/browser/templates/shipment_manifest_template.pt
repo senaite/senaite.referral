@@ -110,9 +110,11 @@
               <td class="align-middle text-left">
                 <h2 i18n:translate="">Receiver</h2>
                 <address class="address">
-                  <div class="lab-title font-weight-bold" tal:content="reflab/code|nothing"></div>
+                  <div class="lab-title font-weight-bold">
+                    <span  tal:content="reflab/Title|nothing"/>&nbsp;
+                    (<span tal:content="reflab/code|nothing"/>)
+                  </div>
                 </address>
-
                 <h2 i18n:translate="">Courier</h2>
                 <div class="courier-info" tal:content="python:view.request.form.get('courier')"></div>
               </td>
