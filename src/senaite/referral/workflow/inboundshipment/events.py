@@ -34,9 +34,6 @@ def after_receive_inbound_samples(shipment):
     samples = shipment.getInboundSamples()
     do_queue_or_action_for(samples, "receive_inbound_sample", context=shipment)
 
-    # Try to receive the inbound shipment itself
-    do_action_for(shipment, "receive_inbound_shipment")
-
 
 def after_receive_inbound_shipment(shipment):
     """Event fired after transition "receive_inbound_shipment" for an Inbound

@@ -138,20 +138,19 @@ def restore_referred_sample(sample):
     sample.reindexObject()
 
 
-def do_queue_or_action_for(object_or_objects, action, **kwargs):
-    """Adds a queue action task for the object or objects and action if the
-    queue is available. Otherwise, does the action as usual
+def do_queue_or_action_for(objects, action, **kwargs):
+    """Adds and returns a queue action task for the object/s and action if the
+    queue is available. Otherwise, does the action as usual and returns None
     """
-    if not isinstance(object_or_objects, (list, tuple)):
-        object_or_objects = [object_or_objects]
+    if not isinstance(objects, (list, tuple)):
+        objects = [objects]
 
     if callable(is_queue_ready) and is_queue_ready():
         # queue is installed and ready
         kwargs["delay"] = kwargs.get("delay", 120)
-        context = kwargs.pop("context", object_or_objects[0])
-        add_action_task(object_or_objects, action, context=context, **kwargs)
-        return
+        context = kwargs.pop("context", objects[0])
+        return add_action_task(objects, action, context=context, **kwargs)
 
     # perform the workflow action
-    for obj in object_or_objects:
+    for obj in objects:
         doActionFor(obj, action)

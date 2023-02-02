@@ -20,7 +20,7 @@
 
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
-from senaite.referral.queue import do_queue_action
+from senaite.referral.workflow import do_queue_or_action_for
 
 from bika.lims import api
 from bika.lims import senaiteMessageFactory as _s
@@ -34,13 +34,12 @@ class WorkflowActionReceiveAdapter(WorkflowActionGenericAdapter):
     """
 
     def __call__(self, action, objects):
-        task = do_queue_action(self.context, action, objects)
+        task = do_queue_or_action_for(self.context, action, objects)
         if task:
             task_uid = task.task_short_uid
             msg = _("A task for the reception of inbound samples has been "
                     "added to the queue: {}").format(task_uid)
             return self.redirect(message=msg)
-
 
         inbound_samples = [api.get_object(obj) for obj in objects]
         transitioned = self.do_action(action, inbound_samples)
