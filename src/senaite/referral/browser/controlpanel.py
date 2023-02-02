@@ -64,6 +64,23 @@ class IReferralControlPanel(Interface):
         required=False,
     )
 
+    chunk_size_receive_inbound_sample = schema.Int(
+        title=_(
+            u"label_chunk_size_receive_inbound_sample",
+            u"Maximum number of inbound samples to receive in a single task"
+        ),
+        description=_(
+            u"description_chunk_size_receive_inbound_sample",
+            u"If the number of inbound samples to receive is above this "
+            u"value, the queue will split the job in as many tasks as "
+            u"required. If the value is 0 or senaite queue is not installed, "
+            u"the system won't process the inbound samples asynchronously and "
+            u"all them will be held in a single request"
+        ),
+        default=5,
+        required=0,
+    )
+
 
 class ReferralControlPanelForm(RegistryEditForm):
     schema = IReferralControlPanel

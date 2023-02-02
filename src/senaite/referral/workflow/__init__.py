@@ -25,6 +25,7 @@ from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.utils import changeWorkflowState
 from bika.lims.workflow import doActionFor
+from senaite.referral.utils import get_chunk_size_for
 
 try:
     from senaite.queue.api import is_queue_ready
@@ -152,8 +153,12 @@ def do_queue_or_action_for(objects, action, **kwargs):
         # queue is installed and ready
         kwargs["delay"] = kwargs.get("delay", 10)
         context = kwargs.pop("context", objects[0])
-        context = api.get_object(context)
-        return add_action_task(objects, action, context=context, **kwargs)
+        chunk_size = kwargs.pop("chunk_size", None)
+        chunk_size = api.to_int(chunk_size, default=get_chunk_size_for(action))
+        if chunk_size > 0:
+            kwargs["chunk_size"] = chunk_size
+            context = api.get_object(context)
+            return add_action_task(objects, action, context=context, **kwargs)
 
     # perform the workflow action
     for obj in objects:
