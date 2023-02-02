@@ -3,6 +3,15 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
     i18n_domain="senaite.referral">
 
+  <!-- Setup chunk size for inbound sample reception -->
+  <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 1.0.0: Setup chunk size for inbound sample reception"
+      description="Fix inbound samples received without sample"
+      source="1003"
+      destination="1004"
+      handler="senaite.referral.upgrade.v01_00_000.setup_chunk_size_receive_inbound_sample"
+      profile="senaite.referral:default"/>
+
   <!-- Fix inbound samples received without sample -->
   <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 1.0.0: Fix inbound samples received without sample"

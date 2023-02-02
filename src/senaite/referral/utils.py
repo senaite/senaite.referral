@@ -23,6 +23,7 @@ import copy
 import json
 from datetime import datetime
 
+from plone.api.exc import InvalidParameterError
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
 from six import string_types
@@ -188,6 +189,17 @@ def is_manual_inbound_shipment_permitted():
     """
     key = "{}.manual_inbound_permitted".format(PRODUCT_NAME)
     return api.get_registry_record(key, default=False)
+
+
+def get_chunk_size_for(action):
+    """Returns the chunk_size for the given action
+    """
+    try:
+        key = "{}.chunk_size_{}".format(PRODUCT_NAME, action)
+        chunk_size = api.get_registry_record(key, default=5)
+    except InvalidParameterError:
+        chunk_size = 5
+    return api.to_int(chunk_size, 5)
 
 
 def to_uids(value):

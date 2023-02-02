@@ -186,3 +186,11 @@ def fix_inbound_samples_received(tool):
         shipment._p_deactivate()
 
     logger.info("Fix inbound samples received but without sample [DONE]")
+
+
+def setup_chunk_size_receive_inbound_sample(tool):
+    logger.info("Setup chunk size for inbound sample reception ...")
+    portal = tool.aq_inner.aq_parent
+    setup = portal.portal_setup
+    setup.runImportStepFromProfile(profile, "plone.app.registry")
+    logger.info("Setup chunk size for inbound sample reception [DONE]")
