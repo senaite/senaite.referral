@@ -236,15 +236,12 @@ class InboundSampleShipment(Container):
     def getReferringLaboratory(self):
         """Returns the client the samples come from
         """
-        value = self.getRawReferringLaboratory()
-        return api.get_object(value, default=None)
+        return api.get_parent(self)
 
     @security.protected(permissions.View)
     def getRawReferringLaboratory(self):
-        value = get_uids_field_value(self, "referring_laboratory")
-        if not value:
-            return None
-        return value[0]
+        lab = self.getReferringLaboratory()
+        return api.get_uid(lab)
 
     @security.protected(permissions.ModifyPortalContent)
     def setReferringLaboratory(self, value):
