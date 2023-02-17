@@ -223,7 +223,9 @@ class RemoteLab(object):
             }
 
         def get_analysis_info(analysis):
-            result_date = analysis.getResultCaptureDate()
+            captured = analysis.getResultCaptureDate()
+            captured = captured if captured else analysis.getDateSubmitted()
+            captured = captured.strftime("%Y-%m-%d") or ""
             return {
                 "keyword": analysis.getKeyword(),
                 "result": analysis.getResult(),
@@ -232,7 +234,7 @@ class RemoteLab(object):
                 "formatted_result": get_formatted_result(analysis) or "NA",
                 "instrument": get_instrument(analysis) or "",
                 "method": get_method(analysis) or "",
-                "result_date": result_date.strftime("%Y-%m-%d"),
+                "result_date": captured,
                 "verifiers": get_verifiers_info(analysis),
                 "analysts": get_analysts_info(analysis),
             }
