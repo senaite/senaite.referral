@@ -31,7 +31,6 @@ from senaite.referral.content import get_uids_field_value
 from senaite.referral.content import set_datetime_value
 from senaite.referral.content import set_string_value
 from senaite.referral.content import set_uids_field_value
-from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.interfaces import IInboundSample
 from senaite.referral.interfaces import IInboundSampleShipment
 from senaite.referral.utils import get_action_date
@@ -41,21 +40,6 @@ from zope.interface import invariant
 
 from bika.lims import api
 from bika.lims.interfaces import IClient
-
-
-def check_referring_laboratory(thing):
-    """Checks if the referring laboratory passed in is valid
-    """
-    obj = api.get_object(thing, default=None)
-    if not IExternalLaboratory.providedBy(obj):
-        raise ValueError("Type is not supported: {}".format(repr(obj)))
-
-    if not obj.getReferring():
-        # The external laboratory must be enabled as referring laboratory
-        raise ValueError("The external laboratory cannot act as a "
-                         "referring laboratory")
-
-    return True
 
 
 def check_referring_client(thing):
@@ -93,14 +77,6 @@ class IInboundSampleShipmentSchema(model.Schema):
         required=True,
     )
 
-    referring_laboratory = schema.Choice(
-        title=_(u"label_inboundsampleshipment_referring_laboratory",
-                default=u"Referring laboratory"),
-        description=_(u"The referring laboratory the samples come from"),
-        vocabulary="senaite.referral.vocabularies.referringlaboratories",
-        required=True,
-    )
-
     referring_client = schema.Choice(
         title=_(u"label_inboundsampleshipment_referring_client",
                 default=u"Referring client"),
@@ -127,15 +103,6 @@ class IInboundSampleShipmentSchema(model.Schema):
         ),
         required=True,
     )
-
-    @invariant
-    def validate_referring_laboratory(data):
-        """Checks if the value for field referring_laboratory is valid
-        """
-        val = data.referring_laboratory
-        if not val:
-            return
-        check_referring_laboratory(val)
 
     @invariant
     def validate_referring_client(data):
@@ -237,18 +204,6 @@ class InboundSampleShipment(Container):
         """Returns the client the samples come from
         """
         return api.get_parent(self)
-
-    @security.protected(permissions.View)
-    def getRawReferringLaboratory(self):
-        lab = self.getReferringLaboratory()
-        return api.get_uid(lab)
-
-    @security.protected(permissions.ModifyPortalContent)
-    def setReferringLaboratory(self, value):
-        """Sets the client the samples come from
-        """
-        set_uids_field_value(self, "referring_laboratory", value,
-                             validator=check_referring_laboratory)
 
     @security.protected(permissions.View)
     def getReferringClient(self):
