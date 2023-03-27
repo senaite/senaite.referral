@@ -51,7 +51,11 @@ WORKFLOWS_TO_UPDATE = {
             "shipped": {
                 "title": "Referred",
                 "description": "Sample is referred to reference laboratory",
-                "transitions": ("verify", "recall_from_shipment"),
+                "transitions": (
+                    "verify",
+                    "reject_at_reference",
+                    "recall_from_shipment"
+                ),
                 # Sample is read-only
                 "permissions_copy_from":  "invalid",
             },
@@ -72,6 +76,16 @@ WORKFLOWS_TO_UPDATE = {
                     "guard_permissions": "",
                     "guard_roles": "",
                     "guard_expr": "python:here.guard_handler('ship')",
+                }
+            },
+            "reject_at_reference": {
+                "title": "Reject sample (at reference lab)",
+                "new_state": "rejected_at_reference",
+                "action": "Reject at reference lab",
+                "guard": {
+                    "guard_permissions": "",
+                    "guard_roles": "",
+                    "guard_expr": "python:here.guard_handler('reject_at_reference')",
                 }
             },
             "recall_from_shipment": {
