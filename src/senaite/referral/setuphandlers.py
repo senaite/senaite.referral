@@ -89,7 +89,7 @@ WORKFLOWS_TO_UPDATE = {
                 }
             },
             "recall_from_shipment": {
-                "title": "Reinstate",
+                "title": "Recall from shipment",
                 "new_state": "",
                 "action": "Recall from shipment",
                 "guard": {
