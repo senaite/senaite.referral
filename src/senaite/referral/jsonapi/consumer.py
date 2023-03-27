@@ -118,6 +118,9 @@ class ReferralConsumer(BaseConsumer):
             raise ValueError("Laboratory is not active: {}".format(
                 self.lab_code))
 
+        # We need to bypass the guard's check for current context!
+        api.get_request().set("lab_code", self.lab_code)
+
         # Iterate through items and process them
         for item in self.items:
 
@@ -140,7 +143,7 @@ class ReferralConsumer(BaseConsumer):
         rejection_reasons = self.get_value(item, "RejectionReasons")
         obj = self.get_object_for(item)
         obj.setRejectionReasons(rejection_reasons)
-        self.do_action(obj, "reject")
+        self.do_action(obj, "reject_at_reference")
 
     def do_action(self, item_or_object, action):
         """Performs an action against the given object

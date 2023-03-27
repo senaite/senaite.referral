@@ -72,14 +72,22 @@ class SamplesListingViewAdapter(object):
         shipment = filter(None, [outbound, inbound])
         item["Shipment"] = " ".join(shipment)
 
+        # Show an alert if the sample has been rejected at reference lab
+        if api.get_review_status(obj) == "rejected_at_reference":
+            msg = _("Sample rejected at reference laboratory")
+            after = item["after"].get("getId", "")
+            ico = self.get_glyphicon("alert", title=msg, color="red")
+            item["after"]["getId"] = " ".join(filter(None, [after, ico]))
+
         return item
 
-    def get_glyphicon(self, name):
+    def get_glyphicon(self, name, **kwargs):
         """Returns an html element that represents the glyphicon with the name
         """
+        attrs = " ".join([kwargs[key] for key in kwargs.keys()])
         span = '<span class="glyphicon glyphicon-{}" ' \
-               'style="padding-right:3px"></span>'
-        return span.format(name)
+               'style="padding-right:3px" {}></span>'
+        return span.format(name, attrs)
 
     def add_review_states(self):
         """Adds referral-specific review states (filter buttons) in the listing
@@ -95,7 +103,7 @@ class SamplesListingViewAdapter(object):
             "id": "shipped",
             "title": _("Referred"),
             "contentFilter": {
-                "review_state": ("shipped",),
+                "review_state": ("shipped", "rejected_at_reference"),
                 "sort_on": "created",
                 "sort_order": "descending"},
             "transitions": [],
@@ -106,6 +114,16 @@ class SamplesListingViewAdapter(object):
             listing=self.listing,
             review_state=shipped,
             after="invalid")
+
+        # Update "rejected" review state to include those that have been
+        # rejected by the reference laboratory
+        for rv in self.listing.review_states:
+            if rv.get("id") == "rejected":
+                statuses = rv["contentFilter"].get("review_state")
+                if not isinstance(statuses, (list, tuple)):
+                    statuses = [statuses]
+                statuses.append("rejected_at_reference")
+                rv["contentFilter"]["review_state"] = list(set(statuses))
 
     def add_columns(self):
         """Adds referral-specific columns in the listing

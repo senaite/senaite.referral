@@ -45,17 +45,23 @@ def TransitionEventHandler(before_after, obj, mod, event): # noqa lowercase
         getattr(mod, function_name)(obj)
 
 
-def get_previous_status(instance, default=None):
-    """Returns the previous state for the given instance from review history
+def get_previous_status(instance, before=None, default=None):
+    """Returns the previous state for the given instance and status from
+    review history. If before is None, returns the state of the sample before
+    its current status.
     """
-    # Get the current status
-    current_status = api.get_review_status(instance)
+    if not before:
+        before = api.get_review_status(instance)
 
     # Get the review history, most recent actions first
+    found = False
     history = api.get_review_history(instance)
     for item in history:
         status = item.get("review_state")
-        if status and status != current_status:
+        if status == before:
+            found = True
+            continue
+        if found:
             return status
     return default
 
@@ -119,8 +125,9 @@ def restore_referred_sample(sample):
 
     # Transition the sample and analyses to the state before sample was shipped
     status = api.get_review_status(sample)
-    if status == "shipped":
-        prev = get_previous_status(sample, default="sample_received")
+    if status in ["shipped", "restore_referred"]:
+        prev = get_previous_status(sample, before="shipped",
+                                   default="sample_received")
         changeWorkflowState(sample, "bika_ar_workflow", prev)
 
     # Restore status of referred analyses

@@ -5,11 +5,20 @@
 
   <!-- Setup chunk size for inbound sample reception -->
   <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 1.0.0: Allow to recall a sample from shipment"
+      description="Added the transition 'recall_from_shipment'"
+      source="1004"
+      destination="1005"
+      handler=".v01_00_000.setup_recall_from_shipment"
+      profile="senaite.referral:default"/>
+
+  <!-- Setup chunk size for inbound sample reception -->
+  <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 1.0.0: Setup chunk size for inbound sample reception"
       description="Fix inbound samples received without sample"
       source="1003"
       destination="1004"
-      handler="senaite.referral.upgrade.v01_00_000.setup_chunk_size_receive_inbound_sample"
+      handler=".v01_00_000.setup_chunk_size_receive_inbound_sample"
       profile="senaite.referral:default"/>
 
   <!-- Fix inbound samples received without sample -->
@@ -18,7 +27,7 @@
       description="Fix inbound samples received without sample"
       source="1002"
       destination="1003"
-      handler="senaite.referral.upgrade.v01_00_000.fix_inbound_samples_received"
+      handler=".v01_00_000.fix_inbound_samples_received"
       profile="senaite.referral:default"/>
 
   <!-- Decouple reception of shipment from reception of inbound samples -->
@@ -27,7 +36,7 @@
       description="Decouple reception of shipment from reception of inbound samples"
       source="1001"
       destination="1002"
-      handler="senaite.referral.upgrade.v01_00_000.decouple_receive_shipment"
+      handler=".v01_00_000.decouple_receive_shipment"
       profile="senaite.referral:default"/>
 
   <!-- New catalog for shipment objects
@@ -37,7 +46,7 @@
       description="New catalog for shipment objects"
       source="1.0.0"
       destination="1001"
-      handler="senaite.referral.upgrade.v01_00_000.setup_new_catalog_shipments"
+      handler=".v01_00_000.setup_new_catalog_shipments"
       profile="senaite.referral:default"/>
 
 </configure>

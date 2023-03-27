@@ -45,3 +45,15 @@ class SampleGuardAdapter(BaseGuardAdapter):
         analyses = self.context.getAnalyses(full_objects=True)
         valid = map(lambda an: api.get_review_status(an) in allowed, analyses)
         return all(valid)
+
+    def guard_reject_at_reference(self):
+        """Returns true if the sample can be transitioned to rejected at
+        reference sample
+        """
+        # Do not allow to reject unless a POST from remote lab
+        request = api.get_request()
+        lab_code = request.get("lab_code")
+        if not lab_code:
+            return False
+
+        return True
