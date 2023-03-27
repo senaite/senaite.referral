@@ -20,6 +20,7 @@
 
 from senaite.referral import check_installed
 from senaite.referral.remotelab import get_remote_connection
+from senaite.referral.workflow import restore_referred_sample
 from senaite.referral.workflow import ship_sample
 
 from bika.lims.workflow import doActionFor
@@ -43,6 +44,9 @@ def AfterTransitionEventHandler(sample, event): # noqa lowercase
 
     if event.transition.id == "reject":
         after_reject(sample)
+
+    if event.transition.id == "recall_from_shipment":
+        restore_referred_sample(sample)
 
 
 def after_no_sampling_workflow(sample):

@@ -129,7 +129,18 @@ class OutboundSampleConsumer(object):
         brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
         if not brains:
             raise ValueError("Sample not found: {}".format(sample_id))
-        return api.get_object(brains[0])
+
+        if len(brains) > 0:
+            raise ValueError("More than one sample: {}".format(sample_id))
+
+        # Get the sample object
+        sample = api.get_object(brains[0])
+
+        # Do not allow to modify the sample if not referred
+        if api.get_review_status(sample) != "shipped":
+            raise ValueError("Sample is not referred: {}".format(sample_id))
+
+        return sample
 
     def update_analysis(self, analysis, record):
         if not analysis:

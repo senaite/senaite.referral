@@ -25,6 +25,7 @@ from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.config import PRODUCT_NAME as product
 from senaite.referral.setuphandlers import setup_catalogs
+from senaite.referral.setuphandlers import setup_workflows
 
 from bika.lims import api
 from bika.lims.utils import changeWorkflowState
@@ -194,3 +195,13 @@ def setup_chunk_size_receive_inbound_sample(tool):
     setup = portal.portal_setup
     setup.runImportStepFromProfile(profile, "plone.app.registry")
     logger.info("Setup chunk size for inbound sample reception [DONE]")
+
+
+def setup_recall_from_shipment(tool):
+    logger.info("Setup transition 'recall_from_shipment' ...")
+    portal = tool.aq_inner.aq_parent
+
+    # Setup workflows
+    setup_workflows(portal)
+
+    logger.info("Setup transition 'recall_from_shipment' [DONE]")
