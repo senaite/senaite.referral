@@ -130,7 +130,7 @@ class OutboundSampleConsumer(object):
         if not brains:
             raise ValueError("Sample not found: {}".format(sample_id))
 
-        if len(brains) > 0:
+        if len(brains) > 1:
             raise ValueError("More than one sample: {}".format(sample_id))
 
         # Get the sample object
