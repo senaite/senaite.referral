@@ -57,6 +57,14 @@ class OutboundSampleConsumer(object):
         sample_id = sample_record.get("referring_id")
         sample = self.get_sample(sample_id)
 
+        # Do not allow to modify the sample if not referred
+        if api.get_review_status(sample) != "shipped":
+            # We don't rise an exception here because maybe the sample was
+            # updated earlier, but the reference lab got a timeout error and
+            # the remote user is now retrying the notification
+            # TODO Keep track of the incoming notifications in current object
+            return True
+
         # TODO Performance - convert to queue task
         # Create a keyword -> analysis mapping
         allowed = ["referred"]
@@ -134,13 +142,7 @@ class OutboundSampleConsumer(object):
             raise ValueError("More than one sample: {}".format(sample_id))
 
         # Get the sample object
-        sample = api.get_object(brains[0])
-
-        # Do not allow to modify the sample if not referred
-        if api.get_review_status(sample) != "shipped":
-            raise ValueError("Sample is not referred: {}".format(sample_id))
-
-        return sample
+        return api.get_object(brains[0])
 
     def update_analysis(self, analysis, record):
         if not analysis:
