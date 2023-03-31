@@ -22,9 +22,11 @@ from senaite.core.listing.interfaces import IListingView
 from senaite.core.listing.interfaces import IListingViewAdapter
 from senaite.referral import check_installed
 from senaite.referral import messageFactory as _
+from senaite.referral.utils import get_services_mapping
 from zope.component import adapter
 from zope.interface import implementer
 
+from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.interfaces.analysis import IRequestAnalysis
 from bika.lims.utils import get_image
@@ -123,3 +125,55 @@ class SampleAnalysesListingAdapter(object):
         elif IRequestAnalysis.providedBy(thing):
             sample = thing.getRequest()
             return self.is_referred(sample)
+
+
+@adapter(IListingView)
+@implementer(IListingViewAdapter)
+class SampleManageAnalysesListingAdapter(object):
+    """Adapter for manage analyses listings
+    """
+
+    # Priority order of this adapter over others
+    priority_order = 99999
+
+    _referring_services = None
+
+    def __init__(self, listing, context):
+        self.listing = listing
+        self.context = context
+
+    @property
+    def referring_services(self):
+        """Returns the UIDs of the services initially requested by the
+        referring laboratory, if any
+        """
+        if self._referring_services is None:
+            inbound_sample = self.context.getInboundSample()
+            if not inbound_sample:
+                self._referring_services = []
+                return self._referring_services
+
+            # Look up the uids of the requested services
+            services = get_services_mapping()
+            keywords = inbound_sample.getAnalyses() or []
+            services_uids = map(lambda key: services.get(key), keywords)
+            self._referring_services = filter(api.is_uid, services_uids)
+
+        return self._referring_services
+
+    @check_installed(None)
+    def before_render(self):
+        pass
+
+    @check_installed(None)
+    def folder_item(self, obj, item, index):
+        # Skip services without analyses in the sample
+        uid = api.get_uid(obj)
+        if uid not in self.listing.analyses:
+            return item
+
+        if uid in self.referring_services:
+            # Mark the row as disabled as it was requested by referring lab
+            item["disabled"] = True
+
+        return item

@@ -69,3 +69,19 @@ def hasOutboundShipment(self):
     """
     uid = self.getField("OutboundShipment").getRaw(self)
     return api.is_uid(uid)
+
+
+def getInboundSample(self):
+    """Returns the Inbound Sample this sample was generated from, if any
+    """
+    # TODO 2.x Replace by get_backreferences
+    shipment = self.getInboundShipment()
+    if not shipment:
+        return None
+
+    uid = api.get_uid(self)
+    for inbound_sample in shipment.getInboundSamples():
+        if inbound_sample.getRawSample() == uid:
+            return inbound_sample
+
+    return None
