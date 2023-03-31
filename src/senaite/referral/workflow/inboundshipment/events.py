@@ -52,8 +52,8 @@ def after_receive_inbound_shipment(shipment):
 
 def after_reject_inbound_shipment(shipment):
     """Event fired after transition "reject_inbound_shipment" for an Inbound
-    Sample Shipment is triggered. All Samples from the shipment, even if not
-    yet received, are rejected too
+    Sample Shipment is triggered. All inbound samples from the shipment are
+    rejected as well
     """
     # Reject all InboundSample objects (not-yet-received)
     for inbound_sample in shipment.getInboundSamples():
@@ -66,4 +66,8 @@ def after_reject_inbound_shipment(shipment):
         return
 
     # Mark the outbound shipment counterpart as rejected
-    remote_lab.do_action(shipment, "reject_outbound_shipment")
+    # We do "reject" (instead of "reject_outbound_shipment") because "reject"
+    # action is trapped by the referring lab consumer. The consumer, besides
+    # triggering the "reject_outbound_shipment" workflow action, it also
+    # transitions its samples to "rejected_at_reference" status.
+    remote_lab.do_action(shipment, "reject")

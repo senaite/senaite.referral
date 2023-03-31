@@ -55,3 +55,12 @@ class InboundShipmentGuardAdapter(BaseGuardAdapter):
             if is_transition_allowed(inbound_sample, action_id):
                 return False
         return True
+
+    def guard_reject_inbound_shipment(self):
+        """Returns true if the inbound shipment does not have any sample or
+        none of them were received
+        """
+        for inbound_sample in self.context.getInboundSamples():
+            if inbound_sample.getRawSample():
+                return False
+        return True
