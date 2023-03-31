@@ -18,8 +18,10 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+from senaite.referral.utils import get_sample_types_mapping
+from senaite.referral.utils import get_services_mapping
+
 from bika.lims import api
-from bika.lims.catalog import SETUP_CATALOG
 from bika.lims.utils.analysisrequest import create_analysisrequest
 from bika.lims.workflow import doActionFor
 
@@ -99,44 +101,3 @@ def create_sample(inbound_sample):
     # Associate this new Sample with the Inbound Sample
     inbound_sample.setSample(sample)
     return sample
-
-
-def get_sample_types_mapping():
-    """Returns a dict with sample type titles, ids and prefixes as keys and
-    values as sample type UIDs to facilitate the retrieval by id, prefix or
-    title
-    """
-    sample_types = dict()
-    query = {"portal_type": "SampleType", "is_active": True}
-    brains = api.search(query, SETUP_CATALOG)
-    for brain in brains:
-        obj = api.get_object(brain)
-        uid = api.get_uid(obj)
-        obj_id = api.get_id(obj)
-        title = api.get_title(obj)
-        prefix = obj.getPrefix()
-        sample_types[obj_id] = uid
-        sample_types[title] = uid
-        sample_types[prefix] = uid
-        sample_types[uid] = uid
-    return sample_types
-
-
-def get_services_mapping():
-    """Returns a dict with service ids, titles and keywords as keys and values
-    as service UIDs to facilitate the retrieval of services by title, keyword
-    or by id
-    """
-    services = dict()
-    query = {"portal_type": "AnalysisService", "is_active": True}
-    brains = api.search(query, SETUP_CATALOG)
-    for brain in brains:
-        uid = api.get_uid(brain)
-        obj_id = api.get_id(brain)
-        title = api.get_title(brain)
-        keyword = brain.getKeyword
-        services[obj_id] = uid
-        services[title] = uid
-        services[keyword] = uid
-        services[uid] = uid
-    return services

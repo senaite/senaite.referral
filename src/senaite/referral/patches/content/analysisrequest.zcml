@@ -39,4 +39,10 @@
       ignoreOriginal="True"
       replacement=".analysisrequest.hasOutboundShipment" />
 
+  <monkey:patch
+      class="bika.lims.content.analysisrequest.AnalysisRequest"
+      original="getInboundSample"
+      ignoreOriginal="True"
+      replacement=".analysisrequest.getInboundSample" />
+
 </configure>

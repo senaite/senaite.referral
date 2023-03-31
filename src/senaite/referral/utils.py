@@ -35,6 +35,7 @@ from bika.lims.utils import render_html_attributes
 from bika.lims.utils import t as _t
 from bika.lims.utils import to_utf8
 from bika.lims.workflow import getTransitionDate
+from bika.lims.catalog import SETUP_CATALOG
 
 _marker = object()
 
@@ -282,3 +283,44 @@ def get_user_info(user_or_username, default=_marker):
         })
 
     return properties
+
+
+def get_sample_types_mapping():
+    """Returns a dict with sample type titles, ids and prefixes as keys and
+    values as sample type UIDs to facilitate the retrieval by id, prefix or
+    title
+    """
+    sample_types = dict()
+    query = {"portal_type": "SampleType", "is_active": True}
+    brains = api.search(query, SETUP_CATALOG)
+    for brain in brains:
+        obj = api.get_object(brain)
+        uid = api.get_uid(obj)
+        obj_id = api.get_id(obj)
+        title = api.get_title(obj)
+        prefix = obj.getPrefix()
+        sample_types[obj_id] = uid
+        sample_types[title] = uid
+        sample_types[prefix] = uid
+        sample_types[uid] = uid
+    return sample_types
+
+
+def get_services_mapping():
+    """Returns a dict with service ids, titles and keywords as keys and values
+    as service UIDs to facilitate the retrieval of services by title, keyword
+    or by id
+    """
+    services = dict()
+    query = {"portal_type": "AnalysisService", "is_active": True}
+    brains = api.search(query, SETUP_CATALOG)
+    for brain in brains:
+        uid = api.get_uid(brain)
+        obj_id = api.get_id(brain)
+        title = api.get_title(brain)
+        keyword = brain.getKeyword
+        services[obj_id] = uid
+        services[title] = uid
+        services[keyword] = uid
+        services[uid] = uid
+    return services
