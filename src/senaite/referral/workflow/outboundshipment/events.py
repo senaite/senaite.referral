@@ -32,7 +32,7 @@ def after_dispatch_outbound_shipment(shipment):
     if not remote_lab:
         return
 
-    # Create an inbound shipment counterpart in the receiving laboratory
+    # Create an inbound shipment counterpart at the reference laboratory
     remote_lab.create_inbound_shipment(shipment)
 
 
@@ -46,7 +46,7 @@ def after_reject_outbound_shipment(shipment):
     if not remote_lab:
         return
 
-    # Reject the inbound shipment counterpart in the receiving laboratory
+    # Reject the inbound shipment counterpart at the reference laboratory
     remote_lab.do_action(shipment, "reject_inbound_shipment")
 
 

@@ -145,6 +145,15 @@ class ReferralConsumer(BaseConsumer):
         obj.setRejectionReasons(rejection_reasons)
         self.do_action(obj, "reject_at_reference")
 
+    def do_inboundsampleshipment_reject(self, item):
+        """Rejects the counterpart outbound shipment at local instance, and
+        transitions its samples to 'Rejected at reference' as well
+        """
+        shipment = self.get_object_for(item)
+        self.do_action(shipment, "reject_outbound_shipment")
+        for sample in shipment.getSamples():
+            self.do_action(sample, "reject_at_reference")
+
     def do_action(self, item_or_object, action):
         """Performs an action against the given object
         """
