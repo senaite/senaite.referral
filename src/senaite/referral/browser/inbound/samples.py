@@ -59,8 +59,12 @@ class SamplesListingView(ListingView):
                 "title": "",
                 "sortable": False,
             }),
+            ("origin_sample_id", {
+                "title": _("Origin Sample ID"),
+                "sortable": True,
+            }),
             ("sample_id", {
-                "title": _("Sample ID"),
+                "title": _("Local Sample ID"),
                 "sortable": True,
             }),
             ("client", {
@@ -180,24 +184,21 @@ class SamplesListingView(ListingView):
             analyses = list(collections.OrderedDict.fromkeys(analyses))
             item.update({
                 "uid": api.get_uid(sample),
-                "sample_id": obj.getReferringID(),
+                "origin_sample_id": obj.getReferringID(),
+                "sample_id": api.get_id(sample),
                 "client": api.get_title(client),
                 "priority": sample.getPriority(),
                 "sample_type": api.get_id(sample_type),
                 "date_sampled": date_sampled.strftime("%Y-%m-%d"),
                 "analyses": ", ".join(analyses),
             })
-            sample_link = get_link_for(sample)
-            csid = obj.getReferringID()
-            if csid:
-                sample_link = "{} &rarr; {}".format(csid, sample_link)
 
             st_link = get_link_for(sample_type)
             original_st = obj.getSampleType()
             if original_st:
                 st_link = "{} &rarr; {}".format(original_st, st_link)
 
-            item["replace"]["sample_id"] = sample_link
+            item["replace"]["sample_id"] = get_link_for(sample)
             item["replace"]["sample_type"] = st_link
             item["replace"]["client"] = get_link_for(client)
             item["replace"]["state_title"] = self.get_state_title(sample)
@@ -212,7 +213,8 @@ class SamplesListingView(ListingView):
             # This inbound sample does not have a sample counterpart yet
             date_sampled = obj.getDateSampled()
             item.update({
-                "sample_id": obj.getReferringID(),
+                "origin_sample_id": obj.getReferringID(),
+                "sample_id": "",
                 "client": "",
                 "priority": obj.getPriority(),
                 "sample_type": obj.getSampleType(),
