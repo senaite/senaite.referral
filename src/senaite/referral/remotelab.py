@@ -232,6 +232,7 @@ class RemoteLab(object):
                 "result_options": analysis.getResultOptions(),
                 "interim_fields": analysis.getInterimFields(),
                 "formatted_result": get_formatted_result(analysis) or "NA",
+                "dl_operand": analysis.getDetectionLimitOperand() or "",
                 "instrument": get_instrument(analysis) or "",
                 "method": get_method(analysis) or "",
                 "result_date": captured,
