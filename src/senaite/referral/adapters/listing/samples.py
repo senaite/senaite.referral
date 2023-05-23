@@ -115,6 +115,23 @@ class SamplesListingViewAdapter(object):
             review_state=shipped,
             after="invalid")
 
+        # New review_state "rejected_at_reference"
+        rejected_at_reference = {
+            "id": "rejected_at_reference",
+            "title": _("Rejected at reference"),
+            "contentFilter": {
+                "review_state": ("rejected_at_reference", ),
+                "sort_on": "created",
+                "sort_order": "descending"},
+            "transitions": [],
+            "custom_transitions": list(default_actions),
+            "columns": list(default_columns),
+        }
+        listing_utils.add_review_state(
+            listing=self.listing,
+            review_state=rejected_at_reference,
+            after="shipped")
+
         # Update "rejected" review state to include those that have been
         # rejected by the reference laboratory
         for rv in self.listing.review_states:
