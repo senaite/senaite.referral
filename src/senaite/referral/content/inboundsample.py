@@ -268,6 +268,16 @@ class InboundSample(Container):
         return api.get_object(uid, default=None)
 
     @security.protected(permissions.View)
+    def getSampleID(self):
+        """Returns the ID of the AnalysisRequest object type counterpart for
+        current instance, if any
+        """
+        sample = self.getSample()
+        if not sample:
+            return None
+        return api.get_id(sample)
+
+    @security.protected(permissions.View)
     def getRawSample(self):
         """Returns the UID of the AnalysisRequest counterpart in current
         instance, if any

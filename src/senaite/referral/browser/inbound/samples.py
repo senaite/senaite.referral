@@ -59,11 +59,11 @@ class SamplesListingView(ListingView):
                 "title": "",
                 "sortable": False,
             }),
-            ("origin_sample_id", {
+            ("getReferringID", {
                 "title": _("Origin Sample ID"),
                 "sortable": True,
             }),
-            ("sample_id", {
+            ("getSampleID", {
                 "title": _("Local Sample ID"),
                 "sortable": True,
             }),
@@ -184,8 +184,8 @@ class SamplesListingView(ListingView):
             analyses = list(collections.OrderedDict.fromkeys(analyses))
             item.update({
                 "uid": api.get_uid(sample),
-                "origin_sample_id": obj.getReferringID(),
-                "sample_id": api.get_id(sample),
+                "getReferringID": obj.getReferringID(),
+                "getSampleID": api.get_id(sample),
                 "client": api.get_title(client),
                 "priority": sample.getPriority(),
                 "sample_type": api.get_id(sample_type),
@@ -198,7 +198,7 @@ class SamplesListingView(ListingView):
             if original_st:
                 st_link = "{} &rarr; {}".format(original_st, st_link)
 
-            item["replace"]["sample_id"] = get_link_for(sample)
+            item["replace"]["getSampleID"] = get_link_for(sample)
             item["replace"]["sample_type"] = st_link
             item["replace"]["client"] = get_link_for(client)
             item["replace"]["state_title"] = self.get_state_title(sample)
@@ -213,8 +213,8 @@ class SamplesListingView(ListingView):
             # This inbound sample does not have a sample counterpart yet
             date_sampled = obj.getDateSampled()
             item.update({
-                "origin_sample_id": obj.getReferringID(),
-                "sample_id": "",
+                "getReferringID": obj.getReferringID(),
+                "getSampleID": "",
                 "client": "",
                 "priority": obj.getPriority(),
                 "sample_type": obj.getSampleType(),
