@@ -19,7 +19,6 @@
   <include package=".browser"/>
   <include package=".catalog"/>
   <include package=".content"/>
-  <include package=".core"/>
   <include package=".jsonapi"/>
   <include package=".patches"/>
   <include package=".queue" zcml:condition="installed senaite.queue"/>

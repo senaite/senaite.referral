@@ -2,7 +2,7 @@
 
 from setuptools import setup, find_packages
 
-version = "1.0.0"
+version = "2.0.0"
 
 with open("README.rst", "r") as fh:
     long_description = fh.read()
@@ -38,9 +38,7 @@ setup(
     install_requires=[
         "pyBarcode",
         "requests",
-        "senaite.lims>=1.3.5",
-        "senaite.lims<2",
-        "senaite.jsonapi",
+        "senaite.lims>=2.5.0",
         # Python 2.7: python-slugify < 5.0.0
         # Python 3.6+: python-slugify >= 5.0.0
         "python-slugify >= 4.0.1",

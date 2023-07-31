@@ -18,7 +18,7 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
-from senaite.referral.core.browser.dexterity.views import SenaiteDefaultView
+from senaite.core.browser.dexterity.views import SenaiteDefaultView
 from bika.lims import api
 
 

@@ -23,7 +23,8 @@ from senaite.lims.interfaces import ISenaiteLIMS
 from zope.interface import Interface
 
 from bika.lims.interfaces import IDoNotSupportSnapshots
-from bika.lims.interfaces import IHideActionsMenu
+
+from senaite.core.interfaces import IHideActionsMenu
 
 
 class ISenaiteReferralLayer(ISenaiteLIMS):

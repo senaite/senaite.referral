@@ -428,11 +428,11 @@ def setup_catalogs(portal):
 
     from Acquisition import aq_base
     from Products.GenericSetup.utils import _resolveDottedName
-    from senaite.referral.core.api.catalog import add_column
-    from senaite.referral.core.api.catalog import add_index
-    from senaite.referral.core.api.catalog import get_columns
-    from senaite.referral.core.api.catalog import get_indexes
-    from senaite.referral.core.api.catalog import reindex_index
+    from senaite.core.api.catalog import add_column
+    from senaite.core.api.catalog import add_index
+    from senaite.core.api.catalog import get_columns
+    from senaite.core.api.catalog import get_indexes
+    from senaite.core.api.catalog import reindex_index
 
     def add_catalog_column(catalog, column):
         columns = get_columns(catalog)

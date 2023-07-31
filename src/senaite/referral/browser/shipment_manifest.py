@@ -35,8 +35,9 @@ from senaite.referral.browser import BaseView
 from zope.interface import implementer
 
 from bika.lims import api
-from bika.lims.interfaces import IHideActionsMenu
 from bika.lims.utils import createPdf
+
+from senaite.core.interfaces import IHideActionsMenu
 
 
 @implementer(IHideActionsMenu)
