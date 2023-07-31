@@ -14,7 +14,7 @@
     appId="senaite.referral"
     category="Products"
     condition_expr=""
-    icon_expr="string:++resource++senaite.referral.static/referral.png"
+    icon_expr="senaite_theme/icon/referral"
     url_expr="string:${portal_url}/@@referral-controlpanel"
     visible="True"
     i18n:domain="senaite.referral"

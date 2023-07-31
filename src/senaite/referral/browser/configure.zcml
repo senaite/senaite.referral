@@ -1,19 +1,21 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
     xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:plone="http://namespaces.plone.org/plone"
     i18n_domain="senaite.referral">
 
-  <!-- Static resource directory -->
-  <browser:resourceDirectory
-    name="senaite.referral.static"
-    directory="static"
-    layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+  <!-- Static directory for js, css and image resources -->
+  <plone:static
+      name="senaite.referral.static"
+      directory="static"
+      type="plone" />
 
   <!-- Package includes -->
   <include package=".externallaboratory"/>
   <include package=".inbound"/>
   <include package=".outbound"/>
   <include package=".shipmentfolder"/>
+  <include package=".theme"/>
   <include package=".viewlets"/>
   <include package=".workflow"/>
 

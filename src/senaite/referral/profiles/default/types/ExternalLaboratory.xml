@@ -9,7 +9,7 @@
   <property name="description" i18n:translate=""/>
 
   <!-- content-type icon -->
-  <property name="icon_expr">string:${portal_url}/++resource++senaite.referral.static/external_laboratory.png</property>
+  <property name="icon_expr">senaite_theme/icon/external_laboratory</property>
 
   <!-- factory name; usually the same as type name -->
   <property name="factory">ExternalLaboratory</property>

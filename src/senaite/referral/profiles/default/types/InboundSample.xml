@@ -12,7 +12,7 @@
   </property>
 
   <!-- content-type icon -->
-  <property name="icon_expr">string:${portal_url}/++resource++senaite.referral.static/inbound_sample.png</property>
+  <property name="icon_expr">senaite_theme/icon/inbound_sample</property>
 
   <!-- factory name; usually the same as type name -->
   <property name="factory">InboundSample</property>

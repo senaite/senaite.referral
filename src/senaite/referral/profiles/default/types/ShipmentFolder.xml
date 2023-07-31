@@ -9,7 +9,7 @@
   <property name="description" i18n:translate=""/>
 
   <!-- content-type icon -->
-  <property name="icon_expr">string:${portal_url}/++resource++senaite.referral.static/shipment_folder.png</property>
+  <property name="icon_expr">senaite_theme/icon/shipment_folder</property>
 
   <!-- factory name; usually the same as type name -->
   <property name="factory">ShipmentFolder</property>
