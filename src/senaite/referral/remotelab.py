@@ -20,7 +20,7 @@
 
 from remotesession import RemoteSession
 from requests.auth import HTTPBasicAuth
-from senaite.core.supermodel import SuperModel
+from senaite.app.supermodel import SuperModel
 from senaite.referral import logger
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.notifications import get_post_base_info
