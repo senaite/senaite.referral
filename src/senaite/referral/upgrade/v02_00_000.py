@@ -18,20 +18,10 @@
 # Copyright 2021-2023 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
-import transaction
-
+from senaite.core.upgrade import upgradestep
+from senaite.core.upgrade.utils import UpgradeUtils
 from senaite.referral import logger
-from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
-from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.config import PRODUCT_NAME as product
-from senaite.referral.setuphandlers import setup_catalogs
-from senaite.referral.setuphandlers import setup_workflows
-
-from bika.lims import api
-from bika.lims.utils import changeWorkflowState
-from bika.lims.upgrade import upgradestep
-from bika.lims.upgrade.utils import commit_transaction
-from bika.lims.upgrade.utils import UpgradeUtils
 
 version = "2000"
 profile = "profile-{0}:default".format(product)

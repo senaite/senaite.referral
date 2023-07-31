@@ -29,9 +29,9 @@ from senaite.referral.setuphandlers import setup_workflows
 
 from bika.lims import api
 from bika.lims.utils import changeWorkflowState
-from bika.lims.upgrade import upgradestep
-from bika.lims.upgrade.utils import commit_transaction
-from bika.lims.upgrade.utils import UpgradeUtils
+from senaite.core.upgrade import upgradestep
+from senaite.core.upgrade.utils import commit_transaction
+from senaite.core.upgrade.utils import UpgradeUtils
 
 version = "1.0.0"  # Remember version number in metadata.xml and setup.py
 profile = "profile-{0}:default".format(product)
