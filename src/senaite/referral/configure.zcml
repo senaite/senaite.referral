@@ -29,9 +29,6 @@
   <utility
       component="senaite.referral.vocabularies.ReferenceLaboratoriesVocabularyFactory"
       name="senaite.referral.vocabularies.referencelaboratories" />
-  <utility
-      component="senaite.referral.vocabularies.ClientsVocabularyFactory"
-      name="senaite.referral.vocabularies.clients" />
 
 
   <!-- Default profile -->

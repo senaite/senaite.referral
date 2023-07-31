@@ -68,22 +68,4 @@ class ReferenceLaboratoriesVocabulary(object):
         return SimpleVocabulary(items)
 
 
-@implementer(IVocabularyFactory)
-class ClientsVocabulary(object):
-    """Returns a simple vocabulary made of active Clients
-    """
-
-    def __call__(self, context):
-        query = {
-            "portal_type": "Client",
-            "is_active": True,
-            "sort_on": "sortable_title",
-            "sort_order": "ascending",
-        }
-        brains = api.search(query, "portal_catalog")
-        items = map(to_simple_term, brains)
-        return SimpleVocabulary(items)
-
-
 ReferenceLaboratoriesVocabularyFactory = ReferenceLaboratoriesVocabulary()
-ClientsVocabularyFactory = ClientsVocabulary()
