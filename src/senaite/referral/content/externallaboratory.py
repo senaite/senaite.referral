@@ -30,14 +30,13 @@ from senaite.core.content.base import Container
 from senaite.core.schema import UIDReferenceField
 from senaite.core.z3cform.widgets.uidreference import UIDReferenceWidgetFactory
 from senaite.referral import messageFactory as _
-from senaite.referral.content import get_bool_value
-from senaite.referral.content import get_string_value
-from senaite.referral.content import set_bool_value
-from senaite.referral.content import set_string_value
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_by_code
 from senaite.referral.utils import is_valid_code
 from senaite.referral.utils import is_valid_url
+from six import string_types
+from z3c.form.interfaces import IAddForm
+from z3c.form.interfaces import IEditForm
 from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
@@ -169,6 +168,11 @@ class IExternalLaboratorySchema(model.Schema):
         fields=["url", "username", "password"]
     )
 
+    # Do not display the password in view mode
+    directives.omitted("password")
+    directives.no_omit(IAddForm, "password")
+    directives.no_omit(IEditForm, "password")
+
     @invariant
     def validate_code(data):
         """Checks if the external laboratory code is unique
@@ -242,47 +246,56 @@ class ExternalLaboratory(Container):
         """Sets whether this external laboratory can act as reference
         laboratory, that can receive dispatched samples from this instance
         """
-        set_bool_value(self, "reference", value)
+        mutator = self.mutator("reference")
+        mutator(self, value)
 
     @security.protected(permissions.View)
     def getReference(self):
         """Returns whether this external laboratory can act as a reference
         laboratory that can receive dispatched samples from this instance
         """
-        return get_bool_value(self, "reference")
+        accessor = self.accessor("reference")
+        return accessor(self)
 
     @security.protected(permissions.ModifyPortalContent)
     def setReferring(self, value):
         """Sets whether this external laboratory can act as referring
         laboratory, that can dispatch samples to this instance
         """
-        set_bool_value(self, "referring", value)
+        mutator = self.mutator("referring")
+        mutator(self, value)
 
     @security.protected(permissions.View)
     def getReferring(self):
         """Returns whether this external laboratory can act as a referring
         laboratory that can dispatch sampels to this instance
         """
-        return get_bool_value(self, "referring")
+        accessor = self.accessor("referring")
+        return accessor(self)
 
     @security.protected(permissions.ModifyPortalContent)
     def setCode(self, value):
         """Sets the code that uniquely identifies this external laboratory
         """
-        def validate_code(code):
-            if not is_valid_code(code):
-                raise ValueError("Code cannot contain special chars or spaces")
-            lab = get_by_code("ExternalLaboratory", code)
-            if lab and lab != self:
-                raise ValueError("Code must be unique")
+        if not isinstance(value, string_types):
+            value = u""
 
-        set_string_value(self, "code", value, validator=validate_code)
+        if not is_valid_code(value):
+            raise ValueError("Code cannot contain special chars or spaces")
+
+        lab = get_by_code("ExternalLaboratory", value)
+        if lab and lab != self:
+            raise ValueError("Code must be unique")
+
+        mutator = self.mutator("code")
+        mutator(self, value)
 
     @security.protected(permissions.View)
     def getCode(self):
         """Returns the code that uniquely identifies this external laboratory
         """
-        return get_string_value(self, "code")
+        accessor = self.accessor("code")
+        return accessor(self)
 
     @security.protected(permissions.ModifyPortalContent)
     def setReferringClient(self, value):
@@ -312,17 +325,18 @@ class ExternalLaboratory(Container):
     def setUrl(self, value):
         """Sets the URL of the SENAITE instance of the external laboratory
         """
-        def validate_url(url):
-            if url and not is_valid_url(url):
-                raise ValueError("URL is not valid")
+        if value and not is_valid_url(value):
+            raise ValueError("URL is not valid")
 
-        set_string_value(self, "url", value, validator=validate_url)
+        mutator = self.mutator("url")
+        mutator(self, value)
 
     @security.protected(permissions.View)
     def getUrl(self):
         """The URL of the SENAITE instance of the external laboratory, if any
         """
-        return get_string_value(self, "url")
+        accessor = self.accessor("url")
+        return accessor(self)
 
     @security.protected(permissions.ModifyPortalContent)
     def setUsername(self, value):
@@ -330,7 +344,8 @@ class ExternalLaboratory(Container):
         SENAITE instance of the external laboratory in order to send POST
         requests
         """
-        set_string_value(self, "username", value)
+        mutator = self.mutator("username")
+        mutator(self, value)
 
     @security.protected(permissions.View)
     def getUsername(self):
@@ -338,7 +353,8 @@ class ExternalLaboratory(Container):
         SENAITE instance of the external laboratory in order to send POST
         requests
         """
-        return get_string_value(self, "username")
+        accessor = self.accessor("username")
+        return accessor(self)
 
     @security.protected(permissions.ModifyPortalContent)
     def setPassword(self, value):
@@ -346,7 +362,8 @@ class ExternalLaboratory(Container):
         SENAITE instance of the external laboratory in order to send POST
         requests
         """
-        set_string_value(self, "password", value)
+        mutator = self.mutator("password")
+        mutator(self, value)
 
     @security.protected(permissions.View)
     def getPassword(self):
@@ -354,4 +371,5 @@ class ExternalLaboratory(Container):
         SENAITE instance of the external laboratory in order to send POST
         requests
         """
-        return get_string_value(self, "password")
+        accessor = self.accessor("password")
+        return accessor(self)
