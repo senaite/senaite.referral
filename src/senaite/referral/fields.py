@@ -22,7 +22,7 @@ import six
 from archetypes.schemaextender.interfaces import IExtensionField
 from Products.Archetypes.Field import StringField
 from Products.Archetypes.Storage.annotation import AnnotationStorage
-from Products.ATExtensions.field import RecordsField
+from senaite.core.browser.fields.records import RecordsField
 from zope.component.hooks import getSite
 from zope.interface import implementer
 
