@@ -1,0 +1,15 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    i18n_domain="senaite.referral">
+
+  <!-- Setup chunk size for inbound sample reception -->
+  <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 1.0.0: Allow to recall a sample from shipment"
+      description="Added the transition 'recall_from_shipment'"
+      source="1005"
+      destination="2000"
+      handler=".v02_00_000.upgrade"
+      profile="senaite.referral:default"/>
+
+</configure>
