@@ -19,37 +19,26 @@
 # Some rights reserved, see README and LICENSE.
 
 from AccessControl import ClassSecurityInfo
+from bika.lims import api
 from plone.autoform import directives
-from plone.dexterity.content import Container
 from plone.supermodel import model
 from Products.CMFCore import permissions
+from senaite.core.catalog import CLIENT_CATALOG
+from senaite.core.content.base import Container
+from senaite.core.schema import UIDReferenceField
+from senaite.core.z3cform.widgets.uidreference import UIDReferenceWidgetFactory
 from senaite.referral import messageFactory as _
 from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.content import get_datetime_value
 from senaite.referral.content import get_string_value
-from senaite.referral.content import get_uids_field_value
 from senaite.referral.content import set_datetime_value
 from senaite.referral.content import set_string_value
-from senaite.referral.content import set_uids_field_value
 from senaite.referral.interfaces import IInboundSample
 from senaite.referral.interfaces import IInboundSampleShipment
 from senaite.referral.utils import get_action_date
 from zope import schema
 from zope.interface import implementer
 from zope.interface import invariant
-
-from bika.lims import api
-from bika.lims.interfaces import IClient
-
-
-def check_referring_client(thing):
-    """Checks if the referring client passed in is valid
-    """
-    obj = api.get_object(thing, default=None)
-    if not IClient.providedBy(obj):
-        raise ValueError("Type is not supported: {}".format(repr(obj)))
-
-    return True
 
 
 class IInboundSampleShipmentSchema(model.Schema):
@@ -77,12 +66,26 @@ class IInboundSampleShipmentSchema(model.Schema):
         required=True,
     )
 
-    referring_client = schema.Choice(
+    referring_client = UIDReferenceField(
         title=_(u"label_inboundsampleshipment_referring_client",
                 default=u"Referring client"),
         description=_(u"The referring client the samples come from"),
-        vocabulary="senaite.referral.vocabularies.clients",
+        allowed_types=("Client", ),
+        multi_valued=False,
         required=True,
+    )
+
+    directives.widget(
+        "referring_client",
+        UIDReferenceWidgetFactory,
+        catalog=CLIENT_CATALOG,
+        query={
+            "portal_type": "Client",
+            "is_active": True,
+            "sort_on": "sortable_title",
+            "sort_order": "ascending",
+        },
+        limit=15,
     )
 
     comments = schema.Text(
@@ -103,15 +106,6 @@ class IInboundSampleShipmentSchema(model.Schema):
         ),
         required=True,
     )
-
-    @invariant
-    def validate_referring_client(data):
-        """Checks if the value for field referring_client is valid
-        """
-        val = data.referring_client
-        if not val:
-            return
-        check_referring_client(val)
 
     @invariant
     def validate_dispatched_datetime(data):
@@ -205,21 +199,29 @@ class InboundSampleShipment(Container):
         """
         return api.get_parent(self)
 
-    @security.protected(permissions.View)
-    def getReferringClient(self):
-        """Returns the client the samples come from
-        """
-        value = get_uids_field_value(self, "referring_client")
-        if not value:
-            return None
-        return value[0]
-
     @security.protected(permissions.ModifyPortalContent)
     def setReferringClient(self, value):
-        """Sets the client the samples come from
+        """Sets the default client the samples from inbound shipments will
+        be assigned to
         """
-        set_uids_field_value(self, "referring_client", value,
-                             validator=check_referring_client)
+        mutator = self.mutator("referring_client")
+        mutator(self, value)
+
+    @security.protected(permissions.View)
+    def getReferringClient(self):
+        """Returns the default client that samples from inbound shipments from
+        this laboratory will be assigned to
+        """
+        accessor = self.accessor("referring_client")
+        return accessor(self)
+
+    @security.protected(permissions.View)
+    def getRawReferringClient(self):
+        """Returns the UID of the default client that samples from inbound
+        shipments from this laboratory will be assigned to
+        """
+        accessor = self.accessor("referring_client", raw=True)
+        return accessor(self)
 
     @security.protected(permissions.View)
     def getInboundSamples(self):
