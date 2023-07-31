@@ -28,7 +28,7 @@ from senaite.referral.fields import ExtUIDReferenceField
 from zope.component import adapter
 from zope.interface import implementer
 
-from bika.lims.browser.widgets import ReferenceWidget
+from senaite.core.browser.widgets import ReferenceWidget
 from bika.lims.interfaces import IAnalysisRequest
 
 
