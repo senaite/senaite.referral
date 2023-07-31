@@ -19,6 +19,8 @@
 # Some rights reserved, see README and LICENSE.
 
 from Products.DCWorkflow.Guard import Guard
+from senaite.core.workflow import ANALYSIS_WORKFLOW
+from senaite.core.workflow import SAMPLE_WORKFLOW
 from senaite.referral import logger
 from senaite.referral.catalog.inbound_sample_catalog import \
     InboundSampleCatalog
@@ -41,7 +43,7 @@ PORTAL_FOLDERS = [
 ]
 
 WORKFLOWS_TO_UPDATE = {
-    "bika_ar_workflow": {
+    SAMPLE_WORKFLOW: {
         "states": {
             "sample_received": {
                 # Do not remove transitions already there
@@ -100,7 +102,7 @@ WORKFLOWS_TO_UPDATE = {
             },
         }
     },
-    "bika_analysis_workflow": {
+    ANALYSIS_WORKFLOW: {
         "states": {
             "unassigned": {
                 "preserve_transitions": True,
