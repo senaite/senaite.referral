@@ -18,8 +18,8 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
-from senaite.core.listing.interfaces import IListingView
-from senaite.core.listing.interfaces import IListingViewAdapter
+from senaite.app.listing.interfaces import IListingView
+from senaite.app.listing.interfaces import IListingViewAdapter
 from senaite.referral import check_installed
 from senaite.referral import messageFactory as _
 from senaite.referral.utils import get_services_mapping

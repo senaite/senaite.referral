@@ -19,7 +19,7 @@
 # Some rights reserved, see README and LICENSE.
 
 import collections
-from senaite.core.listing import ListingView
+from senaite.app.listing import ListingView
 from senaite.referral import messageFactory as _
 from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.notifications import get_last_post

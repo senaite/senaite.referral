@@ -20,7 +20,7 @@
 
 import collections
 from plone.memoize import view
-from senaite.core.listing import ListingView
+from senaite.app.listing import ListingView
 from senaite.referral import messageFactory as _
 from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.utils import get_image_url

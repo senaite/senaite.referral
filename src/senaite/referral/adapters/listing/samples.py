@@ -20,9 +20,9 @@
 
 import collections
 
-from senaite.core.listing import utils as listing_utils
-from senaite.core.listing.interfaces import IListingView
-from senaite.core.listing.interfaces import IListingViewAdapter
+from senaite.app.listing import utils as listing_utils
+from senaite.app.listing.interfaces import IListingView
+from senaite.app.listing.interfaces import IListingViewAdapter
 from senaite.referral import check_installed
 from senaite.referral import messageFactory as _
 from zope.component import adapter

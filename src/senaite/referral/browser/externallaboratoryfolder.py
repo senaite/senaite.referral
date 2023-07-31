@@ -20,7 +20,7 @@
 
 import collections
 from pkg_resources import resource_listdir
-from senaite.core.listing import ListingView
+from senaite.app.listing import ListingView
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
 
