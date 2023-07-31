@@ -24,7 +24,6 @@ from senaite.referral import check_installed
 from senaite.referral.browser.shipment_manifest import ShipmentManifestView
 
 from bika.lims import api
-from bika.lims.workflow import get_review_history_statuses
 
 
 class ShipmentManifestViewlet(ViewletBase):
@@ -43,8 +42,14 @@ class ShipmentManifestViewlet(ViewletBase):
             # a shipment manifest
             return False
 
-        statuses = get_review_history_statuses(self.context)
+        statuses = self.get_review_history_statuses()
         return "ready" in statuses
+
+    def get_review_history_statuses(self):
+        """Returns a list with the review status ids of the instance
+        """
+        history = api.get_review_history(self.context, rev=False)
+        return map(lambda event: event["review_state"], history)
 
     def is_ready(self):
         """Returns whether the shipment is in ready for shipment status
