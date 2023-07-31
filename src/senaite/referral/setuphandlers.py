@@ -18,6 +18,8 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+from bika.lims import api
+from plone.registry.interfaces import IRegistry
 from Products.DCWorkflow.Guard import Guard
 from senaite.core.workflow import ANALYSIS_WORKFLOW
 from senaite.core.workflow import SAMPLE_WORKFLOW
@@ -28,8 +30,7 @@ from senaite.referral.catalog.shipment_catalog import ShipmentCatalog
 from senaite.referral.config import PRODUCT_NAME
 from senaite.referral.config import PROFILE_ID
 from senaite.referral.config import UNINSTALL_ID
-
-from bika.lims import api
+from zope.component import getUtility
 
 CATALOGS = (
     InboundSampleCatalog,
@@ -40,6 +41,11 @@ CATALOGS = (
 PORTAL_FOLDERS = [
     ("external_labs", "External laboratories", "ExternalLaboratoryFolder"),
     ("shipments", "Shipments", "ShipmentFolder"),
+]
+
+NAVTYPES = [
+    "ExternalLaboratoryFolder",
+    "ShipmentFolder",
 ]
 
 WORKFLOWS_TO_UPDATE = {
@@ -156,6 +162,9 @@ def setup_handler(context):
     # Portal folders
     add_portal_folders(portal)
 
+    # Configure visible navigation items
+    setup_navigation_types(portal)
+
     # Setup worlflows
     setup_workflows(portal)
 
@@ -215,55 +224,22 @@ def add_portal_folders(portal):
     """
     logger.info("Adding portal folders ...")
     for folder_id, folder_name, portal_type in PORTAL_FOLDERS:
-        add_obj(portal, folder_id, folder_name, portal_type)
+        if portal.get(folder_id) is None:
+            portal.invokeFactory(portal_type, folder_id, title=folder_name)
 
     logger.info("Adding portal folders [DONE]")
 
 
-def add_obj(container, obj_id, obj_name, obj_type):
-    """Adds an object into the given container
+def setup_navigation_types(portal):
+    """Add additional types for navigation
     """
-    pt = api.get_tool("portal_types")
-    ti = pt.getTypeInfo(container)
+    registry = getUtility(IRegistry)
+    key = "plone.displayed_types"
+    display_types = registry.get(key, ())
 
-    # get the current allowed types for the object
-    allowed_types = ti.allowed_content_types
-
-    def show_in_nav(obj):
-        if hasattr(obj, "setExpirationDate"):
-            obj.setExpirationDate(None)
-        if hasattr(obj, "setExcludeFromNav"):
-            obj.setExcludeFromNav(False)
-
-    if container.get(obj_id):
-        # Object already exists
-        obj = container.get(obj_id)
-
-    else:
-        # Create the object
-        path = api.get_path(container)
-        logger.info("Adding: {}/{}".format(path, obj_id))
-
-        # append the allowed type
-        ti.allowed_content_types = allowed_types + (obj_type, )
-
-        # Create the object
-        container.invokeFactory(obj_type, obj_id, title=obj_name)
-        obj = container.get(obj_id)
-
-    show_in_nav(obj)
-
-    # reset the allowed content types
-    ti.allowed_content_types = allowed_types
-
-    # catalog the object
-    obj_url = api.get_path(obj)
-    cat_ids = getattr(obj, "_catalogs", [])
-    for cat_id in cat_ids:
-        cat = api.get_tool(cat_id)
-        cat.catalog_object(obj, obj_url)
-
-    return obj
+    new_display_types = set(display_types)
+    new_display_types.update(NAVTYPES)
+    registry[key] = tuple(new_display_types)
 
 
 def setup_workflows(portal):
