@@ -19,17 +19,21 @@
 # Some rights reserved, see README and LICENSE.
 
 from AccessControl import ClassSecurityInfo
+from bika.lims import api
+from bika.lims.interfaces import IDeactivable
 from plone.autoform import directives
-from plone.dexterity.content import Container
 from plone.supermodel import model
+from plone.supermodel.directives import fieldset
 from Products.CMFCore import permissions
+from senaite.core.catalog import CLIENT_CATALOG
+from senaite.core.content.base import Container
+from senaite.core.schema import UIDReferenceField
+from senaite.core.z3cform.widgets.uidreference import UIDReferenceWidgetFactory
 from senaite.referral import messageFactory as _
 from senaite.referral.content import get_bool_value
 from senaite.referral.content import get_string_value
-from senaite.referral.content import get_uids_field_value
 from senaite.referral.content import set_bool_value
 from senaite.referral.content import set_string_value
-from senaite.referral.content import set_uids_field_value
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.utils import get_by_code
 from senaite.referral.utils import is_valid_code
@@ -38,9 +42,6 @@ from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
 from zope.interface import invariant
-
-from bika.lims import api
-from bika.lims.interfaces import IDeactivable
 
 
 class IExternalLaboratorySchema(model.Schema):
@@ -81,15 +82,29 @@ class IExternalLaboratorySchema(model.Schema):
         required=False,
     )
 
-    referring_client = schema.Choice(
+    referring_client = UIDReferenceField(
         title=_(u"label_externallaboratory_referring_client",
                 default=u"Default client"),
         description=_(
             U"The default client for inbound sample shipments received from "
             U"this external laboratory"
         ),
-        vocabulary="senaite.referral.vocabularies.clients",
+        allowed_types=("Client", ),
+        multi_valued=False,
         required=False,
+    )
+
+    directives.widget(
+        "referring_client",
+        UIDReferenceWidgetFactory,
+        catalog=CLIENT_CATALOG,
+        query={
+            "portal_type": "Client",
+            "is_active": True,
+            "sort_on": "sortable_title",
+            "sort_order": "ascending",
+        },
+        limit=15,
     )
 
     url = schema.TextLine(
@@ -134,21 +149,21 @@ class IExternalLaboratorySchema(model.Schema):
     directives.order_before(code='*')
 
     # Reference Laboratory fieldset
-    model.fieldset(
+    fieldset(
         "reference_laboratory",
         label=_(u"Reference Laboratory"),
         fields=["reference"]
     )
 
     # Referring Laboratory fieldset
-    model.fieldset(
+    fieldset(
         "referring_laboratory",
         label=_(u"Referring Laboratory"),
         fields=["referring", "referring_client"]
     )
 
     # Connectivity fieldset
-    model.fieldset(
+    fieldset(
         "connectivity",
         label=_(u"Connectivity"),
         fields=["url", "username", "password"]
@@ -168,7 +183,9 @@ class IExternalLaboratorySchema(model.Schema):
                 return
 
         if not is_valid_code(code):
-            raise Invalid(_("Code cannot contain special characters or spaces"))
+            raise Invalid(
+                _("Code cannot contain special characters or spaces")
+            )
 
         lab = get_by_code("ExternalLaboratory", code)
         if lab and lab != context:
@@ -197,7 +214,6 @@ class IExternalLaboratorySchema(model.Schema):
         # Check if a default client for this referring laboratory has been set
         request = api.get_request()
         client = request.form.get("form.widgets.referring_client")
-        client = client and client[0] or None
         if api.is_uid(client):
             return
 
@@ -273,17 +289,24 @@ class ExternalLaboratory(Container):
         """Sets the default client the samples from inbound shipments will
         be assigned to
         """
-        set_uids_field_value(self, "referring_client", value)
+        mutator = self.mutator("referring_client")
+        mutator(self, value)
 
     @security.protected(permissions.View)
     def getReferringClient(self):
         """Returns the default client that samples from inbound shipments from
         this laboratory will be assigned to
         """
-        value = get_uids_field_value(self, "referring_client")
-        if not value:
-            return None
-        return value[0]
+        accessor = self.accessor("referring_client")
+        return accessor(self)
+
+    @security.protected(permissions.View)
+    def getRawReferringClient(self):
+        """Returns the UID of the default client that samples from inbound
+        shipments from this laboratory will be assigned to
+        """
+        accessor = self.accessor("referring_client", raw=True)
+        return accessor(self)
 
     @security.protected(permissions.ModifyPortalContent)
     def setUrl(self, value):
