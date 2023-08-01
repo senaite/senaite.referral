@@ -29,8 +29,7 @@
     <div class="row">
       <div class="col-sm-12">
         <h3>
-          <img i18n:attributes="title" title="Samples"
-               tal:attributes="src string:${portal_url}/++resource++bika.lims.images/sample.png"/>
+          <svg tal:replace="structure senaite_theme/icon_data/sample" />
           <span i18n:translate="">Samples</span>
         </h3>
         <span tal:replace="structure python:view.render_samples_table()"/>
