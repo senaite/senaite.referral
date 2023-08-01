@@ -66,7 +66,7 @@ class AddSamplesListingView(SamplesListingView):
         """
         super(AddSamplesListingView, self).update()
 
-        samples_folder = api.get_portal().analysisrequests
+        samples_folder = api.get_portal().samples
         if check_permission(AddAnalysisRequest, samples_folder):
             uid = api.get_uid(self.context)
             url = api.get_url(samples_folder)
