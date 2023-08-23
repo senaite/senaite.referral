@@ -25,6 +25,7 @@ from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.utils import changeWorkflowState
 from bika.lims.workflow import doActionFor
+from senaite.core.workflow import ANALYSIS_WORKFLOW
 from senaite.core.workflow import SAMPLE_WORKFLOW
 from senaite.referral.utils import get_chunk_size_for
 
@@ -132,7 +133,7 @@ def restore_referred_sample(sample):
         changeWorkflowState(sample, SAMPLE_WORKFLOW, prev)
 
     # Restore status of referred analyses
-    wf_id = "bika_analysis_workflow"
+    wf_id = ANALYSIS_WORKFLOW
     analyses = sample.getAnalyses(full_objects=True, review_state="referred")
     for analysis in analyses:
         prev = get_previous_status(analysis, default="unassigned")
