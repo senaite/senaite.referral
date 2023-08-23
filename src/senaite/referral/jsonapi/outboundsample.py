@@ -22,6 +22,7 @@ import copy
 import json
 from datetime import datetime
 
+from senaite.core.workflow import ANALYSIS_WORKFLOW
 from senaite.jsonapi.exceptions import APIError
 from senaite.jsonapi.interfaces import IPushConsumer
 from zope.interface import alsoProvides
@@ -194,7 +195,7 @@ class OutboundSampleConsumer(object):
         # cause is processed externally.
         # TODO 2.x Do not do manual transition, fix getAllowToSubmitNotAssigned
         alsoProvides(analysis, ISubmitted)
-        wf_id = "bika_analysis_workflow"
+        wf_id = ANALYSIS_WORKFLOW
         wf_state = {"action": "submit"}
         changeWorkflowState(analysis, wf_id, "to_be_verified", **wf_state)
 
