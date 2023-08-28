@@ -125,7 +125,7 @@ def restore_referred_sample(sample):
 
     # Transition the sample and analyses to the state before sample was shipped
     status = api.get_review_status(sample)
-    if status in ["shipped", "restore_referred"]:
+    if status in ["shipped", "rejected_at_reference"]:
         prev = get_previous_status(sample, before="shipped",
                                    default="sample_received")
         changeWorkflowState(sample, "bika_ar_workflow", prev)
