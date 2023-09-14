@@ -20,10 +20,10 @@
 
 from AccessControl import ClassSecurityInfo
 from plone.autoform import directives
-from plone.dexterity.content import Container
 from plone.supermodel import model
 from plone.namedfile.field import NamedBlobFile
 from Products.CMFCore import permissions
+from senaite.core.content.base import Container
 from senaite.referral import messageFactory as _
 from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.content import mutator

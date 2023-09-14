@@ -47,9 +47,12 @@ class IDServerVariablesAdapter(object):
         variables = {}
         portal_type = get_type_id(self.context, **kw)
 
+        # get laboratory the shipment belongs to
+        lab = kw.get("container") or api.get_parent(self.context)
+
         if portal_type in SHIPMENT_TYPES:
             variables.update({
-                "lab_code": self.get_lab_code(self.context)
+                "lab_code": lab.getCode()
             })
 
         return variables
