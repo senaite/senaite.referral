@@ -13,7 +13,7 @@
         Shipment cannot be dispatched because no shipment manifest has been
         generated yet
       </strong>
-      <p class="title">
+      <p class="title mb-0">
         <a i18n:translate=""
            tal:attributes="href string:${context_url}/shipment_manifest">
           Generate the shipment manifest
@@ -26,12 +26,11 @@
       <strong i18n:translate="">
         Shipment manifest has been generated
       </strong>
-      <p class="title">
-        <a i18n:translate=""
+      <p class="title mb-0">
+        <a i18n:translate="" class="mr-2"
            tal:attributes="href python:view.get_manifest_download_url()">
           Download
         </a>
-        &nbsp;
         <a i18n:translate=""
            tal:attributes="href string:${context_url}/shipment_manifest"
            tal:condition="python: view.is_ready()">Regenerate</a>
