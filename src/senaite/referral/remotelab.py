@@ -18,9 +18,15 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+from bika.lims import api
+from bika.lims.interfaces import IAnalysisRequest
+from bika.lims.interfaces import IInternalUse
+from bika.lims.utils import format_supsub
+from bika.lims.utils.analysis import format_uncertainty
 from remotesession import RemoteSession
 from requests.auth import HTTPBasicAuth
 from senaite.app.supermodel import SuperModel
+from senaite.core.api.dtime import date_to_string
 from senaite.referral import logger
 from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.notifications import get_post_base_info
@@ -28,12 +34,6 @@ from senaite.referral.notifications import save_post
 from senaite.referral.utils import get_lab_code
 from senaite.referral.utils import get_user_info
 from senaite.referral.utils import is_valid_url
-
-from bika.lims import api
-from bika.lims.interfaces import IAnalysisRequest
-from bika.lims.interfaces import IInternalUse
-from bika.lims.utils import format_supsub
-from bika.lims.utils.analysis import format_uncertainty
 
 
 def get_remote_connection(laboratory):
@@ -152,17 +152,18 @@ class RemoteLab(object):
             return {
                 "id": api.get_id(sample),
                 "sample_type": api.get_title(sample_type),
-                "date_sampled": date_sampled.strftime("%Y-%m-%d"),
+                "date_sampled": date_to_string(date_sampled),
                 "priority": sample.getPriority(),
                 "analyses": map(lambda an: an.getKeyword, analyses)
             }
 
         dispatched = shipment.getDispatchedDateTime()
+        dispatched = date_to_string(dispatched, "%Y-%m-%d %H:%M:%S")
         samples = map(get_sample_info, shipment.getSamples())
         payload = {
             "consumer": "senaite.referral.inbound_shipment",
             "shipment_id": api.get_id(shipment),
-            "dispatched": dispatched.strftime("%Y-%m-%d %H:%M:%S"),
+            "dispatched": dispatched,
             "samples": filter(None, samples),
         }
         self.notify(shipment, payload, timeout=timeout)
