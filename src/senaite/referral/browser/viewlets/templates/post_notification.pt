@@ -10,7 +10,7 @@
     <div class="portal-alert-item alert alert-info"
          tal:condition="python: not errored">
       <strong i18n:translate="">Remote laboratory has been notified successfully</strong>
-      <p class="title">
+      <p class="title mb-0">
         <span i18n:translate="">Date time</span>:&nbsp;
         <span tal:content="python: post.get('datetime')"/><br/>
         <span i18n:translate="">Server response</span>:&nbsp;
@@ -24,7 +24,7 @@
     <div class="portlet-alert-item alert alert-warning"
          tal:condition="errored">
       <strong i18n:translate="">Unable to notify the remote laboratory</strong>
-      <p class="title">
+      <p class="title mb-0">
         <span i18n:translate="">Date time</span>:&nbsp;
         <span tal:content="python: post.get('datetime')"/><br/>
         <span i18n:translate="">Server response</span>:&nbsp;
