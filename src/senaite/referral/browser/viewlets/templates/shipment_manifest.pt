@@ -1,5 +1,6 @@
 <div tal:omit-tag=""
      tal:condition="python:view.is_visible()"
+     tal:define="context_url string:${context/absolute_url}"
      i18n:domain="senaite.referral">
 
   <div class="visualClear"></div>
@@ -13,7 +14,8 @@
         generated yet
       </strong>
       <p class="title">
-        <a href="shipment_manifest" i18n:translate="">
+        <a i18n:translate=""
+           tal:attributes="href string:${context_url}/shipment_manifest">
           Generate the shipment manifest
         </a>
       </p>
@@ -30,7 +32,8 @@
           Download
         </a>
         &nbsp;
-        <a i18n:translate="" href="shipment_manifest"
+        <a i18n:translate=""
+           tal:attributes="href string:${context_url}/shipment_manifest"
            tal:condition="python: view.is_ready()">Regenerate</a>
       </p>
     </div>
