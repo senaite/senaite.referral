@@ -4,12 +4,10 @@
                   laboratory python:view.laboratory;
                   reflab python:view.context.getReferenceLaboratory()">
   <head>
-      <span tal:replace="structure provider:plone.htmlhead" />
       <style type="text/css">
         body {
             font-family: Arial, Verdana, serif;
             font-size:9pt;
-            writing-mode: tb-rl;
         }
         h1 { font-size: 140%; font-weight:bold; }
         h2 { font-size: 130%; font-weight:bold; }
@@ -18,17 +16,20 @@
         .bold = {font-weight: bold;}
         table { width: 100%; }
         table td { vertical-align:top; };
-        table.noborder td, table.noborder th { border: none; }
         table.nopadding td { padding: 0; }
         table td.label { padding-right: 0.3rem; font-weight: bold; }
-        table th { border-bottom: 1px solid black; }
+        table.noborder td { border: none !important; }
+        table.noborder th {
+          border-top: none !important;
+          border-bottom: 1px solid black;
+        }
         .text-right { text-align: right; }
         .text-left { text-align: left; }
         .text-center { text-align: center; }
         .section-header h1 { font-size: 175%; }
         .section-header img.logo { height: 35px; margin: 20px 0; }
-        .section-header { border-bottom: 1px solid black; }
-        .section-from-to { border-bottom: 1px solid black; }
+        .section-header { border-bottom: 1px solid black; margin-bottom:20px;}
+        .section-from-to { border-bottom: 1px solid black; margin-bottom:20px;}
         @page {
           size: A4 portrait;
           @bottom-right {
@@ -54,12 +55,14 @@
             <tr>
               <td class="align-middle text-left">
                 <img class="logo"
-                     tal:attributes="src string:${portal_url}/logo.png"/>
+                     tal:condition="python:False"
+                     tal:attributes="src string:++plone++senaite.core.static/images/senaite.svg"/>
               </td>
               <td class="align-middle text-center">
                 <h1 i18n:translate="">Shipment manifest</h1>
                 <div tal:define="barcode python:view.get_barcode()">
-                  <img tal:attributes="src barcode" tal:condition="barcode" style="width:300px"/>
+                  <img tal:attributes="src barcode" tal:condition="barcode"
+                       style="width:300px"/>
                   <span tal:content="python: view.context.getShipmentID()"
                         tal:condition="not:barcode"/>
                 </div>
@@ -80,7 +83,7 @@
             </colgroup>
             <tr>
               <!-- Shipment FROM -->
-              <td class="align-middle text-left">
+              <td class="align-middle text-left align-top">
                 <h2 i18n:translate="">Shipper</h2>
                 <address class="address">
                   <div class="lab-title font-weight-bold" tal:content="laboratory/Name|nothing"></div>
@@ -107,7 +110,7 @@
               </td>
 
               <!-- Shipment TO -->
-              <td class="align-middle text-left">
+              <td class="align-middle text-left align-top">
                 <h2 i18n:translate="">Receiver</h2>
                 <address class="address">
                   <div class="lab-title font-weight-bold">
@@ -170,36 +173,38 @@
 
       <!--- CONTENTS -->
       <div class="row section-samples no-gutters">
-        <h2 i18n:translate="">Samples</h2>
-        <table class="w-100 mb-0 noborder">
-          <colgroup>
-            <col style="width:15%"/>
-            <col style="width:15%"/>
-            <col style="width:20%"/>
-            <col style="width:20%"/>
-            <col style="width:30%"/>
-          </colgroup>
-          <tr>
-            <th i18n:translate="shipment_manifest_column_sample_id">
-              Sample ID
-            </th>
-            <th i18n:translate="shipment_manifest_column_client_sample_id">
-              Client SID
-            </th>
-            <th i18n:translate="shipment_manifest_column_date_sampled">
-              Date Sampled
-            </th>
-            <th i18n:translate="shipment_manifest_column_sample_type">
-              Sample Type
-            </th>
-          </tr>
-          <tr tal:repeat="sample python:view.get_samples()">
-            <td class="align-middle text-left" tal:content="python:sample.getId()"/>
-            <td class="align-middle text-left" tal:content="python:sample.getClientSampleID()"/>
-            <td class="align-middle text-left" tal:content="python:view.long_date(sample.getDateSampled())"/>
-            <td class="align-middle text-left" tal:content="python:sample.getSampleType().Title()"/>
-          </tr>
-        </table>
+        <div class="w-100 mb-2">
+          <h2 i18n:translate="">Samples</h2>
+          <table class="table table-sm table-condensed noborder">
+            <colgroup>
+              <col style="width:15%"/>
+              <col style="width:15%"/>
+              <col style="width:20%"/>
+              <col style="width:20%"/>
+              <col style="width:30%"/>
+            </colgroup>
+            <tr>
+              <th i18n:translate="shipment_manifest_column_sample_id">
+                Sample ID
+              </th>
+              <th i18n:translate="shipment_manifest_column_client_sample_id">
+                Client SID
+              </th>
+              <th i18n:translate="shipment_manifest_column_date_sampled">
+                Date Sampled
+              </th>
+              <th i18n:translate="shipment_manifest_column_sample_type">
+                Sample Type
+              </th>
+            </tr>
+            <tr tal:repeat="sample python:view.get_samples()">
+              <td class="align-middle text-left" tal:content="python:sample.getId()"/>
+              <td class="align-middle text-left" tal:content="python:sample.getClientSampleID()"/>
+              <td class="align-middle text-left" tal:content="python:view.long_date(sample.getDateSampled())"/>
+              <td class="align-middle text-left" tal:content="python:sample.getSampleType().Title()"/>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
   </body>

@@ -25,19 +25,17 @@ from io import BytesIO
 
 from barcode import Code39
 from barcode.writer import ImageWriter
+from bika.lims import api
+from bika.lims.utils import createPdf
 from plone.namedfile.file import NamedBlobFile
 from Products.CMFPlone.i18nl10n import ulocalized_time
 from Products.CMFPlone.utils import safe_unicode
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from senaite.core.interfaces import IHideActionsMenu
 from senaite.referral import logger
 from senaite.referral import messageFactory as _
 from senaite.referral.browser import BaseView
 from zope.interface import implementer
-
-from bika.lims import api
-from bika.lims.utils import createPdf
-
-from senaite.core.interfaces import IHideActionsMenu
 
 
 @implementer(IHideActionsMenu)
@@ -152,12 +150,13 @@ class ShipmentManifestTemplate(BaseView):
         return self.to_localized_time(date, long_format=0)
 
     def get_barcode(self):
-        """Returns the formatted address of the current laboratory
+        """Returns the barcode's png image in base64
         """
         try:
             output = BytesIO()
-            shipment_id = self.shipment.getShipmentID()
-            Code39(shipment_id, writer=ImageWriter()).write(output)
+            id = safe_unicode(self.shipment.getShipmentID())
+            barcode = Code39(id, writer=ImageWriter(), add_checksum=False)
+            barcode.write(output)
             output = output.getvalue()
             return "data:image/png;base64,{}".format(b64encode(output))
         except Exception as ex:
