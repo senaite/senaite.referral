@@ -29,6 +29,7 @@ from bika.lims import api
 from bika.lims import PRIORITIES
 from bika.lims.utils import get_image
 from bika.lims.utils import get_link_for
+from senaite.core.api import dtime
 
 
 class SamplesListingView(ListingView):
@@ -218,7 +219,7 @@ class SamplesListingView(ListingView):
                 "client": "",
                 "priority": obj.getPriority(),
                 "sample_type": obj.getSampleType(),
-                "date_sampled": date_sampled.strftime("%Y-%m-%d"),
+                "date_sampled": dtime.date_to_string(date_sampled),
                 "analyses": ", ".join(obj.getAnalyses()),
             })
 
