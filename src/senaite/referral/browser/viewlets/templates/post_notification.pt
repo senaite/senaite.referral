@@ -38,7 +38,7 @@
       </p>
       <form id="retry_notification"
             name="retry_notification"
-            action="retry_notification"
+            tal:attributes="action string:${context/absolute_url}/retry_notification"
             enctype="multipart/form-data"
             method="POST">
 
