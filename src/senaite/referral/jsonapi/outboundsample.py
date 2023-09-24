@@ -161,7 +161,7 @@ class OutboundSampleConsumer(object):
         analysis.setDetectionLimitSelector(False)
         analysis.setDetectionLimitOperand("")
         analysis.setInterimFields([])
-        analysis.setAttachmentOption("")
+        analysis.setAttachmentRequired(False)
         analysis.setPointOfCapture("lab")
         analysis.setUnit("")
 
