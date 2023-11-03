@@ -128,7 +128,7 @@ class OutboundSampleConsumer(object):
             raise ValueError("Field is missing: '{}'".format(field_name))
 
         value = record.get(field_name)
-        if not str(value):
+        if not value:
             raise ValueError("Field is empty: '{}'".format(field_name))
 
     def get_sample(self, sample_id):
