@@ -22,6 +22,7 @@
   <include package=".jsonapi"/>
   <include package=".patches"/>
   <include package=".queue" zcml:condition="installed senaite.queue"/>
+  <include package=".subscribers"/>
   <include package=".upgrade"/>
   <include package=".workflow"/>
 
