@@ -19,6 +19,7 @@
 # Some rights reserved, see README and LICENSE.
 
 from senaite.referral.adapters.guards import BaseGuardAdapter
+from senaite.referral.utils import search_sample_type
 from zope.interface import implementer
 
 from bika.lims.interfaces import IGuardAdapter
@@ -34,4 +35,10 @@ class InboundSampleGuardAdapter(BaseGuardAdapter):
         """
         if self.context.getRawSample():
             return False
+
+        # check if a counterpart sample type exists
+        term = self.context.getSampleType()
+        if not search_sample_type(term):
+            return False
+
         return True
