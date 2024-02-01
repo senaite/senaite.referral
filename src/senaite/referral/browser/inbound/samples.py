@@ -24,6 +24,7 @@ from bika.lims import api
 from bika.lims import PRIORITIES
 from bika.lims.utils import get_image
 from bika.lims.utils import get_link_for
+from bika.lims.utils import render_html_attributes
 from plone.memoize import view
 from senaite.app.listing import ListingView
 from senaite.core.api import dtime
@@ -218,8 +219,8 @@ class SamplesListingView(ListingView):
             sample_type = obj.getSampleType()
             if not self.get_sample_type_uid(sample_type):
                 msg = _("No sample type found for '{}'".format(sample_type))
-                img = get_image("warning.png", title=msg)
-                item["replace"]["sample_type"] = "".join([img, sample_type])
+                span = self.get_danger_html(sample_type, msg)
+                item["replace"]["sample_type"] = span
 
             item.update({
                 "getReferringID": obj.getReferringID(),
@@ -241,6 +242,13 @@ class SamplesListingView(ListingView):
             item["replace"]["priority"] = priority
 
         return item
+
+    def get_danger_html(self, text, title):
+        """Returns an html with the text and title provided
+        """
+        css = "fas fa-exclamation-circle pr-1"
+        attrs = render_html_attributes(title=title, css_class=css)
+        return "<span class='text-danger'><i {}></i>{}".format(attrs, text)
 
     def get_state_title(self, obj):
         """Translates the review state to the current set language
