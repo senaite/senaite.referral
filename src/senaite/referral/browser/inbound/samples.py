@@ -19,17 +19,19 @@
 # Some rights reserved, see README and LICENSE.
 
 import collections
-from senaite.app.listing import ListingView
-from senaite.referral import messageFactory as _
-from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
-from senaite.referral.notifications import get_last_post
-from senaite.referral.utils import get_image_url
 
 from bika.lims import api
 from bika.lims import PRIORITIES
 from bika.lims.utils import get_image
 from bika.lims.utils import get_link_for
+from plone.memoize import view
+from senaite.app.listing import ListingView
 from senaite.core.api import dtime
+from senaite.referral import messageFactory as _
+from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
+from senaite.referral.notifications import get_last_post
+from senaite.referral.utils import get_image_url
+from senaite.referral.utils import get_sample_types_mapping
 
 
 class SamplesListingView(ListingView):
@@ -213,12 +215,18 @@ class SamplesListingView(ListingView):
         else:
             # This inbound sample does not have a sample counterpart yet
             date_sampled = obj.getDateSampled()
+            sample_type = obj.getSampleType()
+            if not self.get_sample_type_uid(sample_type):
+                msg = _("No sample type found for '{}'".format(sample_type))
+                img = get_image("warning.png", title=msg)
+                item["replace"]["sample_type"] = "".join([img, sample_type])
+
             item.update({
                 "getReferringID": obj.getReferringID(),
                 "getSampleID": "",
                 "client": "",
                 "priority": obj.getPriority(),
-                "sample_type": obj.getSampleType(),
+                "sample_type": sample_type,
                 "date_sampled": dtime.date_to_string(date_sampled),
                 "analyses": ", ".join(obj.getAnalyses()),
             })
@@ -256,3 +264,16 @@ class SamplesListingView(ListingView):
             return False
         success = post.get("success", False)
         return not success
+
+    @view.memoize
+    def get_sample_types(self):
+        """Returns the available sample type uids grouped by multiple terms
+        """
+        return get_sample_types_mapping()
+
+    def get_sample_type_uid(self, term):
+        """Returns the UID of the Sample Type that matches with the given term,
+        if any. Returns None otherwise
+        """
+        sample_types = self.get_sample_types()
+        return sample_types.get(term)

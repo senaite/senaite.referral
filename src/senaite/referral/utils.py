@@ -324,3 +324,14 @@ def get_services_mapping():
         services[keyword] = uid
         services[uid] = uid
     return services
+
+
+def search_sample_type(term, full_object=False):
+    """Returns the Sample Type that matches with the given term, if any.
+    Returns None otherwise
+    """
+    sample_types = get_sample_types_mapping()
+    uid = sample_types.get(term)
+    if uid and full_object:
+        return api.get_object_by_uid(uid)
+    return uid
