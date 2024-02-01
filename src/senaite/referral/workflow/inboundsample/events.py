@@ -18,12 +18,11 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
-from senaite.referral.utils import get_sample_types_mapping
-from senaite.referral.utils import get_services_mapping
-
 from bika.lims import api
 from bika.lims.utils.analysisrequest import create_analysisrequest
 from bika.lims.workflow import doActionFor
+from senaite.referral.utils import get_sample_types_mapping
+from senaite.referral.utils import get_services_mapping
 
 
 def after_receive_inbound_sample(inbound_sample):
@@ -79,6 +78,8 @@ def create_sample(inbound_sample):
     # Create the sample object
     sample_type = inbound_sample.getSampleType()
     sample_type_uid = sample_types.get(sample_type)
+    if not sample_type_uid:
+        raise ValueError("No sample type found for '{}'".format(sample_type))
 
     keywords = inbound_sample.getAnalyses() or []
     services_uids = map(lambda key: services.get(key), keywords)

@@ -18,11 +18,15 @@
 # Copyright 2021-2023 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+from bika.lims import api
+from bika.lims.utils import changeWorkflowState
 from senaite.core.upgrade import upgradestep
 from senaite.core.upgrade.utils import UpgradeUtils
 from senaite.referral import logger
+from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.config import PRODUCT_NAME as product
 from senaite.referral.setuphandlers import setup_ajax_transitions
+from senaite.referral.utils import get_sample_types_mapping
 
 version = "2.0.0"
 profile = "profile-{0}:default".format(product)
@@ -53,3 +57,50 @@ def add_ajax_transitions(tool):
     """
     portal = tool.aq_inner.aq_parent
     setup_ajax_transitions(portal)
+
+
+def fix_received_samples_wo_type(tool):
+    """Walks through all inbound samples without sample counterpart that belong
+    to shipments in due status and transitions them to due status
+    """
+    logger.info("Fix received inbound samples without sample type ...")
+    wf_id = "senaite_inbound_sample_workflow"
+
+    # sample types grouped by term
+    sample_types = get_sample_types_mapping()
+
+    def is_wrong(sample):
+        """Returns true if the inbound sample is in received status without
+        a counterpart sample and without a counterpart sample type
+        """
+        if sample.getRawSample():
+            return False
+        term = sample.getSampleType()
+        if sample_types.get(term):
+            return False
+        if api.get_review_status(sample) != "received":
+            return False
+        return True
+
+    query = {"portal_type": "InboundSampleShipment", "review_state": "due"}
+    brains = api.search(query, SHIPMENT_CATALOG)
+    total = len(brains)
+    for num, brain in enumerate(brains):
+        if num and num % 100 == 0:
+            logger.info("Processed objects: {}/{}".format(num, total))
+
+        shipment = api.get_object(brain, default=None)
+
+        # process the wrong samples
+        for sample in shipment.getInboundSamples():
+            if not is_wrong(sample):
+                sample._p_deactivate()
+                continue
+
+            # rollback inbound sample status to due
+            changeWorkflowState(sample, wf_id, "due", action="fix_2002")
+            sample._p_deactivate()
+
+        shipment._p_deactivate()
+
+    logger.info("Fix received inbound samples without sample type [DONE]")

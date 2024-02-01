@@ -4,6 +4,16 @@
     i18n_domain="senaite.referral">
 
   <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 2.0.0: Fix received inbound samples without type"
+      description="
+        Walks through all inbound samples without sample counterpart that
+        belong to shipments in due status and transitions them to due status"
+      source="2001"
+      destination="2002"
+      handler=".v02_00_000.fix_received_samples_wo_type"
+      profile="senaite.referral:default"/>
+
+  <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 2.0.0: Setup async transitions"
       description="Setup default ajax transitions"
       source="2000"
