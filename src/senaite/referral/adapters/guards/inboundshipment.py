@@ -18,11 +18,11 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
-from senaite.referral.adapters.guards import BaseGuardAdapter
-from zope.interface import implementer
-
+from bika.lims import api
 from bika.lims.interfaces import IGuardAdapter
 from bika.lims.workflow import isTransitionAllowed as is_transition_allowed
+from senaite.referral.adapters.guards import BaseGuardAdapter
+from zope.interface import implementer
 
 
 @implementer(IGuardAdapter)
@@ -48,12 +48,12 @@ class InboundShipmentGuardAdapter(BaseGuardAdapter):
         if not samples:
             return False
 
-        action_id = "receive_inbound_sample"
         for inbound_sample in samples:
             if inbound_sample.getRawSample():
                 continue
-            if is_transition_allowed(inbound_sample, action_id):
+            if api.get_review_status(inbound_sample) == "due":
                 return False
+
         return True
 
     def guard_reject_inbound_shipment(self):
