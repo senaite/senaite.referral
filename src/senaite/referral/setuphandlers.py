@@ -18,9 +18,13 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+from collections import OrderedDict
+
 from bika.lims import api
 from plone.registry.interfaces import IRegistry
 from Products.DCWorkflow.Guard import Guard
+from senaite.core.registry import get_registry_record
+from senaite.core.registry import set_registry_record
 from senaite.core.setuphandlers import setup_core_catalogs
 from senaite.core.setuphandlers import setup_other_catalogs
 from senaite.core.workflow import ANALYSIS_WORKFLOW
@@ -29,6 +33,7 @@ from senaite.referral import logger
 from senaite.referral.catalog.inbound_sample_catalog import \
     InboundSampleCatalog
 from senaite.referral.catalog.shipment_catalog import ShipmentCatalog
+from senaite.referral.config import AJAX_TRANSITIONS
 from senaite.referral.config import PRODUCT_NAME
 from senaite.referral.config import PROFILE_ID
 from senaite.referral.config import UNINSTALL_ID
@@ -413,3 +418,17 @@ def setup_catalogs(portal):
     setup_core_catalogs(portal, catalog_classes=CATALOGS)
     setup_other_catalogs(portal, indexes=INDEXES, columns=COLUMNS)
     logger.info("Setup referral catalogs [DONE]")
+
+
+def setup_ajax_transitions(portal):
+    """Setup the transitions from senaite.referral that have to be processed
+    asynchronously by default when the setting "Enable Ajax Transitions" for
+    listings is active
+    """
+    logger.info("Setup ajax transitions ...")
+    key = "listing_active_ajax_transitions"
+    transitions = get_registry_record("listing_active_ajax_transitions") or []
+    transitions.extend(list(AJAX_TRANSITIONS))
+    transitions = list(OrderedDict.fromkeys(transitions))
+    set_registry_record(key, transitions)
+    logger.info("Setup ajax transitions [DONE]")

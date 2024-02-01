@@ -3,12 +3,20 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
     i18n_domain="senaite.referral">
 
+  <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 2.0.0: Setup async transitions"
+      description="Setup default ajax transitions"
+      source="2000"
+      destination="2001"
+      handler=".v02_00_000.setup_ajax_transitions"
+      profile="senaite.referral:default"/>
+
   <!-- Setup chunk size for inbound sample reception -->
   <genericsetup:upgradeStep
-      title="SENAITE.REFERRAL 1.0.0: Allow to recall a sample from shipment"
+      title="SENAITE.REFERRAL 2.0.0: Allow to recall a sample from shipment"
       description="Added the transition 'recall_from_shipment'"
       source="1005"
-      destination="2.0.0"
+      destination="2000"
       handler=".v02_00_000.upgrade"
       profile="senaite.referral:default"/>
 

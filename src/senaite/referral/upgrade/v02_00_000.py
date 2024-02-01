@@ -22,8 +22,9 @@ from senaite.core.upgrade import upgradestep
 from senaite.core.upgrade.utils import UpgradeUtils
 from senaite.referral import logger
 from senaite.referral.config import PRODUCT_NAME as product
+from senaite.referral.setuphandlers import setup_ajax_transitions
 
-version = "2000"
+version = "2.0.0"
 profile = "profile-{0}:default".format(product)
 
 
@@ -44,3 +45,11 @@ def upgrade(tool):
 
     logger.info("{0} upgraded to version {1}".format(product, version))
     return True
+
+
+def add_ajax_transitions(tool):
+    """Adds the transitions from referral that should be processed async by
+    default when the setting "Enable Ajax Transitions" for listings is active
+    """
+    portal = tool.aq_inner.aq_parent
+    setup_ajax_transitions(portal)

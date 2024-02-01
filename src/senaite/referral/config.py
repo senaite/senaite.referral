@@ -27,3 +27,9 @@ PRODUCT_TYPES = (
     "ExternalLaboratory",
     "ExternalLaboratoryFolder",
 )
+
+AJAX_TRANSITIONS = (
+    # Transitions to process async via ajax
+    "receive_inbound_sample",
+    "reject_inbound_sample",
+)
