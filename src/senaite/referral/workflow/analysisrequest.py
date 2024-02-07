@@ -19,6 +19,8 @@
 # Some rights reserved, see README and LICENSE.
 
 from senaite.referral import check_installed
+from senaite.referral.interfaces import IInboundSampleShipment
+from senaite.referral.interfaces import IOutboundSampleShipment
 from senaite.referral.remotelab import get_remote_connection
 from senaite.referral.workflow import restore_referred_sample
 from senaite.referral.workflow import ship_sample
@@ -44,6 +46,9 @@ def AfterTransitionEventHandler(sample, event): # noqa lowercase
 
     if event.transition.id == "reject":
         after_reject(sample)
+
+    if event.transition.id == "invalidate":
+        after_invalidate(sample)
 
     if event.transition.id == "recall_from_shipment":
         restore_referred_sample(sample)
@@ -101,3 +106,24 @@ def after_reject(sample):
 
     # Notify the sample was rejected to the referring lab
     remote_lab.do_action(sample, "reject")
+
+
+def get_remote_lab(shipment):
+    """Returns the remote laboratory assigned to the given shipment, if any
+    """
+    lab = None
+    if IInboundSampleShipment.providedBy(shipment):
+        lab = shipment.getReferringLaboratory()
+    elif IOutboundSampleShipment.providedBy(shipment):
+        lab = shipment.getReferenceLaboratory()
+    return get_remote_connection(lab)
+
+
+def after_invalidate(sample):
+    """"Notify about the invalidation to reference and referring labs
+    """
+    inbound_shipment = sample.getInboundShipment()
+    referring_lab = get_remote_lab(inbound_shipment)
+    if referring_lab:
+        # notify the referring laboratory about the invalidated sample
+        referring_lab.do_action(sample, "invalidate_at_reference")

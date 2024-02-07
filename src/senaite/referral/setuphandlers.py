@@ -65,7 +65,15 @@ WORKFLOWS_TO_UPDATE = {
                 "transitions": ("recall_from_shipment",),
                 # Sample is read-only
                 "permissions_copy_from": "invalid",
-            }
+            },
+            "invalidated_at_reference": {
+                "title": "Invalidated at reference lab",
+                "description": "Sample invalidated at reference laboratory",
+                # This is an end-state
+                "transitions": (),
+                # Sample is read-only
+                "permissions_copy_from": "invalid",
+            },
         },
         "transitions": {
             "ship": {
@@ -86,6 +94,16 @@ WORKFLOWS_TO_UPDATE = {
                     "guard_permissions": "",
                     "guard_roles": "",
                     "guard_expr": "python:here.guard_handler('reject_at_reference')",
+                }
+            },
+            "invalidate_at_reference": {
+                "title": "Invalidate sample (at reference lab)",
+                "new_state": "invalidated_at_reference",
+                "action": "Invalidate at reference lab",
+                "guard": {
+                    "guard_permissions": "",
+                    "guard_roles": "",
+                    "guard_expr": "python:here.guard_handler('invalidate_at_reference')",
                 }
             },
             "recall_from_shipment": {
