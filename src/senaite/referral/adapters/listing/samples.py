@@ -142,33 +142,6 @@ class SamplesListingViewAdapter(object):
                 statuses.append("rejected_at_reference")
                 rv["contentFilter"]["review_state"] = list(set(statuses))
 
-        # New review_state "invalidated_at_reference"
-        rejected_at_reference = {
-            "id": "invalidated_at_reference",
-            "title": _("Invalidated at reference"),
-            "contentFilter": {
-                "review_state": ("invalidated_at_reference", ),
-                "sort_on": "created",
-                "sort_order": "descending"},
-            "transitions": [],
-            "custom_transitions": list(default_actions),
-            "columns": list(default_columns),
-        }
-        listing_utils.add_review_state(
-            listing=self.listing,
-            review_state=rejected_at_reference,
-            after="rejected_at_reference")
-
-        # Update "invalidated" review state to include those that have been
-        # rejected by the reference laboratory
-        for rv in self.listing.review_states:
-            if rv.get("id") == "invalid":
-                statuses = rv["contentFilter"].get("review_state")
-                if not isinstance(statuses, (list, tuple)):
-                    statuses = [statuses]
-                statuses.append("invalidated_at_reference")
-                rv["contentFilter"]["review_state"] = list(set(statuses))
-
     def add_columns(self):
         """Adds referral-specific columns in the listing
         """
