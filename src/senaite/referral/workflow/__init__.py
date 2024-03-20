@@ -18,7 +18,12 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+from DateTime import DateTime
+from Products.CMFCore.WorkflowCore import WorkflowException
+from Products.DCWorkflow.events import AfterTransitionEvent
+from senaite.referral import logger
 from senaite.referral.interfaces import IOutboundSampleShipment
+from zope.event import notify
 from zope.lifecycleevent import modified
 
 from bika.lims import api
@@ -170,3 +175,42 @@ def do_queue_or_action_for(objects, action, **kwargs):
     # perform the workflow action
     for obj in objects:
         doActionFor(obj, action)
+
+
+def change_workflow_state(content, wf_id, state_id, **kwargs):
+    """Changes the workflow status manually
+    """
+    portal_workflow = api.get_tool("portal_workflow")
+    workflow = portal_workflow.getWorkflowById(wf_id)
+    if not workflow:
+        logger.error("%s: Cannot find workflow id %s" % (content, wf_id))
+        return False
+
+    action = kwargs.get("action", None)
+    wf_state = {
+        "action": action,
+        "actor": kwargs.get("actor", api.get_current_user().id),
+        "comments": "Setting state to %s" % state_id,
+        "review_state": state_id,
+        "time": DateTime()
+    }
+
+    # Get old and new state info
+    old_state = workflow._getWorkflowStateOf(content)
+    new_state = workflow.states.get(state_id, None)
+    if new_state is None:
+        raise WorkflowException("Destination state undefined: {}"
+                                .format(state_id))
+
+    # Change status and update permissions
+    portal_workflow.setStatusOf(wf_id, content, wf_state)
+    workflow.updateRoleMappingsFor(content)
+
+    # Notify the object has been transitioned
+    transition = workflow.transitions.get(action)
+    if transition:
+        notify(AfterTransitionEvent(content, workflow, old_state, new_state,
+                                    transition, wf_state, None))
+
+    # Map changes to catalog
+    content.reindexObject()

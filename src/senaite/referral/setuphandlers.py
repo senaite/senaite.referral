@@ -53,6 +53,7 @@ WORKFLOWS_TO_UPDATE = {
                 "description": "Sample is referred to reference laboratory",
                 "transitions": (
                     "verify",
+                    "invalidate_at_reference",
                     "reject_at_reference",
                     "recall_from_shipment"
                 ),
@@ -69,10 +70,8 @@ WORKFLOWS_TO_UPDATE = {
             "invalidated_at_reference": {
                 "title": "Invalidated at reference lab",
                 "description": "Sample invalidated at reference laboratory",
-                # This is an end-state
-                "transitions": (),
-                # Sample is read-only
-                "permissions_copy_from": "invalid",
+                "transitions": ("invalidate",),
+                "permissions_copy_from": "published",
             },
         },
         "transitions": {
