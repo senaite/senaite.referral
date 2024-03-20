@@ -57,3 +57,14 @@ class SampleGuardAdapter(BaseGuardAdapter):
             return False
 
         return True
+
+    def guard_invalidate_at_reference(self):
+        """Returns true if current request contains a POST with the
+        'invalidate_at_reference' action to ensure this transition is not
+        performed manually,
+        """
+        request = api.get_request()
+        lab_code = request.get("lab_code")
+        if not lab_code:
+            return False
+        return True
