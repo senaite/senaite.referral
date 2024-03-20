@@ -120,10 +120,11 @@ def get_remote_lab(shipment):
 
 
 def after_invalidate(sample):
-    """"Notify about the invalidation to reference and referring labs
+    """"Actions to do when invalidating a sample
     """
-    inbound_shipment = sample.getInboundShipment()
-    referring_lab = get_remote_lab(inbound_shipment)
-    if referring_lab:
-        # notify the referring laboratory about the invalidated sample
-        referring_lab.do_action(sample, "invalidate_at_reference")
+    shipment = sample.getInboundShipment()
+    referring = shipment.getReferringLaboratory()
+    referring = get_remote_connection(referring)
+    if referring:
+        # notify the referring laboratory
+        referring.do_action(sample, "invalidate_at_reference")
