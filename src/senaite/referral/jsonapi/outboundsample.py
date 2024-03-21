@@ -58,6 +58,13 @@ class OutboundSampleConsumer(object):
         sample = self.get_sample(sample_id)
 
         # If the sample is invalidated, update the retest instead
+        while self.is_invalidated(sample):
+            sample = sample.getRetest()
+            if not sample:
+                msg = "No retest found for '%s'" % sample_id
+                raise APIError(500, "ValueError: {}".format(msg))
+
+        # If the sample is invalidated, update the retest instead
         if self.is_invalidated(sample):
             sample = sample.getRetest()
             if not sample:
@@ -144,7 +151,6 @@ class OutboundSampleConsumer(object):
         brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
         if not brains:
             raise ValueError("Sample not found: {}".format(sample_id))
-
         if len(brains) > 1:
             raise ValueError("More than one sample: {}".format(sample_id))
 

@@ -262,4 +262,19 @@ class ReferralConsumer(BaseConsumer):
         if len(brains) != 1:
             raise ValueError("No Sample found for {}".format(original_id))
 
-        return api.get_object(brains[0])
+        sample = api.get_object(brains[0])
+
+        # If the sample is invalidated, return the retest instead
+        while self.is_invalidated(sample):
+            sample = sample.getRetest()
+            if not sample:
+                raise ValueError("No retest found for '%s'" % original_id)
+
+        return sample
+
+    def is_invalidated(self, sample):
+        """Returns whether the sample was invalidated in present laboratory
+        or at reference laboratory
+        """
+        statuses = ["invalid", "invalidated_at_reference"]
+        return api.get_review_status(sample) in statuses
