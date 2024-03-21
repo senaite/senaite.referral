@@ -58,6 +58,13 @@ class OutboundSampleConsumer(object):
         sample_id = sample_record.get("referring_id")
         sample = self.get_sample(sample_id)
 
+        # If the sample is invalidated, update the retest instead
+        while self.is_invalidated(sample):
+            sample = sample.getRetest()
+            if not sample:
+                msg = "No retest found for '%s'" % sample_id
+                raise APIError(500, "ValueError: {}".format(msg))
+
         # Do not allow to modify the sample if not referred
         if api.get_review_status(sample) != "shipped":
             # We don't rise an exception here because maybe the sample was
@@ -206,3 +213,10 @@ class OutboundSampleConsumer(object):
 
         # Reindex the analysis
         analysis.reindexObject()
+
+    def is_invalidated(self, sample):
+        """Returns whether the sample was invalidated in present laboratory
+        or at reference laboratory
+        """
+        statuses = ["invalid", "invalidated_at_reference"]
+        return api.get_review_status(sample) in statuses

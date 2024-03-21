@@ -26,6 +26,7 @@ from senaite.referral import logger
 from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.config import PRODUCT_NAME as product
 from senaite.referral.setuphandlers import setup_ajax_transitions
+from senaite.referral.setuphandlers import setup_workflows
 from senaite.referral.utils import get_sample_types_mapping
 
 version = "2.0.0"
@@ -104,3 +105,13 @@ def fix_received_samples_wo_type(tool):
         shipment._p_deactivate()
 
     logger.info("Fix received inbound samples without sample type [DONE]")
+
+
+def setup_invalidate_at_reference(tool):
+    logger.info("Setup transition 'invalidate_at_reference' ...")
+    portal = tool.aq_inner.aq_parent
+
+    # Setup workflows
+    setup_workflows(portal)
+
+    logger.info("Setup transition 'invalidate_at_reference' [DONE]")
