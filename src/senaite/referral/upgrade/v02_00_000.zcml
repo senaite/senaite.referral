@@ -4,6 +4,14 @@
     i18n_domain="senaite.referral">
 
   <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 2.0.0: Invalidate at reference laboratory"
+      description="Added the transition 'invalidate_at_reference'"
+      source="2002"
+      destination="2003"
+      handler=".v02_00_000.setup_invalidate_at_reference"
+      profile="senaite.referral:default"/>
+
+  <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 2.0.0: Fix received inbound samples without type"
       description="
         Walks through all inbound samples without sample counterpart that

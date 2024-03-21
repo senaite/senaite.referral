@@ -20,9 +20,8 @@
 
 from collections import OrderedDict
 
-from bika.lims import api
 from plone.registry.interfaces import IRegistry
-from Products.DCWorkflow.Guard import Guard
+from senaite.core.api.workflow import update_workflow
 from senaite.core.registry import get_registry_record
 from senaite.core.registry import set_registry_record
 from senaite.core.setuphandlers import setup_core_catalogs
@@ -68,15 +67,14 @@ WORKFLOWS_TO_UPDATE = {
     SAMPLE_WORKFLOW: {
         "states": {
             "sample_received": {
-                # Do not remove transitions already there
-                "preserve_transitions": True,
-                "transitions": ("ship",),
+                "transitions": ["ship"],
             },
             "shipped": {
                 "title": "Referred",
                 "description": "Sample is referred to reference laboratory",
                 "transitions": (
                     "verify",
+                    "invalidate_at_reference",
                     "reject_at_reference",
                     "recall_from_shipment"
                 ),
@@ -89,7 +87,13 @@ WORKFLOWS_TO_UPDATE = {
                 "transitions": ("recall_from_shipment",),
                 # Sample is read-only
                 "permissions_copy_from": "invalid",
-            }
+            },
+            "invalidated_at_reference": {
+                "title": "Invalidated at reference lab",
+                "description": "Sample invalidated at reference laboratory",
+                "transitions": ("invalidate",),
+                "permissions_copy_from": "published",
+            },
         },
         "transitions": {
             "ship": {
@@ -122,13 +126,22 @@ WORKFLOWS_TO_UPDATE = {
                     "guard_expr": "python:here.guard_handler('recall_from_shipment')",
                 }
             },
+            "invalidate_at_reference": {
+                "title": "Invalidate sample (at reference lab)",
+                "new_state": "invalidated_at_reference",
+                "action": "Invalidate at reference lab",
+                "guard": {
+                    "guard_permissions": "",
+                    "guard_roles": "",
+                    "guard_expr": "python:here.guard_handler('invalidate_at_reference')",
+                }
+            },
         }
     },
     ANALYSIS_WORKFLOW: {
         "states": {
             "unassigned": {
-                "preserve_transitions": True,
-                "transitions": ("refer",),
+                "transitions": ["refer"],
             },
             "referred": {
                 "title": "Referred",
@@ -263,122 +276,8 @@ def setup_workflows(portal):
     """
     logger.info("Setup workflows ...")
     for wf_id, settings in WORKFLOWS_TO_UPDATE.items():
-        update_workflow(portal, wf_id, settings)
-
-
-def update_workflow(portal, workflow_id, settings):
-    """Updates the workflow with workflow_id with the settings passed-in
-    """
-    logger.info("Updating workflow '{}' ...".format(workflow_id))
-    wf_tool = api.get_tool("portal_workflow")
-    workflow = wf_tool.getWorkflowById(workflow_id)
-    if not workflow:
-        logger.warn("Workflow '{}' not found [SKIP]".format(workflow_id))
-
-    # Update states
-    states = settings.get("states", {})
-    for state_id, values in states.items():
-        update_workflow_state(workflow, state_id, values)
-
-    # Update transitions
-    transitions = settings.get("transitions", {})
-    for transition_id, values in transitions.items():
-        update_workflow_transition(workflow, transition_id, values)
-
-
-def update_workflow_state(workflow, status_id, settings):
-    """Updates the status of a workflow in accordance with settings passed-in
-    """
-    logger.info("Updating workflow '{}', status: '{}' ..."
-                .format(workflow.id, status_id))
-
-    # Create the status (if does not exist yet)
-    new_status = workflow.states.get(status_id)
-    if not new_status:
-        workflow.states.addState(status_id)
-        new_status = workflow.states.get(status_id)
-
-    # Set basic info (title, description, etc.)
-    new_status.title = settings.get("title", new_status.title)
-    description = settings.get("description", None)
-    new_status.description = description or new_status.description
-
-    # Set transitions
-    trans = settings.get("transitions", ())
-    if settings.get("preserve_transitions", False):
-        trans = tuple(set(new_status.transitions+trans))
-    new_status.transitions = trans
-
-    # Set permissions
-    update_workflow_state_permissions(workflow, new_status, settings)
-
-
-def update_workflow_state_permissions(workflow, status, settings):
-    """Updates the permissions of a workflow status in accordance with the
-    settings passed-in
-    """
-    # Copy permissions from another state?
-    permissions_copy_from = settings.get("permissions_copy_from", None)
-    if permissions_copy_from:
-        logger.info("Copying permissions from '{}' to '{}' ..."
-                    .format(permissions_copy_from, status.id))
-        copy_from_state = workflow.states.get(permissions_copy_from)
-        if not copy_from_state:
-            logger.info("State '{}' not found [SKIP]".format(copy_from_state))
-        else:
-            for perm_id in copy_from_state.permissions:
-                perm_info = copy_from_state.getPermissionInfo(perm_id)
-                acquired = perm_info.get("acquired", 1)
-                roles = perm_info.get("roles", acquired and [] or ())
-                logger.info("Setting permission '{}' (acquired={}): '{}'"
-                            .format(perm_id, repr(acquired), ', '.join(roles)))
-                status.setPermission(perm_id, acquired, roles)
-
-    # Override permissions
-    logger.info("Overriding permissions for '{}' ...".format(status.id))
-    state_permissions = settings.get('permissions', {})
-    if not state_permissions:
-        logger.info(
-            "No permissions set for '{}' [SKIP]".format(status.id))
-        return
-
-    for permission_id, roles in state_permissions.items():
-        state_roles = roles and roles or ()
-        if isinstance(state_roles, tuple):
-            acq = 0
-        else:
-            acq = 1
-        logger.info("Setting permission '{}' (acquired={}): '{}'"
-                    .format(permission_id, repr(acq),
-                            ', '.join(state_roles)))
-
-        # Check if this permission is defined globally for this workflow
-        if permission_id not in workflow.permissions:
-            workflow.permissions = workflow.permissions + (permission_id, )
-        status.setPermission(permission_id, acq, state_roles)
-
-
-def update_workflow_transition(workflow, transition_id, settings):
-    """Updates the workflow transition in accordance with settings passed-in
-    """
-    logger.info("Updating workflow '{}', transition: '{}'"
-                .format(workflow.id, transition_id))
-    if transition_id not in workflow.transitions:
-        workflow.transitions.addTransition(transition_id)
-    transition = workflow.transitions.get(transition_id)
-    transition.setProperties(
-        title=settings.get("title"),
-        new_state_id=settings.get("new_state"),
-        after_script_name=settings.get("after_script", ""),
-        actbox_name=settings.get("action", settings.get("title"))
-    )
-    guard = transition.guard or Guard()
-    guard_props = {"guard_permissions": "",
-                   "guard_roles": "",
-                   "guard_expr": ""}
-    guard_props = settings.get("guard", guard_props)
-    guard.changeFromProperties(guard_props)
-    transition.guard = guard
+        update_workflow(wf_id, **settings)
+    logger.info("Setup workflows [DONE]")
 
 
 def setup_id_formatting(portal, format_definition=None):

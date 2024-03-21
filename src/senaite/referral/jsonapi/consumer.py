@@ -25,11 +25,11 @@ from plone.memoize.instance import memoize
 from senaite.jsonapi.interfaces import IPushConsumer
 from senaite.referral import utils
 from senaite.referral.catalog import SHIPMENT_CATALOG
+from senaite.referral.workflow import change_workflow_state
 from zope.interface import implementer
 
 from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
-from bika.lims.utils import changeWorkflowState
 from bika.lims.workflow import doActionFor
 from bika.lims.workflow import isTransitionAllowed
 
@@ -178,6 +178,7 @@ class ReferralConsumer(BaseConsumer):
             return
 
         # Do force the transition
+        # TODO Remove force the transition
         workflows = api.get_workflows_for(obj)
         wf_tool = api.get_tool("portal_workflow")
         for wf_id in workflows:
@@ -187,7 +188,7 @@ class ReferralConsumer(BaseConsumer):
             transition = workflow.transitions[action]
             status = transition.new_state_id
             kwargs = {"action": action}
-            changeWorkflowState(obj, wf_id, status, **kwargs)
+            change_workflow_state(obj, wf_id, status, **kwargs)
 
     def get_counterpart_type(self, portal_type):
         """Returns the counterpart type for the portal type passed in
@@ -261,4 +262,19 @@ class ReferralConsumer(BaseConsumer):
         if len(brains) != 1:
             raise ValueError("No Sample found for {}".format(original_id))
 
-        return api.get_object(brains[0])
+        sample = api.get_object(brains[0])
+
+        # If the sample is invalidated, return the retest instead
+        while self.is_invalidated(sample):
+            sample = sample.getRetest()
+            if not sample:
+                raise ValueError("No retest found for '%s'" % original_id)
+
+        return sample
+
+    def is_invalidated(self, sample):
+        """Returns whether the sample was invalidated in present laboratory
+        or at reference laboratory
+        """
+        statuses = ["invalid", "invalidated_at_reference"]
+        return api.get_review_status(sample) in statuses
