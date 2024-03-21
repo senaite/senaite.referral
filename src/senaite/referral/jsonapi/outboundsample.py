@@ -64,13 +64,6 @@ class OutboundSampleConsumer(object):
                 msg = "No retest found for '%s'" % sample_id
                 raise APIError(500, "ValueError: {}".format(msg))
 
-        # If the sample is invalidated, update the retest instead
-        if self.is_invalidated(sample):
-            sample = sample.getRetest()
-            if not sample:
-                msg = "No retest found for '%s'" % sample_id
-                raise APIError(500, "ValueError: {}".format(msg))
-
         # Do not allow to modify the sample if not referred
         if api.get_review_status(sample) != "shipped":
             # We don't rise an exception here because maybe the sample was
