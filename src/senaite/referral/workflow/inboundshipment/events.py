@@ -21,6 +21,7 @@
 from senaite.referral.remotelab import get_remote_connection
 from senaite.referral.workflow import do_queue_or_action_for
 
+from bika.lims import api
 from bika.lims.workflow import doActionFor as do_action_for
 
 
@@ -46,8 +47,22 @@ def after_receive_inbound_shipment(shipment):
     if not remote_lab:
         return
 
-    # Mark the outbound shipment counterpart as delivered
-    remote_lab.do_action(shipment, "deliver_outbound_shipment")
+    # Collect all the actions to be performed at reference. By default, all
+    # samples from outbound shipment are in "referred" status, so there is
+    # only the need to transition those that have been rejected
+    objects_actions = []
+    status_actions = {"rejected": "reject_at_reference"}
+    for sample in shipment.getInboundSamples():
+        status = api.get_review_status(sample)
+        action = status_actions.get(status)
+        if action:
+            objects_actions.append((sample, action))
+
+    # Mark the outbound shipment counterpart as delivered too
+    objects_actions.append((shipment, "deliver_outbound_shipment"))
+
+    # Notify the reference lab
+    remote_lab.do_actions(shipment, objects_actions)
 
 
 def after_reject_inbound_shipment(shipment):
@@ -65,9 +80,19 @@ def after_reject_inbound_shipment(shipment):
     if not remote_lab:
         return
 
+    # Collect all the actions to be performed at reference. By default, all
+    # samples from outbound shipment are in "referred" status, so there is
+    # only the need to transition those that have been rejected
+    objects_actions = []
+    status_actions = {"rejected": "reject_at_reference"}
+    for sample in shipment.getInboundSamples():
+        status = api.get_review_status(sample)
+        action = status_actions.get(status)
+        if action:
+            objects_actions.append((sample, action))
+
     # Mark the outbound shipment counterpart as rejected
-    # We do "reject" (instead of "reject_outbound_shipment") because "reject"
-    # action is trapped by the referring lab consumer. The consumer, besides
-    # triggering the "reject_outbound_shipment" workflow action, it also
-    # transitions its samples to "rejected_at_reference" status.
-    remote_lab.do_action(shipment, "reject")
+    objects_actions.append((shipment, "reject_outbound_shipment"))
+
+    # Notify the reference lab
+    remote_lab.do_actions(shipment, objects_actions)
