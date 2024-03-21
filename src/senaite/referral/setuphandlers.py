@@ -116,16 +116,6 @@ WORKFLOWS_TO_UPDATE = {
                     "guard_expr": "python:here.guard_handler('reject_at_reference')",
                 }
             },
-            "recall_from_shipment": {
-                "title": "Recall from shipment",
-                "new_state": "",
-                "action": "Recall from shipment",
-                "guard": {
-                    "guard_permissions": "",
-                    "guard_roles": "",
-                    "guard_expr": "python:here.guard_handler('recall_from_shipment')",
-                }
-            },
             "invalidate_at_reference": {
                 "title": "Invalidate sample (at reference lab)",
                 "new_state": "invalidated_at_reference",
@@ -134,6 +124,16 @@ WORKFLOWS_TO_UPDATE = {
                     "guard_permissions": "",
                     "guard_roles": "",
                     "guard_expr": "python:here.guard_handler('invalidate_at_reference')",
+                }
+            },
+            "recall_from_shipment": {
+                "title": "Recall from shipment",
+                "new_state": "",
+                "action": "Recall from shipment",
+                "guard": {
+                    "guard_permissions": "",
+                    "guard_roles": "",
+                    "guard_expr": "python:here.guard_handler('recall_from_shipment')",
                 }
             },
         }
