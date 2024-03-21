@@ -145,7 +145,6 @@ class OutboundSampleConsumer(object):
         brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
         if not brains:
             raise ValueError("Sample not found: {}".format(sample_id))
-
         if len(brains) > 1:
             raise ValueError("More than one sample: {}".format(sample_id))
 
