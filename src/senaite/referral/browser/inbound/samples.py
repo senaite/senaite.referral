@@ -33,6 +33,7 @@ from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.notifications import get_last_post
 from senaite.referral.utils import get_image_url
 from senaite.referral.utils import get_sample_types_mapping
+from senaite.referral.utils import translate
 
 
 class SamplesListingView(ListingView):
@@ -205,7 +206,8 @@ class SamplesListingView(ListingView):
             item["replace"]["getSampleID"] = get_link_for(sample)
             item["replace"]["sample_type"] = st_link
             item["replace"]["client"] = get_link_for(client)
-            item["replace"]["state_title"] = self.get_state_title(sample)
+            state_title = self.get_sample_state_title(sample)
+            item["replace"]["state_title"] = state_title
 
             # Add an icon if last POST notification for this Sample failed
             if self.is_failed_notification(sample):
@@ -251,10 +253,7 @@ class SamplesListingView(ListingView):
         return "<span class='text-danger'><i {}></i>{}".format(attrs, text)
 
     def get_state_title(self, obj):
-        """Translates the review state to the current set language
-        :param state: Review state title
-        :type state: basestring
-        :returns: Translated review state title
+        """Translates the review state of the object to the current language
         """
         state = api.get_review_status(obj)
         ts = api.get_tool("translation_service")
@@ -262,6 +261,16 @@ class SamplesListingView(ListingView):
         portal_type = api.get_portal_type(obj)
         state_title = wf.getTitleForStateOnType(state, portal_type)
         return ts.translate(_(state_title or state), context=self.request)
+
+    def get_sample_state_title(self, obj):
+        """Returns the state of the sample translated, along with information
+        regarding to the reception of the shipment if necessary
+        """
+        title = self.get_state_title(obj)
+        state = api.get_review_status(obj)
+        if state in ["sample_received"]:
+            return title
+        return translate("Received (${status})", mapping={"status": title})
 
     def is_failed_notification(self, obj):
         """Returns whether the last notification POST for the given object

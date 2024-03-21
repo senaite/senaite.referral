@@ -80,10 +80,6 @@ class ReferralConsumer(BaseConsumer):
     """
 
     @property
-    def action(self):
-        return self.get_value(self.data, "action")
-
-    @property
     def items(self):
         return self.get_value(self.data, "items")
 
@@ -104,9 +100,6 @@ class ReferralConsumer(BaseConsumer):
         """Processes the data sent via POST in accordance with the value for
         'action' parameter of the POST request
         """
-        if not self.action:
-            raise ValueError("No action defined")
-
         if not self.lab_code:
             raise ValueError("No lab_code defined")
 
@@ -121,18 +114,26 @@ class ReferralConsumer(BaseConsumer):
         # We need to bypass the guard's check for current context!
         api.get_request().set("lab_code", self.lab_code)
 
+        # backwards compatibility
+        # see https://github.com/senaite/senaite.referral/pull/21
+        default_action = self.get_value(self.data, "action", default=None)
+
         # Iterate through items and process them
         for item in self.items:
 
             # Try to delegate to an existing function
             portal_type = self.get_value(item, "portal_type").lower()
-            func_name = "do_{}_{}".format(portal_type, self.action.lower())
+            action = self.get_value(item, "action", default=default_action)
+            if not action:
+                raise ValueError("No action defined: %s" % repr(item))
+
+            func_name = "do_{}_{}".format(portal_type, action)
             func = getattr(self, func_name, None)
             if func:
                 func(item)
             else:
                 # Rely on default 'do_action'
-                self.do_action(item, self.action)
+                self.do_action(item, action)
 
         return True
 
@@ -197,6 +198,7 @@ class ReferralConsumer(BaseConsumer):
             ("OutboundSampleShipment", "InboundSampleShipment"),
             ("InboundSampleShipment", "OutboundSampleShipment"),
             ("AnalysisRequest", "AnalysisRequest"),
+            ("InboundSample", "AnalysisRequest"),
         )
         return dict(mappings).get(portal_type, None)
 
@@ -249,9 +251,10 @@ class ReferralConsumer(BaseConsumer):
         """Returns the AnalysisRequest object from current instance that is
         related with the information provided in the item passed-in, if any
         """
-        original_id = self.get_value(item, "ClientSampleID")
+        original_id = self.get_value(item, "ClientSampleID", default=None)
+        original_id = self.get_value(item, "referring_id", default=original_id)
         if not original_id:
-            raise ValueError("No ClientSampleID")
+            raise ValueError("No ClientSampleID or referring_id")
 
         query = {
             "portal_type": "AnalysisRequest",

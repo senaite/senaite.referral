@@ -18,6 +18,7 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+import math
 from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.interfaces import IInternalUse
@@ -117,22 +118,38 @@ class RemoteLab(object):
         """Sends a POST request to the remote laboratory for the object and
         action passed-in
         """
-        if not isinstance(obj, (list, tuple, set)):
-            obj = [obj]
+        self.do_actions(obj, [(obj, action)], timeout=timeout)
 
-        # Skip objects that are being transitioned by the remote lab via PUSH
-        # in current request already. This is to prevent circular POSTs
-        obj = filter(lambda ob: not skip_post_action_for(ob), obj)
-        if not obj:
+    def do_actions(self, context, objects_actions, timeout=None):
+        """Sends a POST request to the remote laboratory that performs a set
+        of actions to multiple objects at once
+
+        :param context: the context where this action or actions take place
+        :param objects_actions: list of tuples (object, action)
+        """
+        items = []
+        for obj, action in objects_actions:
+            # Skip objects that are being transitioned by the remote lab via
+            # PUSH in current request already. To prevent circular POSTs
+            if skip_post_action_for(obj):
+                continue
+            item = get_object_info(obj)
+            item["action"] = action
+            items.append(item)
+
+        if not items:
             return
 
-        items = [get_object_info(obj) for obj in obj]
+        timeout = api.to_int(timeout, default=0)
+        if timeout < 1:
+            # infer the timeout based on the number of items
+            timeout = math.ceil((math.log(len(items))+1)*5)
+
         payload = {
             "consumer": "senaite.referral.consumer",
-            "action": action,
             "items": items,
         }
-        self.notify(obj, payload, timeout=timeout)
+        self.notify(context, payload, timeout=timeout)
 
     def create_inbound_shipment(self, shipment, timeout=5):
         """Creates an Inbound Shipment counterpart object for the shipment
