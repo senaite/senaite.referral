@@ -54,7 +54,23 @@ def setOutboundShipment(self, value):
     obj = api.get_object(value, default=None)
     if obj and not IOutboundSampleShipment.providedBy(obj):
         raise ValueError("Type is not supported")
+
+    # check if the value changed
+    import pdb;pdb.set_trace()
+    old = self.getOutboundShipment()
+    if old == obj:
+        return
+
+    # remove this sample from the old shipment
+    if old:
+        old.removeSample(self)
+
+    # assign the shipment to the field
     self.getField("OutboundShipment").set(self, obj)
+
+    # add this sample to the new shipment
+    if obj:
+        obj.addSample(self)
 
 
 def getOutboundShipment(self):
