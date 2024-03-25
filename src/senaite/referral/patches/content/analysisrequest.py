@@ -56,7 +56,6 @@ def setOutboundShipment(self, value):
         raise ValueError("Type is not supported")
 
     # check if the value changed
-    import pdb;pdb.set_trace()
     old = self.getOutboundShipment()
     if old == obj:
         return
