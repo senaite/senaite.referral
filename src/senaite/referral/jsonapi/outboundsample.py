@@ -73,22 +73,33 @@ class OutboundSampleConsumer(object):
             return True
 
         # TODO Performance - convert to queue task
-        # Create a keyword -> analysis mapping
-        allowed = ["referred"]
-        analyses = sample.getAnalyses(full_objects=True, review_state=allowed)
-        analyses = dict([(an.getKeyword(), an) for an in analyses])
+
+        # Get the analyses that are in a suitable status grouped by keyword
+        statuses = ["referred", "assigned", "unassigned"]
+        by_keyword = self.get_analyses_by_keyword(sample, statuses)
 
         # Update the analyses passed-in
         analysis_records = sample_record.get("analyses")
         for analysis_record in analysis_records:
             keyword = analysis_record.get("keyword")
-            analysis = analyses.get(keyword)
-            try:
-                self.update_analysis(analysis, analysis_record)
-            except Exception as e:
-                raise APIError(500, "{}: {}".format(type(e).__name__, str(e)))
+            for analysis in by_keyword.get(keyword):
+                try:
+                    self.update_analysis(analysis, analysis_record)
+                except Exception as e:
+                    raise APIError(500, "{}: {}".format(
+                        type(e).__name__, str(e)))
 
         return True
+
+    def get_analyses_by_keyword(self, sample, statuses):
+        """Returns the analyses of the sample grouped by keyword
+        """
+        groups = {}
+        analyses = sample.getAnalyses(full_objects=True, review_state=statuses)
+        for analysis in analyses:
+            keyword = analysis.getKeyword()
+            groups.setdefault(keyword, []).append(analysis)
+        return groups
 
     def get_data(self):
         out = {}
