@@ -95,37 +95,11 @@ def ship_sample(sample, shipment):
     sample.reindexObject()
 
 
-def recover_sample(sample, shipment=None):
-    """Recovers a sample from a shipment
-    """
-    sample = api.get_object(sample)
-    if not IAnalysisRequest.providedBy(sample):
-        portal_type = api.get_portal_type(sample)
-        raise ValueError("Type not supported: {}".format(portal_type))
-
-    if not shipment:
-        # Extract the shipment from the sample
-        shipment = sample.getOutboundShipment()
-
-    if api.is_uid(shipment):
-        shipment = api.get_object(shipment, default=None)
-
-    if IOutboundSampleShipment.providedBy(shipment):
-        # Remove the sample from the shipment
-        shipment.removeSample(sample)
-
-    # Restore the status of sample and referred analyses
-    restore_referred_sample(sample)
-
-    # Reindex the shipment
-    shipment.reindexObject()
-
-
 def restore_referred_sample(sample):
     """Rolls the status of the referred sample back to the status they had
     before being referred
     """
-    # Remove the shipment assignment from sample
+    # Remove the sample from the shipment if it has not been dispatched
     sample.setOutboundShipment(None)
 
     # Transition the sample and analyses to the state before sample was shipped
