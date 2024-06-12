@@ -211,7 +211,7 @@ class OutboundSampleShipment(Container):
         if sample_uid not in uids:
             return
 
-        uids.pop(sample_uid)
+        uids.remove(sample_uid)
         self.setSamples(uids)
 
     def in_preparation(self):

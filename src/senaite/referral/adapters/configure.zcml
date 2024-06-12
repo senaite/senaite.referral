@@ -37,13 +37,4 @@
     factory=".visibility.OutboundShipmentFieldVisibility"
     name="senaite.referral.visibility.analysisrequest.outboundshipment" />
 
-  <!-- Recovers selected samples from an outbound shipment -->
-  <adapter
-    for="senaite.referral.interfaces.IOutboundSampleShipment
-         senaite.referral.interfaces.ISenaiteReferralLayer"
-    provides="bika.lims.interfaces.IWorkflowActionAdapter"
-    factory=".actions.RecoverFromShipmentAdapter"
-    name="workflow_action_recover_from_shipment"
-    permission="zope.Public" />
-
 </configure>
