@@ -16,6 +16,7 @@ Test Setup
 Needed imports:
 
     >>> from datetime import datetime
+    >>> from datetime import timedelta
     >>> import itertools
     >>> import json
     >>> import transaction
