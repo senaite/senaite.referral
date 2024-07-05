@@ -60,6 +60,9 @@ def AfterTransitionEventHandler(sample, event): # noqa lowercase
     if event.transition.id == "recall_from_shipment":
         restore_referred_sample(sample)
 
+    if event.transition.id == "receive":
+        after_receive(sample)
+
 
 def after_no_sampling_workflow(sample):
     """Automatically receive and ship samples for which an outbound shipment
@@ -134,6 +137,16 @@ def after_invalidate(sample):
     if referring:
         # notify the referring laboratory
         referring.do_action(sample, "invalidate_at_reference")
+
+
+def after_receive(sample):
+    """Actions to do when invalidating a sample
+    """
+    shipment = sample.getInboundShipment()
+    referring = get_remote_lab(shipment)
+    if referring:
+        # notify the referring laboratory
+        referring.do_action(sample, "receive_at_reference")
 
 
 def after_invalidate_at_reference(sample):

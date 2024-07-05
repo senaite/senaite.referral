@@ -65,7 +65,8 @@ class OutboundSampleConsumer(object):
                 raise APIError(500, "ValueError: {}".format(msg))
 
         # Do not allow to modify the sample if not referred
-        if api.get_review_status(sample) != "shipped":
+        statuses = ["shipped", "received_at_reference"]
+        if api.get_review_status(sample) not in statuses:
             # We don't rise an exception here because maybe the sample was
             # updated earlier, but the reference lab got a timeout error and
             # the remote user is now retrying the notification

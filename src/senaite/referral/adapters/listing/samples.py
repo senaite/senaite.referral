@@ -103,7 +103,11 @@ class SamplesListingViewAdapter(object):
             "id": "shipped",
             "title": _("Referred"),
             "contentFilter": {
-                "review_state": ("shipped", "rejected_at_reference"),
+                "review_state": (
+                    "shipped",
+                    "rejected_at_reference",
+                    "received_at_reference",
+                ),
                 "sort_on": "created",
                 "sort_order": "descending"},
             "transitions": [],

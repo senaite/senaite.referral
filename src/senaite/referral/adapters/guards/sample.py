@@ -68,3 +68,14 @@ class SampleGuardAdapter(BaseGuardAdapter):
         if not lab_code:
             return False
         return True
+
+    def guard_receive_at_reference(self):
+        """Returns true if current request contains a POST with the
+        'receive_at_reference' action to ensure this transition is not
+        performed manually,
+        """
+        request = api.get_request()
+        lab_code = request.get("lab_code")
+        if not lab_code:
+            return False
+        return True
