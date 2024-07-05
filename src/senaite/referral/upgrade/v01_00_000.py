@@ -215,3 +215,13 @@ def setup_invalidate_at_reference(tool):
     setup_workflows(portal)
 
     logger.info("Setup transition 'invalidate_at_reference' [DONE]")
+
+
+def setup_receive_at_reference(tool):
+    logger.info("Setup transition 'receive_at_reference' ...")
+    portal = tool.aq_inner.aq_parent
+
+    # Setup workflows
+    setup_workflows(portal)
+
+    logger.info("Setup transition 'receive_at_reference' [DONE]")

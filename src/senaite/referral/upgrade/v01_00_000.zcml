@@ -4,6 +4,14 @@
     i18n_domain="senaite.referral">
 
   <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 1.0.0: New transition: 'Receive at reference'"
+      description="Added the transition 'receive_at_reference'"
+      source="1006"
+      destination="1007"
+      handler=".v01_00_000.setup_receive_at_reference"
+      profile="senaite.referral:default"/>
+
+  <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 1.0.0: Invalidate at reference laboratory"
       description="Added the transition 'invalidate_at_reference'"
       source="1005"
