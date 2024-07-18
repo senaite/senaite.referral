@@ -69,7 +69,8 @@ class OutboundSampleConsumer(object):
         status = api.get_review_status(sample)
         if status == "shipped":
             # TODO Do not allow the modification of 'shipped' samples
-            logger.warn("Update of samples in 'shipped' statues won't be "
+            logger.warn("Please upgrade reference instance to latest!!!. The "
+                        "update of samples in 'shipped' statues won't be "
                         "supported in the near future, but only those in "
                         "'received_at_reference' status")
 
