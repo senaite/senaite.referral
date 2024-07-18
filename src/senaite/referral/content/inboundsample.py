@@ -126,6 +126,12 @@ class IInboundSampleSchema(model.Schema):
     )
 
     # TODO 2.x Replace schema.List by senaite.core.schema.UIDReferenceField
+    directives.omitted("services")
+    services = schema.List(
+        title=_(u"label_inboundsample_services", default=u"Services"),
+    )
+
+    # TODO 2.x Replace schema.List by senaite.core.schema.UIDReferenceField
     directives.omitted("sample")
     sample = schema.List(
         title=_(u"label_inboundsample_sample", default=u"Sample"),
@@ -311,3 +317,21 @@ class InboundSample(Container):
         """Returns the datetime when this inbound sample was rejected or None
         """
         return get_action_date(self, "reject_inbound_sample", default=None)
+
+    def setServices(self, value):
+        """Set the services from the current instance that match with the
+        analyses that were requested by the referring laboratory
+        """
+        set_uids_field_value(self, "services", value)
+
+    def getServices(self):
+        """Returns the services from current instance that match with the
+        analyses that were requested by the referring laboratory
+        """
+        return [api.get_object(uid) for uid in self.getRawServices()]
+
+    def getRawServices(self):
+        """Returns the UIDs of the services from current instance that match
+        with the analyses that were requested by the referring laboratory
+        """
+        return get_uids_field_value(self, "services") or []

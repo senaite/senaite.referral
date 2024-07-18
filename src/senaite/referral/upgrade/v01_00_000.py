@@ -26,6 +26,7 @@ from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.config import PRODUCT_NAME as product
 from senaite.referral.setuphandlers import setup_catalogs
 from senaite.referral.setuphandlers import setup_workflows
+from senaite.referral.utils import get_services_mapping
 
 from bika.lims import api
 from bika.lims.utils import changeWorkflowState
@@ -225,3 +226,37 @@ def setup_receive_at_reference(tool):
     setup_workflows(portal)
 
     logger.info("Setup transition 'receive_at_reference' [DONE]")
+
+
+def setup_inbound_services(tool):
+    """Updates the inbound samples with the service uids that were requested
+    by the referring laboratory
+    """
+    logger.info("Setup inbound services ...")
+
+    # Get baseline objects mappings
+    services = get_services_mapping()
+
+    query = {
+        "portal_type": "InboundSample",
+        "review_state": "received",
+    }
+    brains = api.search(query, INBOUND_SAMPLE_CATALOG)
+    total = len(brains)
+    for num, brain in enumerate(brains):
+        if num and num % 100 == 0:
+            logger.info("Processed objects: {}/{}".format(num, total))
+
+        obj = api.get_object(brain)
+        if obj.getRawServices():
+            # processed already
+            continue
+
+        # Resolve the service uids that match with the requested analyses
+        keywords = obj.getAnalyses() or []
+        services_uids = map(lambda key: services.get(key), keywords)
+        services_uids = list(filter(api.is_uid, services_uids))
+        obj.setServices(services_uids)
+        obj._p_deactivate()
+
+    logger.info("Setup inbound services [DONE]")

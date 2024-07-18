@@ -191,26 +191,23 @@ class RemoteLab(object):
         """
 
         def get_valid_analyses(sample):
-            # Sort by id descending to prioritize newest results if retests
+            # Get the analyses from current sample that were requested by the
+            # referring laboratory, sorted by id descending to prioritize
+            # newest results if retests
+            inbound_sample = sample.getInboundSample()
+            services = inbound_sample.getRawServices()
             kwargs = {
                 "full_objects": True,
+                "getServiceUID": services,
                 "sort_on": "id",
                 "sort_order": "ascending",
             }
 
-            # Exclude old, but valid analyses with same keyword (e.g retests),
+            # exclude old, but valid analyses with same keyword (e.g retests),
             # cause we want to update the referring lab with the newest result
             analyses = {}
             valid = ["verified", "published"]
             for analysis in sample.getAnalyses(**kwargs):
-
-                # Skip analyses for internal use
-                if IInternalUse.providedBy(analysis):
-                    continue
-
-                # Skip hidden, only interested in final results
-                if analysis.getHidden():
-                    continue
 
                 # Skip analyses not in a suitable status
                 if api.get_review_status(analysis) not in valid:
