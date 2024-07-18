@@ -32,6 +32,7 @@ from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 from bika.lims.interfaces import ISubmitted
 from bika.lims.utils import changeWorkflowState
 from bika.lims.workflow import doActionFor
+from senaite.referral import logger
 
 
 @implementer(IPushConsumer)
@@ -64,9 +65,15 @@ class OutboundSampleConsumer(object):
                 msg = "No retest found for '%s'" % sample_id
                 raise APIError(500, "ValueError: {}".format(msg))
 
-        # Do not allow to modify the sample if not referred
-        statuses = ["shipped", "received_at_reference"]
-        if api.get_review_status(sample) not in statuses:
+        # Do not allow to modify the sample if not received at reference
+        status = api.get_review_status(sample)
+        if status == "shipped":
+            # TODO Do not allow the modification of 'shipped' samples
+            logger.warn("Update of samples in 'shipped' statues won't be "
+                        "supported in the near future, but only those in "
+                        "'received_at_reference' status")
+
+        elif status != "received_at_reference":
             # We don't rise an exception here because maybe the sample was
             # updated earlier, but the reference lab got a timeout error and
             # the remote user is now retrying the notification
