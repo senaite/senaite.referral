@@ -98,6 +98,23 @@ class IReferralControlPanel(Interface):
         required=False,
     )
 
+    create_reference_analyses = schema.Bool(
+        title=_(
+            u"label_referral_create_reference_analyses",
+            u"Create analyses from reference laboratory"
+        ),
+        description=_(
+            u"description_referral_create_reference_analyses",
+            u"If selected, the system will create missing analyses in the "
+            u"referring laboratory when receiving a notification for results "
+            u"update from the reference laboratory. Otherwise, the system "
+            u"will skip results for analyses that do not exist in the "
+            u"referred sample."
+        ),
+        default=False,
+        required=False,
+    )
+
 
 class ReferralControlPanelForm(RegistryEditForm):
     schema = IReferralControlPanel

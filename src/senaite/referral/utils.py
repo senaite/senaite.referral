@@ -332,3 +332,11 @@ def get_notify_all_analyses():
     """
     key = "{}.notify_all_analyses".format(PRODUCT_NAME)
     return api.get_registry_record(key, default=False)
+
+
+def get_create_reference_analyses():
+    """Returns whether the system has to create analyses if results are
+    notified by reference lab, but the sample does not have them
+    """
+    key = "{}.create_reference_analyses".format(PRODUCT_NAME)
+    return api.get_registry_record(key, default=False)

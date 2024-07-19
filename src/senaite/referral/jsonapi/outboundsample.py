@@ -24,6 +24,8 @@ from datetime import datetime
 
 from senaite.jsonapi.exceptions import APIError
 from senaite.jsonapi.interfaces import IPushConsumer
+from senaite.referral.utils import get_create_reference_analyses
+from senaite.referral.utils import get_services_mapping
 from zope.interface import alsoProvides
 from zope.interface import implementer
 
@@ -31,6 +33,7 @@ from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 from bika.lims.interfaces import ISubmitted
 from bika.lims.utils import changeWorkflowState
+from bika.lims.utils.analysis import create_analysis
 from bika.lims.workflow import doActionFor
 from senaite.referral import logger
 
@@ -83,15 +86,37 @@ class OutboundSampleConsumer(object):
 
         # TODO Performance - convert to queue task
 
-        # Get the analyses that are in a suitable status grouped by keyword
-        statuses = ["referred", "assigned", "unassigned"]
-        by_keyword = self.get_analyses_by_keyword(sample, statuses)
+        # Get the analyses grouped by keyword
+        by_keyword = self.get_analyses_by_keyword(sample)
+
+        # Allowed statuses
+        statuses = dict.fromkeys(["referred", "assigned", "unassigned"], True)
+
+        # Do we need to create non-existing analyses
+        create_missing = get_create_reference_analyses()
+        services = get_services_mapping() if create_missing else {}
 
         # Update the analyses passed-in
         analysis_records = sample_record.get("analyses")
         for analysis_record in analysis_records:
             keyword = analysis_record.get("keyword")
-            for analysis in by_keyword.get(keyword):
+
+            # pop the analyses to be updated for the given keyword
+            analyses = by_keyword.pop(keyword, [])
+            if not analyses:
+                service_uid = services.get(keyword)
+                service = api.get_object(service_uid, default=None)
+                if service:
+                    # create the missing analysis
+                    analyses = [create_analysis(sample, service)]
+
+            for analysis in analyses:
+                # skip if status is not valid
+                status = api.get_review_status(analysis)
+                if not statuses.get(status, False):
+                    continue
+
+                # update the analysis
                 try:
                     self.update_analysis(analysis, analysis_record)
                 except Exception as e:
@@ -100,11 +125,11 @@ class OutboundSampleConsumer(object):
 
         return True
 
-    def get_analyses_by_keyword(self, sample, statuses):
+    def get_analyses_by_keyword(self, sample):
         """Returns the analyses of the sample grouped by keyword
         """
         groups = {}
-        analyses = sample.getAnalyses(full_objects=True, review_state=statuses)
+        analyses = sample.getAnalyses(full_objects=True)
         for analysis in analyses:
             keyword = analysis.getKeyword()
             groups.setdefault(keyword, []).append(analysis)
