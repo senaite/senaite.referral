@@ -3,6 +3,14 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
 
   <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 1.0.0: Setup notify all analyses setting"
+      description="Setup notify all analyses setting"
+      source="1008"
+      destination="1009"
+      handler=".v01_00_000.setup_notify_all_analyses"
+      profile="senaite.referral:default"/>
+
+  <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 1.0.0: Store service uids in inbound sample"
       description="Store service uids in inbound sample"
       source="1007"

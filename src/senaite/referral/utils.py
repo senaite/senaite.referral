@@ -324,3 +324,11 @@ def get_services_mapping():
         services[keyword] = uid
         services[uid] = uid
     return services
+
+
+def get_notify_all_analyses():
+    """Returns whether the system has to send notifications for analyses that
+    weren't initially requested
+    """
+    key = "{}.notify_all_analyses".format(PRODUCT_NAME)
+    return api.get_registry_record(key, default=False)

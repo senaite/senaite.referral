@@ -19,8 +19,6 @@
 # Some rights reserved, see README and LICENSE.
 
 import math
-
-from remotesession import RemoteSession
 from requests.auth import HTTPBasicAuth
 from senaite.core.supermodel import SuperModel
 from senaite.referral import logger
@@ -28,14 +26,15 @@ from senaite.referral.interfaces import IExternalLaboratory
 from senaite.referral.notifications import get_post_base_info
 from senaite.referral.notifications import save_post
 from senaite.referral.utils import get_lab_code
+from senaite.referral.utils import get_notify_all_analyses
 from senaite.referral.utils import get_user_info
 from senaite.referral.utils import is_valid_url
 
 from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
-from bika.lims.interfaces import IInternalUse
 from bika.lims.utils import format_supsub
 from bika.lims.utils.analysis import format_uncertainty
+from remotesession import RemoteSession
 
 
 def get_remote_connection(laboratory):
@@ -191,30 +190,32 @@ class RemoteLab(object):
         """
 
         def get_valid_analyses(sample):
-            # Get the analyses from current sample that were requested by the
-            # referring laboratory, sorted by id descending to prioritize
-            # newest results if retests
-            inbound_sample = sample.getInboundSample()
-            services = inbound_sample.getRawServices()
-            kwargs = {
+            # Get the analyses to notify about to the reference laboratory,
+            # sorted by id descending to prioritize newest results if retests
+            query = {
                 "full_objects": True,
-                "getServiceUID": services,
                 "sort_on": "id",
                 "sort_order": "ascending",
             }
+
+            notify_all = get_notify_all_analyses()
+            if not notify_all:
+                # only notify about analyses that were requested via shipment
+                inbound_sample = sample.getInboundSample()
+                query["getServiceUID"] = inbound_sample.getRawServices()
 
             # exclude old, but valid analyses with same keyword (e.g retests),
             # cause we want to update the referring lab with the newest result
             analyses = {}
             valid = ["verified", "published"]
-            for analysis in sample.getAnalyses(**kwargs):
+            for analysis in sample.getAnalyses(**query):
 
                 # Skip analyses not in a suitable status
                 if api.get_review_status(analysis) not in valid:
                     continue
 
                 # Skip retested, only interested in final results
-                if analysis.getRetest():
+                if analysis.getRawRetest():
                     continue
 
                 keyword = analysis.getKeyword()
