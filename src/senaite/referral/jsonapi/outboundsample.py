@@ -102,7 +102,7 @@ class OutboundSampleConsumer(object):
             keyword = analysis_record.get("keyword")
 
             # pop the analyses to be updated for the given keyword
-            analyses = by_keyword.pop(keyword, [])
+            analyses = by_keyword.get(keyword, [])
             if not analyses:
                 service_uid = services.get(keyword)
                 service = api.get_object(service_uid, default=None)
