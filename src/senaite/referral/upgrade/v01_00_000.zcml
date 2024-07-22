@@ -3,11 +3,11 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
 
   <genericsetup:upgradeStep
-      title="SENAITE.REFERRAL 1.0.0: Setup notify all analyses setting"
-      description="Setup notify all analyses setting"
+      title="SENAITE.REFERRAL 1.0.0: Setup results notification settings"
+      description="Setup results notification settings"
       source="1008"
       destination="1009"
-      handler=".v01_00_000.setup_notify_all_analyses"
+      handler=".v01_00_000.setup_results_notification"
       profile="senaite.referral:default"/>
 
   <genericsetup:upgradeStep
