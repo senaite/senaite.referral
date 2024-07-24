@@ -22,7 +22,6 @@ from senaite.core.listing.interfaces import IListingView
 from senaite.core.listing.interfaces import IListingViewAdapter
 from senaite.referral import check_installed
 from senaite.referral import messageFactory as _
-from senaite.referral.utils import get_services_mapping
 from zope.component import adapter
 from zope.interface import implementer
 
@@ -149,16 +148,7 @@ class SampleManageAnalysesListingAdapter(object):
         """
         if self._referring_services is None:
             inbound_sample = self.context.getInboundSample()
-            if not inbound_sample:
-                self._referring_services = []
-                return self._referring_services
-
-            # Look up the uids of the requested services
-            services = get_services_mapping()
-            keywords = inbound_sample.getAnalyses() or []
-            services_uids = map(lambda key: services.get(key), keywords)
-            self._referring_services = filter(api.is_uid, services_uids)
-
+            self._referring_services = inbound_sample.getRawServices()
         return self._referring_services
 
     @check_installed(None)
