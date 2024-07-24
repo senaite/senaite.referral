@@ -18,11 +18,13 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+from zope.component.interfaces import implements
+
 from bika.lims.browser.workflow import RequestContextAware
+from bika.lims.browser.workflow.analysisrequest import \
+    WorkflowActionSaveAnalysesAdapter
 from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.interfaces import IWorkflowActionUIDsAdapter
-from zope.component.interfaces import implements
-from bika.lims.browser.workflow.analysisrequest import WorkflowActionSaveAnalysesAdapter
 
 
 class WorkflowActionShipAdapter(RequestContextAware):
