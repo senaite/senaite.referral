@@ -19,8 +19,10 @@
 # Some rights reserved, see README and LICENSE.
 
 from bika.lims.browser.workflow import RequestContextAware
+from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.interfaces import IWorkflowActionUIDsAdapter
 from zope.component.interfaces import implements
+from bika.lims.browser.workflow.analysisrequest import WorkflowActionSaveAnalysesAdapter
 
 
 class WorkflowActionShipAdapter(RequestContextAware):
@@ -34,3 +36,21 @@ class WorkflowActionShipAdapter(RequestContextAware):
         url = "{}/referral_ship_samples?uids={}".format(self.back_url,
                                                         ",".join(uids))
         return self.redirect(redirect_url=url)
+
+
+class SaveAnalysesAdapter(WorkflowActionSaveAnalysesAdapter):
+
+    def get_uids_from_request(self):
+        """Returns the UIDs from the request plus those from the analyses from
+        the inound shipment that were once requested, if any
+        """
+        uids = super(SaveAnalysesAdapter, self).get_uids_from_request()
+        if not IAnalysisRequest.providedBy(self.context):
+            return uids
+
+        inbound_sample = self.context.getInboundSample()
+        if not inbound_sample:
+            return uids
+
+        uids.extend(inbound_sample.getRawServices())
+        return list(set(uids))

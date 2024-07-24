@@ -26,4 +26,16 @@
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
     permission="zope.Public" />
 
+  <!-- Analysis Request: "save_analyses"
+  Prevents services that were initially requested by the referring laboratory
+  to be manually removed through manage_analyses view
+  -->
+  <adapter
+      name="workflow_action_save_analyses"
+      for="bika.lims.interfaces.IAnalysisRequest
+           senaite.referral.interfaces.ISenaiteReferralLayer"
+      factory=".analysisrequest.SaveAnalysesAdapter"
+      provides="bika.lims.interfaces.IWorkflowActionAdapter"
+      permission="zope.Public" />
+
 </configure>
