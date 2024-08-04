@@ -41,7 +41,7 @@ def setup_baseline_data(portal):
     setup = portal.bika_setup
     client = api.create(portal.clients, "Client", Name="Happy Hills", ClientID="HH")
     api.create(client, "Contact", Firstname="Rita", Lastname="Mohale")
-    api.create(setup.bika_sampletypes, "SampleType", title="Water", Prefix="W")
+    api.create(portal.setup.sampletypes, "SampleType", title="Water", Prefix="W")
     lab_contact = api.create(setup.bika_labcontacts, "LabContact", Firstname="Lab", Lastname="Manager")
     department = api.create(portal.setup.departments, "Department", title="Chemistry", Manager=lab_contact)
     category = api.create(portal.setup.analysiscategories, "AnalysisCategory", title="Metals", Department=department)
