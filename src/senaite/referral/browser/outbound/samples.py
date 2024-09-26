@@ -19,15 +19,13 @@
 # Some rights reserved, see README and LICENSE.
 
 import collections
-
-from senaite.app.listing import ListingView
-from senaite.referral import messageFactory as _
-from senaite.referral.utils import get_image_url
-
 from bika.lims import api
 from bika.lims import bikaMessageFactory as _c
 from bika.lims import PRIORITIES
-from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
+from senaite.app.listing import ListingView
+from senaite.core.catalog import SAMPLE_CATALOG
+from senaite.referral import messageFactory as _
+from senaite.referral.utils import get_image_url
 
 
 class SamplesListingView(ListingView):
@@ -43,7 +41,7 @@ class SamplesListingView(ListingView):
         self.show_select_all_checkbox = True
         self.show_search = False
 
-        self.catalog = CATALOG_ANALYSIS_REQUEST_LISTING
+        self.catalog = SAMPLE_CATALOG
         self.contentFilter = {
             "UID": context.getRawSamples(),
             "sort_on": "sortable_title",
@@ -53,6 +51,11 @@ class SamplesListingView(ListingView):
         self.columns = collections.OrderedDict((
             ("priority", {
                "title": ""}),
+            ("position", {
+                "title": _("Pos."),
+                "index": "sortable_title",
+                "sortable": True
+            }),
             ("getId", {
                 "title": _c("Sample ID"),
                 "attr": "getId",
@@ -113,6 +116,23 @@ class SamplesListingView(ListingView):
                     "custom_transitions": [],
                     "confirm_transitions": [],
                 })
+
+    def folderitems(self):
+        items = super(SamplesListingView, self).folderitems()
+
+        # use 'sortable_title' as the flag to sort by the order in the field
+        sort_on = self.get_sort_on()
+        if sort_on != "sortable_title":
+            return items
+
+        # set the position attribute for each item
+        uids = self.context.getRawSamples()
+        for item in items:
+            item["position"] = uids.index(item["uid"]) + 1
+
+        # sort them ascending or descending
+        rev = self.get_sort_order() in ["descending"]
+        return sorted(items, key=lambda item: item["position"], reverse=rev)
 
     def folderitem(self, obj, item, index):
         """Applies new properties to item that is currently being rendered as a
