@@ -51,7 +51,8 @@ class SamplesListingViewAdapter(object):
         obj = api.get_object(obj)
 
         # Outbound shipment
-        outbound = obj.getOutboundShipment()
+        outbound_uid = obj.getRawOutboundShipment()
+        outbound = self.listing.get_object_by_uid(outbound_uid)
         if outbound:
             link = get_link_for(outbound)
             ico = self.get_glyphicon("export")
@@ -59,7 +60,8 @@ class SamplesListingViewAdapter(object):
             outbound = api.get_title(outbound)
 
         # Inbound shipment
-        inbound = obj.getInboundShipment()
+        inbound_uid = obj.getRawInboundShipment()
+        inbound = self.listing.get_object_by_uid(inbound_uid)
         if inbound:
             link = get_link_for(inbound)
             ico = self.get_glyphicon("import")

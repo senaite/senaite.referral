@@ -11,6 +11,12 @@
 
   <monkey:patch
       class="bika.lims.content.analysisrequest.AnalysisRequest"
+      original="getRawInboundShipment"
+      ignoreOriginal="True"
+      replacement=".analysisrequest.getRawInboundShipment" />
+
+  <monkey:patch
+      class="bika.lims.content.analysisrequest.AnalysisRequest"
       original="getInboundShipment"
       ignoreOriginal="True"
       replacement=".analysisrequest.getInboundShipment" />
@@ -26,6 +32,12 @@
       original="setOutboundShipment"
       ignoreOriginal="True"
       replacement=".analysisrequest.setOutboundShipment" />
+
+  <monkey:patch
+      class="bika.lims.content.analysisrequest.AnalysisRequest"
+      original="getRawOutboundShipment"
+      ignoreOriginal="True"
+      replacement=".analysisrequest.getRawOutboundShipment" />
 
   <monkey:patch
       class="bika.lims.content.analysisrequest.AnalysisRequest"

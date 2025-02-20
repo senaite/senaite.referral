@@ -33,6 +33,13 @@ def setInboundShipment(self, value):
     self.getField("InboundShipment").set(self, obj)
 
 
+def getRawInboundShipment(self):
+    """Returns the uid of the InboundSampleShipment this Sample comes from,
+    if any. Returns None otherwise
+    """
+    return self.getField("InboundShipment").getRaw(self)
+
+
 def getInboundShipment(self):
     """Returns the InboundSampleShipment object the AnalysisRequest comes from
     if any. Returns None otherwise
@@ -44,8 +51,9 @@ def getInboundShipment(self):
 def hasInboundShipment(self):
     """Returns whether the sample comes from an inbound sample shipment
     """
-    uid = self.getField("InboundShipment").getRaw(self)
-    return api.is_uid(uid)
+    if self.getRawInboundShipment():
+        return True
+    return False
 
 
 def setOutboundShipment(self, value):
@@ -72,6 +80,12 @@ def setOutboundShipment(self, value):
         obj.addSample(self)
 
 
+def getRawOutboundShipment(self):
+    """Returns the uid of the Outbound shipment this Sample is assigned to
+    """
+    return self.getField("OutboundShipment").getRaw(self)
+
+
 def getOutboundShipment(self):
     """Returns the Outbound Shipment object the AnalysisRequest is assigned to
     """
@@ -82,8 +96,9 @@ def getOutboundShipment(self):
 def hasOutboundShipment(self):
     """Returns whether the sample has been assigned to an Outbound shipment
     """
-    uid = self.getField("OutboundShipment").getRaw(self)
-    return api.is_uid(uid)
+    if self.getRawOutboundShipment():
+        return True
+    return False
 
 
 def getInboundSample(self):
