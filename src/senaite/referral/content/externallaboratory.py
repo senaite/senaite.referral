@@ -26,6 +26,7 @@ from plone.supermodel import model
 from plone.supermodel.directives import fieldset
 from Products.CMFCore import permissions
 from senaite.core.catalog import CLIENT_CATALOG
+from senaite.core.catalog import CONTACT_CATALOG
 from senaite.core.content.base import Container
 from senaite.core.schema import UIDReferenceField
 from senaite.core.z3cform.widgets.uidreference import UIDReferenceWidgetFactory
@@ -106,6 +107,26 @@ class IExternalLaboratorySchema(model.Schema):
         limit=15,
     )
 
+    default_contact = UIDReferenceField(
+        title=_(u"label_externallaboratory_default_contact",
+                default=u"Default contact"),
+        description=_(
+            U"The default contact for inbound sample shipments received from "
+            U"this external laboratory"
+        ),
+        allowed_types=("Contact",),
+        multi_valued=False,
+        required=False,
+    )
+
+    directives.widget(
+        "default_contact",
+        UIDReferenceWidgetFactory,
+        catalog=CONTACT_CATALOG,
+        query="get_contacts_query",
+        limit=15,
+    )
+
     url = schema.TextLine(
         title=_(u"label_externallaboratory_url", default=u"URL"),
         description=_(
@@ -158,7 +179,7 @@ class IExternalLaboratorySchema(model.Schema):
     fieldset(
         "referring_laboratory",
         label=_(u"Referring Laboratory"),
-        fields=["referring", "referring_client"]
+        fields=["referring", "referring_client", "default_contact"]
     )
 
     # Connectivity fieldset
@@ -215,10 +236,13 @@ class IExternalLaboratorySchema(model.Schema):
         if not value:
             return
 
-        # Check if a default client for this referring laboratory has been set
+        # Check if a default client and contact for this referring laboratory
+        # has been set
         request = api.get_request()
         client = request.form.get("form.widgets.referring_client")
-        if api.is_uid(client):
+        contact = request.form.get("form.widgets.default_contact")
+
+        if api.is_uid(client) and api.is_uid(contact):
             return
 
         # mark the request to avoid multiple raising
@@ -226,8 +250,9 @@ class IExternalLaboratorySchema(model.Schema):
         if getattr(request, key, False):
             return
         setattr(request, key, True)
-        msg = _("Please set the default client to use when creating "
-                "samples from this referring laboratory first")
+        msg = _("Please set the default client and contact to use when "
+                "creating samples from this referring laboratory first")
+
         raise Invalid(msg)
 
 
@@ -240,6 +265,27 @@ class ExternalLaboratory(Container):
 
     security = ClassSecurityInfo()
     exclude_from_nav = True
+
+    @security.private
+    def get_contacts_query(self):
+        """Return the query for the Contact field
+        """
+        query = {
+            "portal_type": "Contact",
+            "is_active": True,
+            "sort_on": "sortable_title",
+            "sort_order": "ascending",
+        }
+
+        # Get contacts belong to referring client if it is set
+        referring_client = getattr(self, "referring_client", None)
+        if referring_client:
+            client_uid = referring_client[0]
+            query["path"] = {
+                "query": api.get_path(api.get_object_by_uid(client_uid)),
+                "level": 0
+            }
+        return query
 
     @security.protected(permissions.ModifyPortalContent)
     def setReference(self, value):
@@ -372,4 +418,28 @@ class ExternalLaboratory(Container):
         requests
         """
         accessor = self.accessor("password")
+        return accessor(self)
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setDefaultContact(self, value):
+        """Sets the default contact the samples from inbound shipments will
+        be assigned to
+        """
+        mutator = self.mutator("default_contact")
+        mutator(self, value)
+
+    @security.protected(permissions.View)
+    def getDefaultContact(self):
+        """Returns the default contact that samples from inbound shipments from
+        this laboratory will be assigned to
+        """
+        accessor = self.accessor("default_contact")
+        return accessor(self)
+
+    @security.protected(permissions.View)
+    def getRawDefaultContact(self):
+        """Returns the UID of the default contact that samples from inbound
+        shipments from this laboratory will be assigned to
+        """
+        accessor = self.accessor("default_contact", raw=True)
         return accessor(self)
