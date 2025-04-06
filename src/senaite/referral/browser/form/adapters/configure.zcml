@@ -1,0 +1,17 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="senaite.referral">
+
+
+  <!-- Edit form handler for ExternalLaboratory -->
+  <adapter
+      for="senaite.referral.interfaces.IExternalLaboratory
+           senaite.referral.interfaces.ISenaiteReferralLayer"
+      factory=".referral.EditFormAdapter"/>
+
+  <!-- Edit form handler for InboundSampleShipment -->
+  <adapter
+      for="senaite.referral.interfaces.IInboundSampleShipment
+           senaite.referral.interfaces.ISenaiteReferralLayer"
+      factory=".referral.EditFormAdapter"/>
+</configure>

@@ -140,22 +140,19 @@ class IInboundSampleShipmentSchema(model.Schema):
             raise ValueError("Dispatched date time is not valid")
 
     @invariant
-    def validate_referring_client(data):
-        """Checks if the referring client is set has active contacts
+    def validate_referring(data):
+        """Checks if the referring client and default contact are set
         """
-        referring_client = data.referring_client
-        if not referring_client:
+        request = api.get_request()
+        client = request.form.get("form.widgets.referring_client")
+        contact = request.form.get("form.widgets.default_contact")
+
+        if api.is_uid(client) and api.is_uid(contact):
             return
 
-        client = api.get_object_by_uid(referring_client[0])
-        if not client:
-            raise ValueError(_("Referring client not found"))
-
-        contacts = client.getContacts()
-        if len(contacts) > 0:
-            return
-
-        raise ValueError(_("Referring client has no active contacts"))
+        msg = _("Please set the default client and contact to use when "
+                "creating samples from this referring laboratory first")
+        raise ValueError(msg)
 
 
 @implementer(IInboundSampleShipment, IInboundSampleShipmentSchema)

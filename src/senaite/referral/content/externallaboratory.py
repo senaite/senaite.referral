@@ -278,13 +278,10 @@ class ExternalLaboratory(Container):
         }
 
         # Get contacts belong to referring client if it is set
-        referring_client = getattr(self, "referring_client", None)
+        referring_client = self.getRawReferringClient()
         if referring_client:
-            client_uid = referring_client[0]
-            query["path"] = {
-                "query": api.get_path(api.get_object_by_uid(client_uid)),
-                "level": 0
-            }
+            query["getParentUID"] = referring_client
+
         return query
 
     @security.protected(permissions.ModifyPortalContent)
