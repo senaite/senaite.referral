@@ -24,6 +24,7 @@ from plone.autoform import directives
 from plone.supermodel import model
 from Products.CMFCore import permissions
 from senaite.core.catalog import CLIENT_CATALOG
+from senaite.core.catalog import CONTACT_CATALOG
 from senaite.core.content.base import Container
 from senaite.core.schema import UIDReferenceField
 from senaite.core.z3cform.widgets.uidreference import UIDReferenceWidgetFactory
@@ -88,6 +89,25 @@ class IInboundSampleShipmentSchema(model.Schema):
         limit=15,
     )
 
+    default_contact = UIDReferenceField(
+        title=_(u"label_inboundsampleshipment_default_contact",
+                default=u"Default contact"),
+        description=_(
+            u"The default contact for the samples come from"
+        ),
+        allowed_types=("Contact",),
+        multi_valued=False,
+        required=True,
+    )
+
+    directives.widget(
+        "default_contact",
+        UIDReferenceWidgetFactory,
+        catalog=CONTACT_CATALOG,
+        query="get_contacts_query",
+        limit=15,
+    )
+
     comments = schema.Text(
         title=_(u"label_inboundsampleshipment_comments",
                 default=u"Comments"),
@@ -119,6 +139,21 @@ class IInboundSampleShipmentSchema(model.Schema):
         if not val:
             raise ValueError("Dispatched date time is not valid")
 
+    @invariant
+    def validate_referring(data):
+        """Checks if the referring client and default contact are set
+        """
+        request = api.get_request()
+        client = request.form.get("form.widgets.referring_client")
+        contact = request.form.get("form.widgets.default_contact")
+
+        if api.is_uid(client) and api.is_uid(contact):
+            return
+
+        msg = _("Please set the default client and contact to use when "
+                "creating samples from this referring laboratory first")
+        raise ValueError(msg)
+
 
 @implementer(IInboundSampleShipment, IInboundSampleShipmentSchema)
 class InboundSampleShipment(Container):
@@ -128,6 +163,27 @@ class InboundSampleShipment(Container):
     _catalogs = [SHIPMENT_CATALOG, ]
     exclude_from_nav = True
     security = ClassSecurityInfo()
+
+    @security.private
+    def get_contacts_query(self):
+        """Return the query for the Contact field
+        """
+        query = {
+            "portal_type": "Contact",
+            "is_active": True,
+            "sort_on": "sortable_title",
+            "sort_order": "ascending",
+        }
+
+        # Get contacts belong to referring client if it is set
+        referring_client = getattr(self, "referring_client", None)
+        if referring_client:
+            client_uid = referring_client[0]
+            query["path"] = {
+                "query": api.get_path(api.get_object_by_uid(client_uid)),
+                "level": 0
+            }
+        return query
 
     def _get_title(self):
         return self.getShipmentID()
@@ -249,3 +305,27 @@ class InboundSampleShipment(Container):
         query = {"UID": uids}
         samples = api.search(query, "uid_catalog")
         return [api.get_object(sample) for sample in samples]
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setDefaultContact(self, value):
+        """Sets the default contact the samples from inbound shipments will
+        be assigned to
+        """
+        mutator = self.mutator("default_contact")
+        mutator(self, value)
+
+    @security.protected(permissions.View)
+    def getDefaultContact(self):
+        """Returns the default contact that samples from inbound shipments from
+        this laboratory will be assigned to
+        """
+        accessor = self.accessor("default_contact")
+        return accessor(self)
+
+    @security.protected(permissions.View)
+    def getRawDefaultContact(self):
+        """Returns the UID of the default contact that samples from inbound
+        shipments from this laboratory will be assigned to
+        """
+        accessor = self.accessor("default_contact", raw=True)
+        return accessor(self)

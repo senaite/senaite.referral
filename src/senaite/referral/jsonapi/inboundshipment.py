@@ -89,6 +89,7 @@ class InboundShipmentConsumer(object):
             "shipment_id": str(shipment_id),
             "referring_laboratory": api.get_uid(lab),
             "referring_client": lab.getRawReferringClient(),
+            "default_contact": lab.getRawDefaultContact(),
             "comments": str(comments),
             "dispatched_datetime": DT2dt(dispatched_date),
             "samples": sample_records,
