@@ -151,9 +151,11 @@ shipments are created through a push consumer - see PushConsumer.rst):
 
     >>> lab = filter(lambda lab: lab.code == "EXT2", labs)[0]
     >>> client = filter(lambda cl: cl.getClientID() == "HH", clients)[0]
+    >>> contact = client.getContacts()[0]
     >>> values = {
     ...     "referring_laboratory": api.get_uid(lab),
     ...     "referring_client": api.get_uid(client),
+    ...     "default_contact": api.get_uid(contact),
     ...     "comments": "Test inbound sample shipment",
     ...     "dispatched_datetime": datetime.now() - timedelta(days=2)
     ... }
@@ -193,9 +195,11 @@ Manually create an inbound shipment:
 
     >>> lab = filter(lambda lab: lab.code == "EXT2", labs)[0]
     >>> client = filter(lambda cl: cl.getClientID() == "HH", clients)[0]
+    >>> contact = client.getContacts()[0]
     >>> values = {
     ...     "referring_laboratory": api.get_uid(lab),
     ...     "referring_client": api.get_uid(client),
+    ...     "default_contact": api.get_uid(contact),
     ...     "comments": "Test inbound sample shipment 2",
     ...     "dispatched_datetime": datetime.now() - timedelta(days=2)
     ... }
