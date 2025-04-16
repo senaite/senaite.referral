@@ -72,8 +72,7 @@ def create_sample(inbound_sample):
     client = api.get_object(client)
 
     # Get the default contact for this shipment
-    contact = shipment.getDefaultContact()
-    contact = api.get_object(contact)
+    contact = shipment.getRawDefaultContact()
 
     # Get baseline objects mappings
     services = get_services_mapping()
@@ -95,7 +94,7 @@ def create_sample(inbound_sample):
 
     values = {
         "Client": api.get_uid(client),
-        "Contact": api.get_uid(contact),
+        "Contact": contact,
         "ClientSampleID": inbound_sample.getReferringID(),
         "DateSampled": inbound_sample.getDateSampled(),
         "SampleType": sample_type_uid,
