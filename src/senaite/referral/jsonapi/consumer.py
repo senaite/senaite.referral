@@ -281,3 +281,11 @@ class ReferralConsumer(BaseConsumer):
         """
         statuses = ["invalid", "invalidated_at_reference"]
         return api.get_review_status(sample) in statuses
+
+    def do_inbound_sample_reject(self, item):
+        shipment = self.get_object_for(item)
+        self.do_action(shipment, "reject_inbound_sample")
+        for sample in shipment.getInboundSamples():
+            rejection_reasons = self.get_value(sample, "RejectionReasons")
+            sample.setRejectionReasons(rejection_reasons)
+            self.do_action(sample, "reject_at_reference")

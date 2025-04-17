@@ -31,6 +31,9 @@
       component="senaite.referral.vocabularies.ReferenceLaboratoriesVocabularyFactory"
       name="senaite.referral.vocabularies.referencelaboratories" />
 
+  <utility
+      component="senaite.referral.vocabularies.RejectionReasonsVocabularyFactory"
+      name="senaite.referral.vocabularies.rejection_reasons" />
 
   <!-- Default profile -->
   <genericsetup:registerProfile

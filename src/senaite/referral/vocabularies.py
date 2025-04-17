@@ -22,6 +22,7 @@ from zope.interface import implementer
 from zope.schema.interfaces import IVocabularyFactory
 from zope.schema.vocabulary import SimpleTerm
 from zope.schema.vocabulary import SimpleVocabulary
+from zope.site.hooks import getSite
 
 from bika.lims import api
 
@@ -69,3 +70,28 @@ class ReferenceLaboratoriesVocabulary(object):
 
 
 ReferenceLaboratoriesVocabularyFactory = ReferenceLaboratoriesVocabulary()
+
+
+@implementer(IVocabularyFactory)
+class RejectionReasonsVocabulary(object):
+
+    def __call__(self, context):
+        plone = getSite()
+        settings = plone.bika_setup
+
+        if len(settings.RejectionReasons) > 0:
+            reject_reasons = settings.RejectionReasons[0]
+        else:
+            return []
+
+        sorted_keys = sorted(reject_reasons.keys())
+        if 'checkbox' in sorted_keys:
+            sorted_keys.remove('checkbox')
+
+        items = []
+        for key in sorted_keys:
+            items.append(reject_reasons[key].strip())
+        return SimpleVocabulary(items)
+
+
+RejectionReasonsVocabularyFactory = RejectionReasonsVocabulary()

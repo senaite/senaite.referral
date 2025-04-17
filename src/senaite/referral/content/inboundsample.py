@@ -141,6 +141,17 @@ class IInboundSampleSchema(model.Schema):
         )
     )
 
+    # Add the field RejectionReasons to InboundSample type
+    rejection_reasons = schema.Choice(
+        title=_(
+            u"label_inboundsample_rejection_reasons",
+            default=u"Sample Rejection Reasons"
+        ),
+        description=_(u"Sample Rejection Reasons"),
+        vocabulary="senaite.referral.vocabularies.rejection_reasons",
+        required=False,
+    )
+
     @invariant
     def validate_referring_id(data):
         """Checks if the value for field referring_id is valid
@@ -335,3 +346,13 @@ class InboundSample(Container):
         with the analyses that were requested by the referring laboratory
         """
         return get_uids_field_value(self, "services") or []
+
+    @security.protected(permissions.View)
+    def getRejectionReasons(self):
+        accessor = self.accessor("rejection_reasons")
+        return accessor(self)
+
+    @security.protected(permissions.ModifyPortalContent)
+    def setRejectionReasons(self, value):
+        mutator = self.mutator("rejection_reasons")
+        mutator(self, value)
