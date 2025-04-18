@@ -19,13 +19,17 @@
 # Some rights reserved, see README and LICENSE.
 
 import collections
+from bika.lims.workflow import doActionFor
+import six
 
 from bika.lims import api
 from bika.lims import PRIORITIES
+from bika.lims.browser import BrowserView
 from bika.lims.utils import get_image
 from bika.lims.utils import get_link_for
 from bika.lims.utils import render_html_attributes
 from plone.memoize import view
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from senaite.app.listing import ListingView
 from senaite.core.api import dtime
 from senaite.referral import messageFactory as _
@@ -294,3 +298,74 @@ class SamplesListingView(ListingView):
         """
         sample_types = self.get_sample_types()
         return sample_types.get(term)
+
+
+class RejectInboundSamplesView(BrowserView):
+    """View that renders the InboundSamples rejection view
+    """
+    template = ViewPageTemplateFile("templates/reject_inbound_sample.pt")
+
+    def __init__(self, context, request):
+        super(RejectInboundSamplesView, self).__init__(context, request)
+        self.context = context
+        self.request = request
+
+    def __call__(self):
+        # Form submit
+        form = self.request.form
+
+        # Handle form submission
+        if form.get("submit", None) == "Reject":
+            reasons = form.get("reasons", [])
+            if not reasons:
+                message = _("Please select at least one rejection reason")
+                self.context.plone_utils.addPortalMessage(message, "error")
+                return self.template()
+
+            # Reject each inbound sample with the given reasons
+            shipment = None
+            inbound_samples = self.retrieve_inbound_samples()
+
+            for sample in inbound_samples:
+                shipment = shipment or sample.aq_parent
+                doActionFor(sample, "reject_inbound_sample", reasons=reasons)
+
+            # Redirect to the inbound shipment
+            if shipment:
+                self.request.response.redirect(shipment.absolute_url())
+                return
+
+            # No shipment found - shouldn't happen
+            url = self.request.get_header(
+                "referer", self.context.absolute_url()
+            )
+            self.request.response.redirect(url)
+            return
+
+        return self.template()
+
+    def retrieve_inbound_samples(self):
+        """Retrieves the inbound samples from request
+        """
+        inbound_samples = []
+        # Get the UIDs of the inbound samples from the request
+        uids = self.request.form.get("uids", [])
+        if isinstance(uids, six.string_types):
+            uids = uids.split(",")
+
+        uids = list(set(uids))
+        if not uids:
+            return []
+
+        query = dict(portal_type="InboundSample", UID=uids)
+        for brain in api.search(query):
+            inbound_sample = api.get_object(brain)
+            inbound_samples.append(inbound_sample)
+
+        return inbound_samples
+
+    @view.memoize
+    def get_rejection_options(self):
+        """Returns the list of available rejection reasons
+        """
+        return api.get_setup().getRejectionReasonsItems()

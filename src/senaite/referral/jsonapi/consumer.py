@@ -27,7 +27,6 @@ from senaite.referral import utils
 from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.workflow import change_workflow_state
 from zope.interface import implementer
-
 from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 from bika.lims.workflow import doActionFor
@@ -282,10 +281,17 @@ class ReferralConsumer(BaseConsumer):
         statuses = ["invalid", "invalidated_at_reference"]
         return api.get_review_status(sample) in statuses
 
-    def do_inbound_sample_reject(self, item):
-        shipment = self.get_object_for(item)
-        self.do_action(shipment, "reject_inbound_sample")
-        for sample in shipment.getInboundSamples():
-            rejection_reasons = self.get_value(sample, "RejectionReasons")
-            sample.setRejectionReasons(rejection_reasons)
-            self.do_action(sample, "reject_at_reference")
+    def do_inboundsample_reject(inbound_sample, response):
+        """Rejects an inbound sample
+        """
+        # Get the rejection reasons from the request data
+        request_data = response.get("request_data", {})
+        reasons = request_data.get("reasons", [])
+
+        # Store the rejection reasons
+        if reasons:
+            inbound_sample.setRejectionReasons(reasons)
+
+        # Do the transition
+        doActionFor(inbound_sample, "reject_inbound_sample")
+        return True

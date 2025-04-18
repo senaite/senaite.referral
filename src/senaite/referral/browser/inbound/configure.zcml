@@ -20,4 +20,12 @@
       permission="zope2.View"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
+  <!-- Inbound Sample Reject view -->
+  <browser:page
+      for="*"
+      name="reject_inbound_sample"
+      class=".samples.RejectInboundSamplesView"
+      permission="zope2.View"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer"
+    />
 </configure>

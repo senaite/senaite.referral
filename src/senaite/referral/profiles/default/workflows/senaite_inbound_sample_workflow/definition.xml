@@ -68,7 +68,7 @@
 
   <!-- Transition: reject_inbound_sample -->
   <transition transition_id="reject_inbound_sample" title="Reject" new_state="rejected" trigger="USER" before_script="" after_script="" i18n:attributes="title">
-    <action url="" category="workflow" icon="">Reject</action>
+    <action url="reject_inbound_sample?uids=${object_uid}" category="workflow" icon="">Reject</action>
     <guard>
       <guard-expression>python:here.guard_handler("reject_inbound_sample")</guard-expression>
     </guard>

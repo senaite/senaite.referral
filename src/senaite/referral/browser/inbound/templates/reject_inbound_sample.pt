@@ -1,0 +1,100 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="senaite.referral">
+
+<body>
+
+<metal:content-title fill-slot="content-title">
+  <h1 i18n:translate="">
+    Reject Inbound Sample(s)
+  </h1>
+</metal:content-title>
+
+<metal:content-description fill-slot="content-description">
+  <p i18n:translate="">
+    Assign reasons for rejecting inbound sample(s)
+  </p>
+</metal:content-description>
+
+<metal:content-core fill-slot="content-core">
+  <div id="reject-inbound-sample-form"
+       class="row"
+       tal:define="samples view/inbound_samples">
+
+    <tal:nosamples tal:condition="not:samples">
+      <p i18n:translate="">No inbound samples selected for rejection</p>
+    </tal:nosamples>
+
+    <tal:hassamples tal:condition="samples">
+      <form method="POST">
+        <input type="hidden" name="submitted" value="1"/>
+        <input tal:repeat="sample samples"
+               type="hidden" name="uids:list" 
+               tal:attributes="value sample/UID"/>
+
+        <div class="col-sm-12">
+          <div class="form-group">
+            <label i18n:translate="">
+              Selected Inbound Samples
+            </label>
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th i18n:translate="">Sample ID</th>
+                  <th i18n:translate="">Sample Type</th>
+                  <th i18n:translate="">Date Sampled</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr tal:repeat="sample samples">
+                  <td tal:content="sample/getId">ID</td>
+                  <td tal:content="sample/getSampleType">Type</td>
+                  <td tal:content="sample/getSamplingDate">Date</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="form-group">
+            <label i18n:translate="">
+              Rejection Reasons
+            </label>
+            <div class="help-block" i18n:translate="">
+              Please select at least one reason for rejection
+            </div>
+            <div class="checkbox" tal:repeat="option view/get_rejection_options">
+              <label>
+                <input type="checkbox" 
+                       name="reasons:list"
+                       tal:attributes="value option/value"/>
+                <span tal:content="option/title">Reason</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label i18n:translate="">Other Reasons</label>
+              <textarea class="form-control" 
+                        name="reasons:list" 
+                        rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group text-right">
+            <input type="submit" 
+                   class="btn btn-danger"
+                   name="submit" 
+                   value="Reject"
+                   i18n:attributes="value"/>
+            <a class="btn btn-default"
+               tal:attributes="href python:request.get('HTTP_REFERER', view.context.absolute_url())"
+               i18n:translate="">Cancel</a>
+          </div>
+        </div>
+      </form>
+    </tal:hassamples>
+  </div>
+</metal:content-core>
+
+</body>
+</html>

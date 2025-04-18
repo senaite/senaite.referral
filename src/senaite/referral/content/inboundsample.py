@@ -35,6 +35,7 @@ from senaite.referral.content import set_string_value
 from senaite.referral.content import set_uids_field_value
 from senaite.referral.interfaces import IInboundSample
 from senaite.referral.utils import get_action_date
+from z3c.form.browser.checkbox import CheckBoxFieldWidget
 from zope import schema
 from zope.interface import implementer
 from zope.interface import Invalid
@@ -46,7 +47,7 @@ from bika.lims import api
 def is_referring_id_unique(instance, referring_id):
     """Checks whether the referring id passed-in is unique
     """
-    query = {"portal_type": "InboundSample", "referring_id": referring_id }
+    query = {"portal_type": "InboundSample", "referring_id": referring_id}
     brains = api.search(query, catalog=INBOUND_SAMPLE_CATALOG)
     if not brains:
         return True
@@ -142,13 +143,26 @@ class IInboundSampleSchema(model.Schema):
     )
 
     # Add the field RejectionReasons to InboundSample type
-    rejection_reasons = schema.Choice(
-        title=_(
-            u"label_inboundsample_rejection_reasons",
-            default=u"Sample Rejection Reasons"
+    model.fieldset(
+        'rejection',
+        label=_('Rejection'),
+        fields=['rejection_reasons', 'rejection_other']
+    )
+
+    rejection_reasons = schema.Set(
+        title=_("Rejection reasons"),
+        description=_("Select predefined rejection reasons"),
+        value_type=schema.Choice(
+            title=_("Rejection reasons"),
+            vocabulary="senaite.core.rejectionreasons"
         ),
-        description=_(u"Sample Rejection Reasons"),
-        vocabulary="senaite.referral.vocabularies.rejection_reasons",
+        required=False,
+    )
+    directives.widget('rejection_reasons', CheckBoxFieldWidget)
+
+    rejection_other = schema.Text(
+        title=_("Other rejection reasons"),
+        description=_("Describe other rejection reasons not predefined"),
         required=False,
     )
 

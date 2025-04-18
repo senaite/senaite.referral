@@ -1,0 +1,17 @@
+<div class="alert alert-danger"
+     tal:define="samples view/rejected_samples">
+  
+  <h4 i18n:translate="">The following inbound samples were rejected:</h4>
+  
+  <div tal:repeat="sample samples">
+    <p>
+      <strong tal:content="sample/getId">ID</strong>
+      <tal:reasons tal:define="reasons sample/getRejectionReasons">
+        <tal:hasreasons tal:condition="reasons">
+          <span i18n:translate="">Reasons</span>:
+          <span tal:replace="python:','.join(reasons)"></span>
+        </tal:hasreasons>
+      </tal:reasons>
+    </p>
+  </div>
+</div>
