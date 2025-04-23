@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# Copyright 2021-2022 by it's authors.
+# Copyright 2021-2025 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
 import collections
@@ -115,15 +115,16 @@ class SamplesListingView(ListingView):
                 },
                 "custom_transitions": [print_stickers],
                 "columns": self.columns.keys(),
-            }, {
+            },
+            {
                 "id": "rejected",
                 "title": _("Rejected"),
                 "contentFilter": {
                     "review_state": "rejected",
                 },
-                "custom_transitions": [],
                 "columns": self.columns.keys(),
-            }, {
+            },
+            {
                 "id": "all",
                 "title": _("All"),
                 "contentFilter": {},

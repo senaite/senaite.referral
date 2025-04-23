@@ -18,6 +18,8 @@
 # Copyright 2021-2022 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
+from senaite.app.listing.adapters.workflow import ListingWorkflowTransition
+from senaite.app.listing.interfaces import IListingWorkflowTransition
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
 from senaite.referral.workflow import do_queue_or_action_for
@@ -25,6 +27,7 @@ from senaite.referral.workflow import do_queue_or_action_for
 from bika.lims import api
 from bika.lims import senaiteMessageFactory as _s
 from bika.lims.browser.workflow import WorkflowActionGenericAdapter
+from zope.interface import implementer
 
 
 class WorkflowActionReceiveAdapter(WorkflowActionGenericAdapter):
@@ -68,3 +71,32 @@ class WorkflowActionReceiveAdapter(WorkflowActionGenericAdapter):
         """
         key = "{}.barcodes_preview_reception".format(PRODUCT_NAME)
         return api.get_registry_record(key, default=False)
+
+
+@implementer(IListingWorkflowTransition)
+class InboundSampleRejectWorkflowTransition(ListingWorkflowTransition):
+    """Adapter in charge of InboundSample's 'reject' action
+    """
+    def __init__(self, view, context, request):
+        super(InboundSampleRejectWorkflowTransition, self).__init__(
+            view, context, request)
+        self.back_url = self.context.absolute_url()
+        self.chained_uids = []
+
+    def do_transition(
+        self, transition, chained_uids, failed_transitions, **kw
+    ):
+        """Execute the workflow transition
+        """
+        super(InboundSampleRejectWorkflowTransition, self).do_transition(
+            transition, chained_uids, failed_transitions, **kw)
+        self.chained_uids = chained_uids
+
+    def get_redirect_url(self):
+        """Redirect after reject_inbound_sample transition
+        """
+        uids = ",".join(self.chained_uids)
+        url = "{}/reject_inbound_samples?uids={}".format(
+            self.back_url, uids
+        )
+        return url

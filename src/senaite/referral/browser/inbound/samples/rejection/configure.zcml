@@ -1,0 +1,14 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="senaite.referral">
+
+  <!-- Reject Inbound Samples View -->
+  <browser:page
+      for="*"
+      name="reject_inbound_samples"
+      class=".reject_inbound_samples.RejectInboundSamplesView"
+      permission="senaite.core.permissions.ManageBika"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+
+</configure>
