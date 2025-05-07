@@ -81,7 +81,7 @@
                   </label>
                   <div tal:condition="reasons" tal:repeat="reason reasons">
                     <input type="checkbox"
-                           tal:attributes="name string:samples.reasons:records:list;
+                           tal:attributes="name string:inbound_samples.reasons:records:list;
                                            value reason"/>
                     <span tal:content="reason"></span>
                   </div>
@@ -102,7 +102,7 @@
                     Rejection reasons
                   </label>
                   <textarea rows="5" class="form-control"
-                            tal:attributes="name string:samples.other_reasons:records"></textarea>
+                            tal:attributes="name string:inbound_samples.other_reasons:records"></textarea>
                 </div>
 
               </div>

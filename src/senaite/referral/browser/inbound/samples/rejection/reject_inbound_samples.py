@@ -38,7 +38,7 @@ class RejectInboundSamplesView(BrowserView):
         super(RejectInboundSamplesView, self).__init__(context, request)
         self.context = context
         self.request = request
-        self.back_url = self.context.absolute_url()
+        self.back_url = api.get_url(self.context.getInboundShipment())
 
     def __call__(self):
         form = self.request.form
@@ -73,15 +73,10 @@ class RejectInboundSamplesView(BrowserView):
                 if not any([reasons, other]):
                     continue
 
-                # This is quite bizarre!
-                # AR's Rejection reasons is a RecordsField, but with one
-                # record only, that contains both predefined and other reasons.
                 obj = api.get_object_by_uid(inbound_sample_uid)
-                rejection_reasons = {
-                    "other": other,
-                    "selected": reasons
-                }
-                obj.setRejectionReasons([rejection_reasons])
+
+                obj.setSelectedRejectionReasons(reasons)
+                obj.setOtherRejectionReasons(other)
 
                 # Reject the sample
                 processed.append(obj)

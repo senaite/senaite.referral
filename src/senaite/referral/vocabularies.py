@@ -69,3 +69,18 @@ class ReferenceLaboratoriesVocabulary(object):
 
 
 ReferenceLaboratoriesVocabularyFactory = ReferenceLaboratoriesVocabulary()
+
+
+@implementer(IVocabularyFactory)
+class RejectionReasonsVocabulary(object):
+    """Vocabulary factory for rejection reasons
+    """
+
+    def __call__(self, context):
+        items = api.get_setup().getRejectionReasonsItems()
+        return SimpleVocabulary(
+            [SimpleTerm(item, item, item) for item in items]
+        )
+
+
+RejectionReasonsVocabularyFactory = RejectionReasonsVocabulary()
