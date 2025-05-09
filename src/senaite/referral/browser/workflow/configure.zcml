@@ -38,4 +38,15 @@
       provides="bika.lims.interfaces.IWorkflowActionAdapter"
       permission="zope.Public" />
 
+  <!-- Inbound Samples: "reject"
+  Redirects to the reject inbound samples view
+  -->
+  <adapter 
+    name="reject_inbound_sample"
+    for="senaite.app.listing.interfaces.IAjaxListingView
+         *
+         senaite.referral.interfaces.ISenaiteReferralLayer"
+    provides="senaite.app.listing.interfaces.IListingWorkflowTransition"
+    factory=".inboundsample.InboundSampleRejectWorkflowTransition" />
+
 </configure>
