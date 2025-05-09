@@ -52,4 +52,15 @@
       permission="zope2.View"
       layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
 
+
+  <!-- Rejected Inbound Samples viewlet -->
+  <browser:viewlet
+      for="senaite.referral.interfaces.IInboundSampleShipment"
+      name="senaite.referral.viewlet.rejected_inbound_samples"
+      class=".inboundsample.RejectedInboundSamplesViewlet"
+      manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+      template="templates/rejected_inbound_samples_viewlet.pt"
+      permission="zope2.View"
+      layer="senaite.referral.interfaces.ISenaiteReferralLayer" />
+    
 </configure>
