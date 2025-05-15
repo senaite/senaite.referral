@@ -85,56 +85,24 @@ class OutboundSampleConsumer(object):
             # TODO Keep track of the incoming notifications in current object
             return True
 
-        # TODO Performance - convert to queue task
-
-        # Get the analyses grouped by keyword
-        by_keyword = self.get_analyses_by_keyword(sample)
-
-        # Allowed statuses
-        statuses = dict.fromkeys(["referred", "assigned", "unassigned"], True)
-
         # Do we need to create non-existing analyses
         create_missing = get_create_reference_analyses()
-        services = get_services_mapping() if create_missing else {}
 
-        # Update the analyses passed-in
-        analysis_records = sample_record.get("analyses")
-        for analysis_record in analysis_records:
-            keyword = analysis_record.get("keyword")
+        # update the analyses from current instance
+        for record in sample_record.get("analyses"):
 
-            # pop the analyses to be updated for the given keyword
-            analyses = by_keyword.get(keyword, [])
-            if not analyses:
-                service_uid = services.get(keyword)
-                service = api.get_object(service_uid, default=None)
-                if service:
-                    # create the missing analysis
-                    analyses = [create_analysis(sample, service)]
+            # get the analysis to update from the sample
+            keyword = record.get("keyword")
+            analysis = self.find_analysis(sample, keyword, create_missing)
 
-            for analysis in analyses:
-                # skip if status is not valid
-                status = api.get_review_status(analysis)
-                if not statuses.get(status, False):
-                    continue
-
-                # update the analysis
-                try:
-                    self.update_analysis(analysis, analysis_record)
-                except Exception as e:
-                    raise APIError(500, "{}: {}".format(
-                        type(e).__name__, str(e)))
+            # update the analysis
+            try:
+                self.update_analysis(analysis, record)
+            except Exception as e:
+                raise APIError(500, "{}: {}".format(
+                    type(e).__name__, str(e)))
 
         return True
-
-    def get_analyses_by_keyword(self, sample):
-        """Returns the analyses of the sample grouped by keyword
-        """
-        groups = {}
-        analyses = sample.getAnalyses(full_objects=True)
-        for analysis in analyses:
-            keyword = analysis.getKeyword()
-            groups.setdefault(keyword, []).append(analysis)
-        return groups
 
     def get_data(self):
         out = {}
@@ -195,6 +163,45 @@ class OutboundSampleConsumer(object):
 
         # Get the sample object
         return api.get_object(brains[0])
+
+    def can_update(self, analysis):
+        """Returns whether the analysis can be updated with data from the
+        reference laboratory.
+        """
+        status = ["referred", "assigned", "unassigned"]
+        return api.get_review_status(analysis) in status
+
+    def find_analysis(self, sample, keyword, create_missing):
+        """Finds and returns the first analysis from the provided sample that
+        matches the given keyword and is eligible for an update with data from
+        the reference laboratory.
+        """
+        # get the analyses to update
+        query = {
+            "full_objects": True,
+            "sort_on": "id",
+            "sort_order": "ascending",
+            "getKeyword": keyword,
+        }
+        analyses = sample.getAnalyses(**query)
+
+        # create an analysis if missing
+        if not analyses and create_missing:
+            services = get_services_mapping()
+            service_uid = services.get(keyword)
+            service = api.get_object(service_uid, default=None)
+            return create_analysis(sample, service) if service else None
+
+        # purge analyses that are not in a suitable status
+        # This approach is used instead of adding 'review_state' to the
+        # query to ensure no new analyses are created if invalid-status
+        # analyses already exist.
+        analyses = list(filter(lambda an: self.can_update(an), analyses))
+        if not analyses:
+            return None
+
+        # return the first analysis
+        return analyses[0]
 
     def update_analysis(self, analysis, record):
         if not analysis:

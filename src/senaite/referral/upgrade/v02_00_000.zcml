@@ -4,6 +4,14 @@
     i18n_domain="senaite.referral">
 
   <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 2.0.0: Additional results notification settings"
+      description="Additional results notification settings"
+      source="2006"
+      destination="2007"
+      handler=".v02_00_000.additional_results_notification"
+      profile="senaite.referral:default"/>
+
+  <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 2.0.0: Setup results notification settings"
       description="Setup results notification settings"
       source="2005"

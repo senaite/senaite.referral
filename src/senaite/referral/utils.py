@@ -337,17 +337,33 @@ def search_sample_type(term, full_object=False):
     return uid
 
 
-def get_notify_all_analyses():
-    """Returns whether the system has to send notifications for analyses that
-    weren't initially requested
-    """
-    key = "{}.notify_all_analyses".format(PRODUCT_NAME)
-    return api.get_registry_record(key, default=False)
-
-
 def get_create_reference_analyses():
     """Returns whether the system has to create analyses if results are
     notified by reference lab, but the sample does not have them
     """
     key = "{}.create_reference_analyses".format(PRODUCT_NAME)
+    return api.get_registry_record(key, default=False)
+
+
+def get_notify_unrequested():
+    """Returns whether the system has to include analyses that weren't
+    initially requested when notifying back results to the referring laboratory
+    """
+    key = "{}.notify_unrequested_analyses".format(PRODUCT_NAME)
+    return api.get_registry_record(key, default=False)
+
+
+def get_notify_retested():
+    """Returns whether the system has to include retested analyses when
+    notifying back results to the referring laboratory
+    """
+    key = "{}.notify_retested_analyses".format(PRODUCT_NAME)
+    return api.get_registry_record(key, default=False)
+
+
+def get_notify_hidden():
+    """Returns whether the system has to include hidden analyses when notifying
+    back results to the referring laboratory
+    """
+    key = "{}.notify_hidden_analyses".format(PRODUCT_NAME)
     return api.get_registry_record(key, default=False)

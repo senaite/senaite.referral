@@ -19,6 +19,7 @@
 # Some rights reserved, see README and LICENSE.
 
 import math
+
 from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.utils import format_supsub
@@ -32,7 +33,9 @@ from senaite.referral.notifications import get_post_base_info
 from senaite.referral.notifications import save_post
 from senaite.referral.remotesession import RemoteSession
 from senaite.referral.utils import get_lab_code
-from senaite.referral.utils import get_notify_all_analyses
+from senaite.referral.utils import get_notify_hidden
+from senaite.referral.utils import get_notify_retested
+from senaite.referral.utils import get_notify_unrequested
 from senaite.referral.utils import get_user_info
 from senaite.referral.utils import is_valid_url
 
@@ -189,40 +192,38 @@ class RemoteLab(object):
         """Update the analyses from the remote laboratory with the information
         provided with the sample passed-in
         """
+        notify_unrequested = get_notify_unrequested()
+        notify_retested = get_notify_retested()
+        notify_hidden = get_notify_hidden()
 
         def get_valid_analyses(sample):
-            # Get the analyses to notify about to the reference laboratory,
-            # sorted by id descending to prioritize newest results if retests
+            # Get the analyses to notify about to the reference laboratory
             query = {
                 "full_objects": True,
                 "sort_on": "id",
                 "sort_order": "ascending",
+                "review_state": ["verified", "published"],
             }
 
-            notify_all = get_notify_all_analyses()
-            if not notify_all:
-                # only notify about analyses that were requested via shipment
+            # Skip unsolicited analyses?
+            if not notify_unrequested:
                 inbound_sample = sample.getInboundSample()
                 query["getServiceUID"] = inbound_sample.getRawServices()
 
-            # exclude old, but valid analyses with same keyword (e.g retests),
-            # cause we want to update the referring lab with the newest result
-            analyses = {}
-            valid = ["verified", "published"]
+            analyses = []
             for analysis in sample.getAnalyses(**query):
 
-                # Skip analyses not in a suitable status
-                if api.get_review_status(analysis) not in valid:
+                # Skip hidden?
+                if not notify_hidden and analysis.getHidden():
                     continue
 
-                # Skip retested, only interested in final results
-                if analysis.getRawRetest():
+                # Skip retested?
+                if not notify_retested and analysis.isRetested():
                     continue
 
-                keyword = analysis.getKeyword()
-                analyses[keyword] = analysis
+                analyses.append(analysis)
 
-            return analyses.values()
+            return analyses
 
         def get_sample_info(sample):
             # Extract the shipment the sample belongs to
