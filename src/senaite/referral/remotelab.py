@@ -24,6 +24,7 @@ from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.utils import format_supsub
 from bika.lims.utils.analysis import format_uncertainty
+from collections import defaultdict
 from requests.auth import HTTPBasicAuth
 from senaite.app.supermodel import SuperModel
 from senaite.core.api.dtime import date_to_string
@@ -243,13 +244,43 @@ class RemoteLab(object):
             # We are only interested in analyses results. Referring laboratory
             # does not care about the information set at sample level
             analyses = get_valid_analyses(sample)
-            analyses = [get_analysis_info(analysis) for analysis in analyses]
+
+            # analyses are sorted by sortable_title, so retests always come
+            # *after* the original analysis. However, the original analysis
+            # might not be present here because their status is retracted, are
+            # flagged as hidden or are retests too. Therefore, we have to
+            # update the `retest_of` field with the latest valid analysis when
+            # not present to ensure that results in the referring laboratory
+            # are consistent
+            analyses_info = []
+            uids_by_keyword = {}
+            for analysis in analyses:
+                info = get_analysis_info(analysis)
+
+                # get the uids already processed for current keyword
+                keyword = info.get("keyword")
+                uids = uids_by_keyword.get(keyword, [])
+
+                # handle retests properly
+                retest_of = info.get("retest_of")
+                if retest_of not in uids:
+                    # pick the last processed uid for current keyword or make
+                    # the remote lab think that this is not a retest
+                    info["retest_of"] = uids[-1] if uids else ""
+
+                # update the processed analyses
+                uid = info.get("uid")
+                uids_by_keyword.setdefault(keyword, []).append(uid)
+
+                # append the analysis info
+                analyses_info.append(info)
+
             return {
                 "id": api.get_id(sample),
                 "uid": api.get_uid(sample),
                 "referring_id": sample.getClientSampleID(),
                 "shipment_id": shipment.getShipmentID(),
-                "analyses": analyses,
+                "analyses": analyses_info,
             }
 
         def get_analysis_info(analysis):
