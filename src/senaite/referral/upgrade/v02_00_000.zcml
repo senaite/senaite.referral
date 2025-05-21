@@ -3,6 +3,14 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
 
   <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 2.0.0: Setup outbound samples sorting config"
+      description="Setup outbound samples sorting config"
+      source="2008"
+      destination="2009"
+      handler=".v02_00_000.setup_outbound_samples_order"
+      profile="senaite.referral:default"/>
+
+  <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 2.0.0: Adds 'remote_uid' index in 'uid_catalog'"
       description="Adds 'remote_uid' index in 'uid_catalog'"
       source="2007"

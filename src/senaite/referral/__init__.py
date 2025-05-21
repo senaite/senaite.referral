@@ -27,6 +27,8 @@ from zope.i18nmessageid import MessageFactory
 from bika.lims.api import get_request
 
 messageFactory = MessageFactory(PRODUCT_NAME)
+_ = messageFactory
+
 logger = logging.getLogger(PRODUCT_NAME)
 
 

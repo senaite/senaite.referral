@@ -1,0 +1,13 @@
+<configure  xmlns="http://namespaces.zope.org/zope">
+
+  <!-- Outbound samples order vocabulary -->
+  <utility
+      component=".outboundsamples.OutboundSamplesOrderVocabularyFactory"
+      name="senaite.referral.vocabularies.outboundsamples.order" />
+
+  <!-- Case Outcomes vocabulary -->
+  <utility
+      component=".referencelabs.ReferenceLaboratoriesVocabularyFactory"
+      name="senaite.referral.vocabularies.referencelaboratories" />
+
+</configure>

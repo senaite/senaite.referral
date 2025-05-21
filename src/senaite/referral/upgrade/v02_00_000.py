@@ -197,3 +197,11 @@ def add_remote_uid_index(tool):
         uc.addIndex(index, "FieldIndex")
 
     logger.info("Add 'remote_uid' index in 'uid_catalog' [DONE]")
+
+
+def setup_outbound_samples_order(tool):
+    logger.info("Setup order of outbound samples ...")
+    portal = tool.aq_inner.aq_parent
+    setup = portal.portal_setup
+    setup.runImportStepFromProfile(profile, "plone.app.registry")
+    logger.info("Setup order of outbound samples [DONE]")
