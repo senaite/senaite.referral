@@ -8,6 +8,7 @@ OUTBOUND_SAMPLES_ORDER_VOCABULARY_ID = "senaite.referral.vocabularies.outboundsa
 
 SAMPLES_ORDER = (
     ("keep", _("Keep assignment order")),
+    ("created", _("Sort by creation date")),
     ("sid", _("Sort by Sample ID")),
 )
 

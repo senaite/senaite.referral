@@ -24,6 +24,7 @@ import json
 from datetime import datetime
 
 from plone.api.exc import InvalidParameterError
+from senaite.core.p3compat import cmp
 from senaite.referral import messageFactory as _
 from senaite.referral import PRODUCT_NAME
 from six import string_types
@@ -375,3 +376,32 @@ def get_outbound_samples_order():
     """
     key = "{}.outbound_samples_order".format(PRODUCT_NAME)
     return api.get_registry_record(key, default="keep")
+
+
+def cmp_by_id(x, y):
+    """Compare the two objects x and y by their id.
+    """
+    # resolve uids
+    x = api.get_object(x) if api.is_uid(x) else x
+    y = api.get_object(y) if api.is_uid(y) else y
+
+    # compare by id
+    return cmp(api.get_id(x), api.get_id(y))
+
+
+def cmp_by_created(x, y):
+    """Compare the two objects x and y by their creation date and return an
+    integer according to the outcome. If both objects have same creation date,
+    the function falls back to the comparison of the two objects by id.
+    """
+    # resolve uids
+    x = api.get_object(x) if api.is_uid(x) else x
+    y = api.get_object(y) if api.is_uid(y) else y
+
+    # get creation dates
+    created_a = api.get_creation_date(x)
+    created_b = api.get_creation_date(y)
+
+    # compare creation dates and fallback to ID if equal
+    comp = cmp(created_a, created_b)
+    return comp if comp != 0 else cmp_by_id(x, y)

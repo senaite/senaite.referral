@@ -31,9 +31,11 @@ from senaite.referral.content import accessor
 from senaite.referral.content import get_string_value
 from senaite.referral.content import get_uids_field_value
 from senaite.referral.content import set_string_value
-from senaite.referral.content import set_uids_field_value
 from senaite.referral.interfaces import IOutboundSampleShipment
+from senaite.referral.utils import cmp_by_created
+from senaite.referral.utils import cmp_by_id
 from senaite.referral.utils import get_action_date
+from senaite.referral.utils import get_outbound_samples_order
 from zope import schema
 from zope.interface import implementer
 
@@ -181,10 +183,22 @@ class OutboundSampleShipment(Container):
         uids = self.getRawSamples()
         return [api.get_object(samp) for samp in uids]
 
-    def setSamples(self, value):
+    def setSamples(self, samples):
         """Assigns the samples assigned to this shipment
         """
-        set_uids_field_value(self, "samples", value, validator=check_sample)
+        # sort the samples in accordance with system settings
+        order = get_outbound_samples_order()
+        if order == "sid":
+            # sort by sample id
+            samples = sorted(samples, cmp=cmp_by_id)
+        elif order == "created":
+            # sort by creation date
+            samples = sorted(samples, cmp=cmp_by_created)
+
+        # store as uids
+        uids = list(map(api.get_uid, samples))
+        setter = mutator(self, "samples")
+        setter(self, uids)
 
     def addSample(self, value):
         """Adds a sample to this shipment
