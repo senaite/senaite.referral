@@ -367,3 +367,11 @@ def get_notify_hidden():
     """
     key = "{}.notify_hidden_analyses".format(PRODUCT_NAME)
     return api.get_registry_record(key, default=False)
+
+
+def get_outbound_samples_order():
+    """Returns the default sorting strategy to use when adding samples to an
+    outbound shipment.
+    """
+    key = "{}.outbound_samples_order".format(PRODUCT_NAME)
+    return api.get_registry_record(key, default="keep")

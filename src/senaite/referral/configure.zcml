@@ -24,13 +24,8 @@
   <include package=".queue" zcml:condition="installed senaite.queue"/>
   <include package=".subscribers"/>
   <include package=".upgrade"/>
+  <include package=".vocabularies"/>
   <include package=".workflow"/>
-
-  <!-- Vocabularies -->
-  <utility
-      component="senaite.referral.vocabularies.ReferenceLaboratoriesVocabularyFactory"
-      name="senaite.referral.vocabularies.referencelaboratories" />
-
 
   <!-- Default profile -->
   <genericsetup:registerProfile

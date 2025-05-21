@@ -22,6 +22,8 @@ from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
 from plone.app.registry.browser.controlpanel import RegistryEditForm
 from plone.z3cform import layout
 from senaite.referral import messageFactory as _
+from senaite.referral.vocabularies.outboundsamples import \
+    OUTBOUND_SAMPLES_ORDER_VOCABULARY_ID
 from zope import schema
 from zope.interface import Interface
 
@@ -79,6 +81,19 @@ class IReferralControlPanel(Interface):
         ),
         default=5,
         required=0,
+    )
+
+    outbound_samples_order = schema.Choice(
+        title=_(
+            u"label_referral_outbound_samples_order",
+            default=u"Default sorting order for samples in outbound shipments"
+        ),
+        description=_(
+            u"description_referral_outbound_samples_order",
+            default=u"The default sorting strategy to use when adding samples "
+                    u"to an outbound shipment."
+        ),
+        vocabulary=OUTBOUND_SAMPLES_ORDER_VOCABULARY_ID,
     )
 
     notify_unrequested_analyses = schema.Bool(
