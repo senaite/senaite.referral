@@ -1,7 +1,22 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
-    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
-    i18n_domain="senaite.referral">
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
+
+  <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 2.0.0: Adds 'remote_uid' index in 'uid_catalog'"
+      description="Adds 'remote_uid' index in 'uid_catalog'"
+      source="2007"
+      destination="2008"
+      handler=".v02_00_000.add_remote_uid_index"
+      profile="senaite.referral:default"/>
+
+  <genericsetup:upgradeStep
+      title="SENAITE.REFERRAL 2.0.0: Additional results notification settings"
+      description="Additional results notification settings"
+      source="2006"
+      destination="2007"
+      handler=".v02_00_000.additional_results_notification"
+      profile="senaite.referral:default"/>
 
   <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 2.0.0: Setup results notification settings"

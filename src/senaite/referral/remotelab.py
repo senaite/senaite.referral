@@ -19,10 +19,12 @@
 # Some rights reserved, see README and LICENSE.
 
 import math
+
 from bika.lims import api
 from bika.lims.interfaces import IAnalysisRequest
 from bika.lims.utils import format_supsub
 from bika.lims.utils.analysis import format_uncertainty
+from collections import defaultdict
 from requests.auth import HTTPBasicAuth
 from senaite.app.supermodel import SuperModel
 from senaite.core.api.dtime import date_to_string
@@ -32,7 +34,9 @@ from senaite.referral.notifications import get_post_base_info
 from senaite.referral.notifications import save_post
 from senaite.referral.remotesession import RemoteSession
 from senaite.referral.utils import get_lab_code
-from senaite.referral.utils import get_notify_all_analyses
+from senaite.referral.utils import get_notify_hidden
+from senaite.referral.utils import get_notify_retested
+from senaite.referral.utils import get_notify_unrequested
 from senaite.referral.utils import get_user_info
 from senaite.referral.utils import is_valid_url
 
@@ -189,40 +193,49 @@ class RemoteLab(object):
         """Update the analyses from the remote laboratory with the information
         provided with the sample passed-in
         """
+        skip_unrequested = not get_notify_unrequested()
+        skip_retested = not get_notify_retested()
+        skip_hidden = not get_notify_hidden()
 
         def get_valid_analyses(sample):
-            # Get the analyses to notify about to the reference laboratory,
-            # sorted by id descending to prioritize newest results if retests
+            # Get the analyses to notify about to the reference laboratory
             query = {
                 "full_objects": True,
-                "sort_on": "id",
+                "sort_on": "sortable_title",
                 "sort_order": "ascending",
             }
 
-            notify_all = get_notify_all_analyses()
-            if not notify_all:
-                # only notify about analyses that were requested via shipment
+            # Skip unsolicited analyses?
+            if skip_unrequested:
                 inbound_sample = sample.getInboundSample()
                 query["getServiceUID"] = inbound_sample.getRawServices()
 
-            # exclude old, but valid analyses with same keyword (e.g retests),
-            # cause we want to update the referring lab with the newest result
-            analyses = {}
-            valid = ["verified", "published"]
+            analyses = []
             for analysis in sample.getAnalyses(**query):
 
-                # Skip analyses not in a suitable status
-                if api.get_review_status(analysis) not in valid:
+                # Skip hidden?
+                # Be aware that retests are flagged as hidden by default
+                if skip_hidden and analysis.getHidden():
                     continue
 
-                # Skip retested, only interested in final results
-                if analysis.getRawRetest():
+                # Skip retested?
+                # If retested are skipped, current instance notifies about
+                # the final result, that is the last retest
+                if skip_retested and analysis.isRetested():
                     continue
 
-                keyword = analysis.getKeyword()
-                analyses[keyword] = analysis
+                # Skip invalid status?
+                # XX We do this instead of including review_state in a query
+                #    because this action usually happens when analyses are
+                #    verified and at this point, their indexed status is still
+                #    the old one (to_be_verified)
+                status = api.get_review_status(analysis)
+                if status not in ["verified", "published"]:
+                    continue
 
-            return analyses.values()
+                analyses.append(analysis)
+
+            return analyses
 
         def get_sample_info(sample):
             # Extract the shipment the sample belongs to
@@ -231,12 +244,43 @@ class RemoteLab(object):
             # We are only interested in analyses results. Referring laboratory
             # does not care about the information set at sample level
             analyses = get_valid_analyses(sample)
-            analyses = [get_analysis_info(analysis) for analysis in analyses]
+
+            # analyses are sorted by sortable_title, so retests always come
+            # *after* the original analysis. However, the original analysis
+            # might not be present here because their status is retracted, are
+            # flagged as hidden or are retests too. Therefore, we have to
+            # update the `retest_of` field with the latest valid analysis when
+            # not present to ensure that results in the referring laboratory
+            # are consistent
+            analyses_info = []
+            uids_by_keyword = {}
+            for analysis in analyses:
+                info = get_analysis_info(analysis)
+
+                # get the uids already processed for current keyword
+                keyword = info.get("keyword")
+                uids = uids_by_keyword.get(keyword, [])
+
+                # handle retests properly
+                retest_of = info.get("retest_of")
+                if retest_of not in uids:
+                    # pick the last processed uid for current keyword or make
+                    # the remote lab think that this is not a retest
+                    info["retest_of"] = uids[-1] if uids else ""
+
+                # update the processed analyses
+                uid = info.get("uid")
+                uids_by_keyword.setdefault(keyword, []).append(uid)
+
+                # append the analysis info
+                analyses_info.append(info)
+
             return {
                 "id": api.get_id(sample),
+                "uid": api.get_uid(sample),
                 "referring_id": sample.getClientSampleID(),
                 "shipment_id": shipment.getShipmentID(),
-                "analyses": analyses,
+                "analyses": analyses_info,
             }
 
         def get_analysis_info(analysis):
@@ -244,6 +288,11 @@ class RemoteLab(object):
             captured = captured if captured else analysis.getDateSubmitted()
             captured = captured.strftime("%Y-%m-%d") or ""
             return {
+                "id": api.get_id(analysis),
+                "uid": api.get_uid(analysis),
+                "retest": analysis.getRawRetest(),
+                "retest_of": analysis.getRawRetestOf(),
+                "hidden": analysis.getHidden(),
                 "keyword": analysis.getKeyword(),
                 "result": analysis.getResult(),
                 "result_options": analysis.getResultOptions(),

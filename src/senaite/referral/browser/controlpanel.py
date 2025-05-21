@@ -81,18 +81,48 @@ class IReferralControlPanel(Interface):
         required=0,
     )
 
-    notify_all_analyses = schema.Bool(
+    notify_unrequested_analyses = schema.Bool(
         title=_(
-            u"label_referral_notify_all_analyses",
-            u"Notify all analyses to referring laboratory"
+            u"label_referral_notify_unrequested_analyses",
+            u"Notify the referring laboratory about unrequested analyses"
         ),
         description=_(
-            u"description_referral_notify_all_analyses",
-            u"If selected, the system will send all analyses back to the "
-            u"referring laboratory for results update after verification, "
-            u"those that weren't requested through the shipment included. "
-            u"Otherwise, the system will send notifications back only for "
-            u"those analyses that were initially requested."
+            u"description_referral_notify_retested_analyses",
+            u"If selected, the results of unsolicited analyses will be sent "
+            u"back to the referring laboratory after the sample is verified. "
+            u"If not selected, only the results of initially requested "
+            u"analyses will be shared."
+        ),
+        default=False,
+        required=False,
+    )
+
+    notify_retested_analyses = schema.Bool(
+        title=_(
+            u"label_referral_notify_retested_analyses",
+            u"Notify the referring laboratory about retested analyses"
+        ),
+        description=_(
+            u"description_referral_notify_retested_analyses",
+            u"If selected, the results of retested analyses will be sent back "
+            u"to the referring laboratory after the sample is verified. If "
+            u"not selected, only the retest results will be shared."
+        ),
+        default=False,
+        required=False,
+    )
+
+    notify_hidden_analyses = schema.Bool(
+        title=_(
+            u"label_referral_notify_hidden_analyses",
+            u"Notify the referring laboratory about hidden analyses"
+        ),
+        description=_(
+            u"description_referral_notify_retested_analyses",
+            u"If selected, the results of hidden analyses will be sent back "
+            u"to the referring laboratory after the sample is verified. If "
+            u"not selected, the results of analyses flagged as hidden won't "
+            u"be shared."
         ),
         default=False,
         required=False,

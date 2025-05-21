@@ -19,15 +19,19 @@
 # Some rights reserved, see README and LICENSE.
 
 from bika.lims import api
+from bika.lims.api import UID_CATALOG
 from bika.lims.utils import changeWorkflowState
+from plone import api as ploneapi
 from senaite.core.upgrade import upgradestep
 from senaite.core.upgrade.utils import UpgradeUtils
 from senaite.referral import logger
-from senaite.referral.catalog import SHIPMENT_CATALOG
+from senaite.referral import PRODUCT_NAME
 from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
+from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.config import PRODUCT_NAME as product
 from senaite.referral.setuphandlers import setup_ajax_transitions
 from senaite.referral.setuphandlers import setup_workflows
+from senaite.referral.utils import get_notify_unrequested
 from senaite.referral.utils import get_sample_types_mapping
 from senaite.referral.utils import get_services_mapping
 
@@ -169,3 +173,27 @@ def setup_results_notification(tool):
     setup = portal.portal_setup
     setup.runImportStepFromProfile(profile, "plone.app.registry")
     logger.info("Setup results notification settings [DONE]")
+
+
+def additional_results_notification(tool):
+    setup_results_notification(tool)
+
+    # update notify_unrequested_analyses
+    key = "{}.notify_all_analyses".format(PRODUCT_NAME)
+    unrequested = get_notify_unrequested()
+    unrequested = api.get_registry_record(key, default=unrequested)
+
+    key = "{}.notify_unrequested_analyses".format(PRODUCT_NAME)
+    ploneapi.portal.set_registry_record(key, unrequested)
+
+
+def add_remote_uid_index(tool):
+    logger.info("Add 'remote_uid' index in 'uid_catalog' ...")
+    portal = tool.aq_inner.aq_parent
+
+    index = "remote_uid"
+    uc = api.get_tool(UID_CATALOG)
+    if "remote_uid" not in uc.indexes():
+        uc.addIndex(index, "FieldIndex")
+
+    logger.info("Add 'remote_uid' index in 'uid_catalog' [DONE]")

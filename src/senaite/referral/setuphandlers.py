@@ -20,6 +20,7 @@
 
 from collections import OrderedDict
 
+from bika.lims.api import UID_CATALOG
 from plone.registry.interfaces import IRegistry
 from senaite.core.api.workflow import update_workflow
 from senaite.core.registry import get_registry_record
@@ -43,8 +44,9 @@ CATALOGS = (
     ShipmentCatalog,
 )
 
-# Tuples of (catalog, index_name, index_type)
+# Tuples of (catalog, index_name, index_attribute, index_type)
 INDEXES = [
+    (UID_CATALOG, "remote_uid", "remote_uid", "FieldIndex")
 ]
 
 # Tuples of (catalog, column_name)
