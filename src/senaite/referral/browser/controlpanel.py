@@ -87,7 +87,7 @@ class IReferralControlPanel(Interface):
             u"Notify the referring laboratory about unrequested analyses"
         ),
         description=_(
-            u"description_referral_notify_retested_analyses",
+            u"description_referral_notify_unrequested_analyses",
             u"If selected, the results of unsolicited analyses will be sent "
             u"back to the referring laboratory after the sample is verified. "
             u"If not selected, only the results of initially requested "
@@ -118,7 +118,7 @@ class IReferralControlPanel(Interface):
             u"Notify the referring laboratory about hidden analyses"
         ),
         description=_(
-            u"description_referral_notify_retested_analyses",
+            u"description_referral_notify_hidden_analyses",
             u"If selected, the results of hidden analyses will be sent back "
             u"to the referring laboratory after the sample is verified. If "
             u"not selected, the results of analyses flagged as hidden won't "
