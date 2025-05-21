@@ -19,6 +19,7 @@
 # Some rights reserved, see README and LICENSE.
 
 from bika.lims import api
+from bika.lims.api import UID_CATALOG
 from bika.lims.utils import changeWorkflowState
 from plone import api as ploneapi
 from senaite.core.upgrade import upgradestep
@@ -184,3 +185,15 @@ def additional_results_notification(tool):
 
     key = "{}.notify_unrequested_analyses".format(PRODUCT_NAME)
     ploneapi.portal.set_registry_record(key, unrequested)
+
+
+def add_remote_uid_index(tool):
+    logger.info("Add 'remote_uid' index in 'uid_catalog' ...")
+    portal = tool.aq_inner.aq_parent
+
+    index = "remote_uid"
+    uc = api.get_tool(UID_CATALOG)
+    if "remote_uid" not in uc.indexes():
+        uc.addIndex(index, "FieldIndex")
+
+    logger.info("Add 'remote_uid' index in 'uid_catalog' [DONE]")

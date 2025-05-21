@@ -97,3 +97,18 @@ class IInboundSampleCatalog(ISenaiteReferralCatalogObject):
 class IShipmentCatalog(ISenaiteReferralCatalogObject):
     """Marker interface for Shipment Catalog
     """
+
+
+class IRemoteResource(Interface):
+    """Marker interface for a referral's remote resource
+    """
+
+    def UID(self):
+        """Returns the Remote UID of this resource
+        """
+
+
+class IRemoteContent(Interface):
+    """Marker interface for objects that maintain a reference to corresponding
+    referral content in a remote laboratory
+    """

@@ -192,21 +192,20 @@ class RemoteLab(object):
         """Update the analyses from the remote laboratory with the information
         provided with the sample passed-in
         """
-        notify_unrequested = get_notify_unrequested()
-        notify_retested = get_notify_retested()
-        notify_hidden = get_notify_hidden()
+        skip_unrequested = not get_notify_unrequested()
+        skip_retested = not get_notify_retested()
+        skip_hidden = not get_notify_hidden()
 
         def get_valid_analyses(sample):
             # Get the analyses to notify about to the reference laboratory
             query = {
                 "full_objects": True,
-                "sort_on": "id",
+                "sort_on": "sortable_title",
                 "sort_order": "ascending",
-                "review_state": ["verified", "published"],
             }
 
             # Skip unsolicited analyses?
-            if not notify_unrequested:
+            if skip_unrequested:
                 inbound_sample = sample.getInboundSample()
                 query["getServiceUID"] = inbound_sample.getRawServices()
 
@@ -214,11 +213,23 @@ class RemoteLab(object):
             for analysis in sample.getAnalyses(**query):
 
                 # Skip hidden?
-                if not notify_hidden and analysis.getHidden():
+                # Be aware that retests are flagged as hidden by default
+                if skip_hidden and analysis.getHidden():
                     continue
 
                 # Skip retested?
-                if not notify_retested and analysis.isRetested():
+                # If retested are skipped, current instance notifies about
+                # the final result, that is the last retest
+                if skip_retested and analysis.isRetested():
+                    continue
+
+                # Skip invalid status?
+                # XX We do this instead of including review_state in a query
+                #    because this action usually happens when analyses are
+                #    verified and at this point, their indexed status is still
+                #    the old one (to_be_verified)
+                status = api.get_review_status(analysis)
+                if status not in ["verified", "published"]:
                     continue
 
                 analyses.append(analysis)
@@ -235,6 +246,7 @@ class RemoteLab(object):
             analyses = [get_analysis_info(analysis) for analysis in analyses]
             return {
                 "id": api.get_id(sample),
+                "uid": api.get_uid(sample),
                 "referring_id": sample.getClientSampleID(),
                 "shipment_id": shipment.getShipmentID(),
                 "analyses": analyses,
@@ -245,6 +257,11 @@ class RemoteLab(object):
             captured = captured if captured else analysis.getDateSubmitted()
             captured = captured.strftime("%Y-%m-%d") or ""
             return {
+                "id": api.get_id(analysis),
+                "uid": api.get_uid(analysis),
+                "retest": analysis.getRawRetest(),
+                "retest_of": analysis.getRawRetestOf(),
+                "hidden": analysis.getHidden(),
                 "keyword": analysis.getKeyword(),
                 "result": analysis.getResult(),
                 "result_options": analysis.getResultOptions(),

@@ -1,8 +1,20 @@
 <configure
   xmlns="http://namespaces.zope.org/zope"
-  i18n_domain="senaite.referral">
+  xmlns:monkey="http://namespaces.plone.org/monkey">
 
   <!-- Package includes -->
   <include package=".content"/>
+
+  <monkey:patch
+      class="plone.dexterity.content.DexterityContent"
+      original="remote_uid"
+      ignoreOriginal="True"
+      replacement=".dexterity.remote_uid" />
+
+  <monkey:patch
+      class="Products.Archetypes.BaseObject.BaseObject"
+      original="remote_uid"
+      ignoreOriginal="True"
+      replacement=".archetypes.remote_uid" />
 
 </configure>
