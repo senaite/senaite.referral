@@ -46,13 +46,12 @@ def after_receive_inbound_sample(inbound_sample):
         receive_sample(sample)
 
     # Notify the referring laboratory about the sample's reception
-    shipment = sample.getInboundShipment()
+    shipment = inbound_sample.getInboundShipment()
     referring = get_remote_lab(shipment)
     if referring:
         referring.do_action(sample, "receive_at_reference")
 
     # Try with the whole shipment
-    shipment = inbound_sample.getInboundShipment()
     doActionFor(shipment, "receive_inbound_shipment")
 
 
