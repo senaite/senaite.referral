@@ -19,10 +19,13 @@
 # Some rights reserved, see README and LICENSE.
 
 from bika.lims import api
+from bika.lims.interfaces import IReceived
 from bika.lims.utils.analysisrequest import create_analysisrequest
+from bika.lims.utils.analysisrequest import receive_sample
 from bika.lims.workflow import doActionFor
 from senaite.referral.utils import get_sample_types_mapping
 from senaite.referral.utils import get_services_mapping
+from senaite.referral.workflow.analysisrequest import get_remote_lab
 
 
 def after_receive_inbound_sample(inbound_sample):
@@ -38,11 +41,17 @@ def after_receive_inbound_sample(inbound_sample):
     # Create the sample
     sample = create_sample(inbound_sample)
 
-    # Auto-receive the sample object
-    doActionFor(sample, "receive")
+    # Always auto-receive samples from inbound shipments
+    if not IReceived.providedBy(sample):
+        receive_sample(sample)
+
+    # Notify the referring laboratory about the sample's reception
+    shipment = inbound_sample.getInboundShipment()
+    referring = get_remote_lab(shipment)
+    if referring:
+        referring.do_action(sample, "receive_at_reference")
 
     # Try with the whole shipment
-    shipment = inbound_sample.getInboundShipment()
     doActionFor(shipment, "receive_inbound_shipment")
 
 
