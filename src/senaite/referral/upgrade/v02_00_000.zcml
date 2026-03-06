@@ -3,6 +3,18 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
 
   <genericsetup:upgradeStep
+      title="Display Shipments and External Labs in the navbar"
+      description="
+        This upgrade step makes the product compatible with senaite.core#2835
+        by adding Shipments and External Labs folders to the setup field
+        'Sidebar displayed portal types', thereby displaying them in the
+        left-hand navigation bar."
+      source="2009"
+      destination="2010"
+      handler=".v02_00_000.display_folders_navbar"
+      profile="senaite.referral:default"/>
+
+  <genericsetup:upgradeStep
       title="SENAITE.REFERRAL 2.0.0: Setup outbound samples sorting config"
       description="Setup outbound samples sorting config"
       source="2008"

@@ -29,6 +29,8 @@ from senaite.referral import PRODUCT_NAME
 from senaite.referral.catalog import INBOUND_SAMPLE_CATALOG
 from senaite.referral.catalog import SHIPMENT_CATALOG
 from senaite.referral.config import PRODUCT_NAME as product
+from senaite.referral.setuphandlers import display_in_nav
+from senaite.referral.setuphandlers import PORTAL_FOLDERS
 from senaite.referral.setuphandlers import setup_ajax_transitions
 from senaite.referral.setuphandlers import setup_workflows
 from senaite.referral.utils import get_notify_unrequested
@@ -205,3 +207,15 @@ def setup_outbound_samples_order(tool):
     setup = portal.portal_setup
     setup.runImportStepFromProfile(profile, "plone.app.registry")
     logger.info("Setup order of outbound samples [DONE]")
+
+
+def display_folders_navbar(tool):
+    """Displays Shipments and External Labs folders in the navigation bar
+    """
+    logger.info("Display folders in navigation bar ...")
+    portal = api.get_portal()
+    folders = [portal.get(folder[0]) for folder in PORTAL_FOLDERS]
+    for folder in folders:
+        if folder is not None:
+            display_in_nav(folder)
+    logger.info("Display folders in navigation bar [DONE]")

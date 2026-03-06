@@ -23,7 +23,6 @@ from senaite.referral import logger
 from senaite.referral import PRODUCT_NAME
 from senaite.referral.setuphandlers import setup_catalogs
 from senaite.referral.setuphandlers import setup_workflows
-from senaite.referral.setuphandlers import setup_navigation_types
 
 
 def afterUpgradeStepHandler(event):  # noqa CamelCase
@@ -44,8 +43,5 @@ def afterUpgradeStepHandler(event):  # noqa CamelCase
 
     # Setup workflows
     setup_workflows(portal)
-
-    # Setup navigation tpyes
-    setup_navigation_types(portal)
 
     logger.info("Run {}.afterUpgradeStepHandler [DONE]".format(PRODUCT_NAME))
