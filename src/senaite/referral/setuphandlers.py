@@ -20,8 +20,8 @@
 
 from collections import OrderedDict
 
+from bika.lims import api
 from bika.lims.api import UID_CATALOG
-from plone.registry.interfaces import IRegistry
 from senaite.core.api.workflow import update_workflow
 from senaite.core.registry import get_registry_record
 from senaite.core.registry import set_registry_record
@@ -37,7 +37,6 @@ from senaite.referral.config import AJAX_TRANSITIONS
 from senaite.referral.config import PRODUCT_NAME
 from senaite.referral.config import PROFILE_ID
 from senaite.referral.config import UNINSTALL_ID
-from zope.component import getUtility
 
 CATALOGS = (
     InboundSampleCatalog,
@@ -58,11 +57,6 @@ COLUMNS = [
 PORTAL_FOLDERS = [
     ("external_labs", "External laboratories", "ExternalLaboratoryFolder"),
     ("shipments", "Shipments", "ShipmentFolder"),
-]
-
-NAVTYPES = [
-    "ExternalLaboratoryFolder",
-    "ShipmentFolder",
 ]
 
 WORKFLOWS_TO_UPDATE = {
@@ -215,9 +209,6 @@ def setup_handler(context):
     # Portal folders
     add_portal_folders(portal)
 
-    # Configure visible navigation items
-    setup_navigation_types(portal)
-
     # Setup worlflows
     setup_workflows(portal)
 
@@ -278,21 +269,40 @@ def add_portal_folders(portal):
     logger.info("Adding portal folders ...")
     for folder_id, folder_name, portal_type in PORTAL_FOLDERS:
         if portal.get(folder_id) is None:
-            portal.invokeFactory(portal_type, folder_id, title=folder_name)
+            logger.info("Adding folder: {}".format(folder_id))
+            params = dict(id=folder_id, title=folder_name)
+            api.create(portal, portal_type, **params)
+
+    # make folders visible in the navigation bar
+    for folder_id, folder_name, portal_type in PORTAL_FOLDERS:
+        obj = portal.get(folder_id)
+        if obj is not None:
+            display_in_nav(obj)
 
     logger.info("Adding portal folders [DONE]")
 
 
-def setup_navigation_types(portal):
-    """Add additional types for navigation
+def display_in_nav(obj):
+    """Makes an object to be displayed in the navigation bar
     """
-    registry = getUtility(IRegistry)
-    key = "plone.displayed_types"
-    display_types = registry.get(key, ())
+    portal_type = api.get_portal_type(obj)
 
-    new_display_types = set(display_types)
-    new_display_types.update(NAVTYPES)
-    registry[key] = tuple(new_display_types)
+    # remove from senaite setup's sidebar_skip_types
+    setup = api.get_senaite_setup()
+    skip = setup.getSidebarSkipTypes()
+    if skip and portal_type in skip:
+        skip = tuple(pt for pt in skip if pt != portal_type)
+        setup.setSidebarSkipTypes(skip)
+
+    # if a root folder, add to senaite setup's sidebar_folders
+    setup = api.get_senaite_setup()
+    portal = api.get_portal()
+    if api.get_parent(obj) == portal:
+        obj_id = api.get_id(obj)
+        folders = setup.getSidebarFolders()
+        if obj_id not in folders:
+            folders += (obj_id, )
+            setup.setSidebarFolders(folders)
 
 
 def setup_workflows(portal):
