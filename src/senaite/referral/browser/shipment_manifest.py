@@ -111,7 +111,9 @@ class ShipmentManifestTemplate(BaseView):
     def laboratory(self):
         """Laboratory object from the LIMS setup
         """
-        return api.get_setup().laboratory
+        # Laboratory was migrated to Dexterity in senaite.core 2.7 and
+        # now lives under `portal.setup` instead of `portal.bika_setup`.
+        return api.get_senaite_setup().laboratory
 
     @property
     def shipment(self):

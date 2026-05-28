@@ -4,6 +4,7 @@ Changelog
 2.0.0 (Unreleased)
 ------------------
 
+- #40 Compatibility with core#2810 (Laboratory to DX)
 - #39 Compatibility with core#2835 (display Shipments in navbar)
 - #38 Fix referred samples do not transition to "received at reference"
 - #37 Allow to set the default sorting order for samples in outbound shipments
